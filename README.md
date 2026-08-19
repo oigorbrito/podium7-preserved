@@ -23,6 +23,8 @@ Run every discovered test case in its own Python process:
 python scripts/run_tests_one_by_one.py
 ```
 
+The runner writes machine-readable execution evidence to `artifacts/test-report.json`, including the Git commit, Python version, platform, discovered/passed counts, status, and failed test when applicable. The generated `artifacts/` directory is ignored by Git.
+
 The GitHub Actions workflow `.github/workflows/sequential-tests.yml` uses the same command so local and CI execution follow the same isolation rule.
 
 For normal unittest discovery without process isolation:
