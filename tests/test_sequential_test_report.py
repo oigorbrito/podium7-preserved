@@ -1,7 +1,9 @@
+import tempfile
 import unittest
 from datetime import datetime, timezone
+from pathlib import Path
 
-from scripts.run_tests_one_by_one import REPORT_SCHEMA, _validate_report
+from scripts.run_tests_one_by_one import REPORT_SCHEMA, _discover_test_ids, _validate_report
 
 
 class SequentialTestReportTests(unittest.TestCase):
@@ -45,6 +47,21 @@ class SequentialTestReportTests(unittest.TestCase):
         report["generated_at"] = "2026-08-19T20:00:00"
         with self.assertRaises(ValueError):
             _validate_report(report)
+
+    def test_duplicate_test_identifier_is_rejected(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tests_dir = Path(tmp)
+            (tests_dir / "test_duplicate.py").write_text(
+                "import unittest\n\n"
+                "class DuplicateTests(unittest.TestCase):\n"
+                "    def test_same(self):\n"
+                "        pass\n"
+                "    def test_same(self):\n"
+                "        pass\n",
+                encoding="utf-8",
+            )
+            with self.assertRaises(ValueError):
+                _discover_test_ids(tests_dir)
 
 
 if __name__ == "__main__":
