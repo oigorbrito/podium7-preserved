@@ -11,6 +11,18 @@ def _require_text(value: str, field: str) -> None:
         raise ValueError(f"{field} is required")
 
 
+def _require_optional_text(value: str | None, field: str) -> None:
+    if value is not None and not value.strip():
+        raise ValueError(f"{field} must be non-empty when provided")
+
+
+def _require_unique_texts(values: tuple[str, ...], field: str) -> None:
+    for value in values:
+        _require_text(value, field)
+    if len(set(values)) != len(values):
+        raise ValueError(f"{field} must not contain duplicates")
+
+
 class DecisionStatus(str, Enum):
     EVIDENCE_BACKED = "EVIDENCE_BACKED"
     HYPOTHESIS = "HYPOTHESIS"
@@ -100,10 +112,15 @@ class CandidateFact:
     normalization_rule: str | None = None
 
     def __post_init__(self) -> None:
+        _require_text(self.id, "candidate fact id")
+        _require_text(self.entity_candidate_id, "candidate entity_candidate_id")
+        _require_text(self.attribute, "attribute")
+        _require_text(self.evidence_id, "candidate evidence_id")
+        _require_text(self.extraction_method, "candidate extraction_method")
+        _require_optional_text(self.unit, "candidate unit")
+        _require_optional_text(self.normalization_rule, "candidate normalization_rule")
         if self.confidence is not None and not 0.0 <= self.confidence <= 1.0:
             raise ValueError("confidence must be between 0 and 1")
-        if not self.attribute.strip():
-            raise ValueError("attribute is required")
 
 
 @dataclass(frozen=True)
@@ -114,6 +131,14 @@ class ProvenanceRecord:
     was_derived_from: tuple[str, ...] = ()
     was_generated_by: str | None = None
     was_associated_with: str | None = None
+
+    def __post_init__(self) -> None:
+        _require_text(self.entity_id, "provenance entity_id")
+        _require_text(self.activity_id, "provenance activity_id")
+        _require_optional_text(self.agent_id, "provenance agent_id")
+        _require_optional_text(self.was_generated_by, "provenance was_generated_by")
+        _require_optional_text(self.was_associated_with, "provenance was_associated_with")
+        _require_unique_texts(self.was_derived_from, "provenance derivation reference")
 
 
 @dataclass(frozen=True)
@@ -127,8 +152,13 @@ class CanonicalFact:
     provenance: ProvenanceRecord
 
     def __post_init__(self) -> None:
+        _require_text(self.id, "canonical fact id")
+        _require_text(self.entity_id, "canonical entity_id")
+        _require_text(self.attribute, "canonical attribute")
+        _require_text(self.fusion_decision, "canonical fusion_decision")
         if not self.candidate_references:
             raise ValueError("canonical facts require at least one candidate reference")
+        _require_unique_texts(self.candidate_references, "canonical candidate reference")
         if self.provenance.entity_id != self.entity_id:
             raise ValueError("canonical fact provenance must reference the same entity")
         missing_derivations = tuple(
@@ -153,9 +183,14 @@ class Conflict:
     selected_candidate_id: str | None = None
 
     def __post_init__(self) -> None:
+        _require_text(self.id, "conflict id")
+        _require_text(self.attribute, "conflict attribute")
+        _require_text(self.reason, "conflict reason")
         if len(self.candidate_references) < 2:
             raise ValueError("a conflict requires at least two candidate references")
+        _require_unique_texts(self.candidate_references, "conflict candidate reference")
         if self.resolution_state is ConflictState.RESOLVED and self.selected_candidate_id is None:
             raise ValueError("resolved conflicts require selected_candidate_id")
+        _require_optional_text(self.selected_candidate_id, "conflict selected_candidate_id")
         if self.selected_candidate_id is not None and self.selected_candidate_id not in self.candidate_references:
             raise ValueError("selected candidate must belong to candidate_references")
