@@ -22,8 +22,8 @@ The structured source contributes two persisted raw evidence records (GT and Sca
 - `EXPORT = PASS`
 - `REPRODUCIBLE = PASS`
 - acceptance test: PASS, run individually
-- cumulative tests introduced and executed individually: 56/56 PASS
+- full discovered suite: 122/122 PASS, executed one test case per Python process
 
 ## Execution note
 
-The environment did not provide the `gh` CLI, so the final E2E test was executed against a local compatible mirror of the published modules and fixtures. The implementation and acceptance test themselves are committed to the repository.
+The earlier mirror-only limitation is closed. On 2026-08-19 the repository was cloned to `C:\Projetos\p7` on Windows with Python 3.13 and `python scripts\run_tests_one_by_one.py` completed all 122 discovered tests successfully, one process per test case. The sequential runner remains the canonical local/CI test command.
