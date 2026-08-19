@@ -9,7 +9,8 @@ import platform
 import re
 import subprocess
 import sys
-from typing import Any
+from typing import Any, Iterator
+import unittest
 
 
 REPORT_SCHEMA = "podium7.sequential-test-report.v1"
@@ -28,30 +29,52 @@ REPORT_KEYS = {
 GIT_SHA_RE = re.compile(r"^[0-9a-f]{40}$")
 
 
-def _is_test_case_class(node: ast.ClassDef) -> bool:
-    for base in node.bases:
-        if isinstance(base, ast.Attribute) and base.attr == "TestCase":
-            return True
-        if isinstance(base, ast.Name) and base.id == "TestCase":
-            return True
-    return False
-
-
-def _discover_test_ids(tests_dir: Path) -> list[str]:
-    test_ids: list[str] = []
-    seen: set[str] = set()
+def _reject_duplicate_test_methods(tests_dir: Path) -> None:
     for path in sorted(tests_dir.glob("test_*.py")):
         tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
         for node in tree.body:
-            if not isinstance(node, ast.ClassDef) or not _is_test_case_class(node):
+            if not isinstance(node, ast.ClassDef):
                 continue
+            seen: set[str] = set()
             for member in node.body:
-                if isinstance(member, (ast.FunctionDef, ast.AsyncFunctionDef)) and member.name.startswith("test_"):
-                    test_id = f"{path.stem}.{node.name}.{member.name}"
-                    if test_id in seen:
-                        raise ValueError(f"duplicate test identifier: {test_id}")
-                    seen.add(test_id)
-                    test_ids.append(test_id)
+                if not isinstance(member, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                    continue
+                if not member.name.startswith("test_"):
+                    continue
+                test_id = f"{path.stem}.{node.name}.{member.name}"
+                if member.name in seen:
+                    raise ValueError(f"duplicate test identifier: {test_id}")
+                seen.add(member.name)
+
+
+def _iter_tests(suite: unittest.TestSuite) -> Iterator[unittest.TestCase]:
+    for item in suite:
+        if isinstance(item, unittest.TestSuite):
+            yield from _iter_tests(item)
+        else:
+            yield item
+
+
+def _discover_test_ids(tests_dir: Path) -> list[str]:
+    _reject_duplicate_test_methods(tests_dir)
+
+    loader = unittest.TestLoader()
+    suite = loader.discover(
+        start_dir=str(tests_dir),
+        pattern="test_*.py",
+        top_level_dir=str(tests_dir),
+    )
+    if loader.errors:
+        raise ValueError("unittest discovery failed: " + " | ".join(loader.errors))
+
+    test_ids: list[str] = []
+    seen: set[str] = set()
+    for test in _iter_tests(suite):
+        test_id = test.id()
+        if test_id in seen:
+            raise ValueError(f"duplicate test identifier: {test_id}")
+        seen.add(test_id)
+        test_ids.append(test_id)
     return sorted(test_ids)
 
 
