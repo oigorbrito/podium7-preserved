@@ -35,6 +35,38 @@ class AIDiscoveryTests(unittest.TestCase):
         self.assertEqual(first, second)
         self.assertEqual(first[0].normalized_value, 223.709961)
 
+    def test_duplicate_attribute_after_normalization_is_rejected(self):
+        payload = {
+            "source_id": "x",
+            "rules": [
+                {"label": "Power", "attribute": "power", "parser": r"(\d+) HP", "source_unit": "hp"},
+                {"label": "Power Alt", "attribute": " POWER ", "parser": r"(\d+) HP", "source_unit": "hp"},
+            ],
+        }
+        with self.assertRaises(ValueError):
+            validate_extraction_artifact(payload)
+
+    def test_duplicate_label_after_normalization_is_rejected(self):
+        payload = {
+            "source_id": "x",
+            "rules": [
+                {"label": "Power", "attribute": "power", "parser": r"(\d+) HP", "source_unit": "hp"},
+                {"label": " power ", "attribute": "torque", "parser": r"(\d+) Nm", "source_unit": "Nm"},
+            ],
+        }
+        with self.assertRaises(ValueError):
+            validate_extraction_artifact(payload)
+
+    def test_blank_source_unit_is_rejected(self):
+        payload = {
+            "source_id": "x",
+            "rules": [
+                {"label": "Power", "attribute": "power", "parser": r"(\d+) HP", "source_unit": "   "}
+            ],
+        }
+        with self.assertRaises(ValueError):
+            validate_extraction_artifact(payload)
+
 
 if __name__ == "__main__":
     unittest.main()
