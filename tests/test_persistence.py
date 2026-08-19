@@ -17,6 +17,7 @@ from podium7.persistence import EvidenceStore
 
 
 SOURCE = Source("source-1", "Example", "https://example.test/vehicle")
+SECOND_SOURCE = Source("source-2", "Second", "https://example.test/vehicle/2")
 ENTITY = AutomotiveIdentity(
     kind=EntityKind.POWERTRAIN,
     make="Artega",
@@ -166,6 +167,23 @@ class PersistenceTests(unittest.TestCase):
                     raise RuntimeError("abort")
             self.assertIsNone(store.get_source(SOURCE.id))
             self.assertEqual(store.snapshot_counts()["sources"], 0)
+
+    def test_nested_failure_rolls_back_inner_unit_when_caught(self):
+        canonical = canonical_fact()
+        with EvidenceStore() as store:
+            seed_candidate_path(store)
+            store.save_canonical_fact(canonical, "provenance-1")
+            with store.transaction():
+                try:
+                    store.save_canonical_fact(canonical, "provenance-2")
+                except ValueError:
+                    pass
+                store.save_source(SECOND_SOURCE)
+            self.assertIsNone(store.get_provenance("provenance-2"))
+            self.assertEqual(store.get_source(SECOND_SOURCE.id), SECOND_SOURCE)
+            counts = store.snapshot_counts()
+            self.assertEqual(counts["provenance"], 1)
+            self.assertEqual(counts["canonical_facts"], 1)
 
 
 if __name__ == "__main__":

@@ -35,6 +35,7 @@ class EvidenceStore:
         self._connection.row_factory = sqlite3.Row
         self._connection.execute("PRAGMA foreign_keys = ON")
         self._transaction_depth = 0
+        self._savepoint_counter = 0
         self._create_schema()
 
     def close(self) -> None:
@@ -48,11 +49,17 @@ class EvidenceStore:
 
     @contextmanager
     def transaction(self) -> Iterator["EvidenceStore"]:
-        """Group persistence operations into one atomic SQLite transaction."""
+        """Group persistence operations atomically, including nested units."""
 
         outermost = self._transaction_depth == 0
+        savepoint: str | None = None
         if outermost:
             self._connection.execute("BEGIN")
+        else:
+            self._savepoint_counter += 1
+            savepoint = f"podium7_sp_{self._savepoint_counter}"
+            self._connection.execute(f"SAVEPOINT {savepoint}")
+
         self._transaction_depth += 1
         try:
             yield self
@@ -60,11 +67,18 @@ class EvidenceStore:
             self._transaction_depth -= 1
             if outermost:
                 self._connection.rollback()
+            else:
+                assert savepoint is not None
+                self._connection.execute(f"ROLLBACK TO SAVEPOINT {savepoint}")
+                self._connection.execute(f"RELEASE SAVEPOINT {savepoint}")
             raise
         else:
             self._transaction_depth -= 1
             if outermost:
                 self._connection.commit()
+            else:
+                assert savepoint is not None
+                self._connection.execute(f"RELEASE SAVEPOINT {savepoint}")
 
     def _create_schema(self) -> None:
         self._connection.executescript(
