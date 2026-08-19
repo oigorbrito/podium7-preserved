@@ -33,6 +33,15 @@ def _round(value: float) -> float:
     return round(value, 6)
 
 
+def _unsupported_unit(attribute: str, unit: str | None) -> ValueError:
+    return ValueError(f"unsupported unit for {attribute!r}: {unit!r}")
+
+
+def _require_unitless(attribute: str, unit: str | None) -> None:
+    if unit is not None:
+        raise _unsupported_unit(attribute, unit)
+
+
 def normalize_fact(attribute: str, value: Any, unit: str | None) -> NormalizationResult:
     if attribute == "power":
         if unit == "kW":
@@ -41,6 +50,7 @@ def normalize_fact(attribute: str, value: Any, unit: str | None) -> Normalizatio
             return NormalizationResult(_round(_finite_number(value) * 0.7456998716), "kW", "power.hp_to_kw.v1")
         if unit in {"cv", "PS"}:
             return NormalizationResult(_round(_finite_number(value) * 0.73549875), "kW", "power.metric_hp_to_kw.v1")
+        raise _unsupported_unit(attribute, unit)
 
     if attribute == "torque":
         if unit == "Nm":
@@ -49,24 +59,28 @@ def normalize_fact(attribute: str, value: Any, unit: str | None) -> Normalizatio
             return NormalizationResult(_round(_finite_number(value) * 1.3558179483314), "Nm", "torque.lbft_to_nm.v1")
         if unit == "kgfm":
             return NormalizationResult(_round(_finite_number(value) * 9.80665), "Nm", "torque.kgfm_to_nm.v1")
+        raise _unsupported_unit(attribute, unit)
 
     if attribute == "displacement":
         if unit == "cc":
             return NormalizationResult(_finite_identity(value), "cc", "displacement.cc.identity.v1")
         if unit in {"L", "l"}:
             return NormalizationResult(_round(_finite_number(value) * 1000.0), "cc", "displacement.l_to_cc.v1")
+        raise _unsupported_unit(attribute, unit)
 
     if attribute in {"length", "width", "height", "wheelbase"}:
         if unit == "mm":
             return NormalizationResult(_finite_identity(value), "mm", f"{attribute}.mm.identity.v1")
         if unit in {"in", "inch", "inches"}:
             return NormalizationResult(_round(_finite_number(value) * 25.4), "mm", f"{attribute}.in_to_mm.v1")
+        raise _unsupported_unit(attribute, unit)
 
     if attribute == "curb_weight":
         if unit == "kg":
             return NormalizationResult(_finite_identity(value), "kg", "curb_weight.kg.identity.v1")
         if unit in {"lb", "lbs"}:
             return NormalizationResult(_round(_finite_number(value) * 0.45359237), "kg", "curb_weight.lb_to_kg.v1")
+        raise _unsupported_unit(attribute, unit)
 
     if attribute == "fuel_economy_combined":
         if unit == "L/100km":
@@ -76,8 +90,27 @@ def normalize_fact(attribute: str, value: Any, unit: str | None) -> Normalizatio
             if mpg <= 0:
                 raise ValueError("mpg must be greater than zero")
             return NormalizationResult(_round(235.214583 / mpg), "L/100km", "consumption.mpg_us_to_l100km.v1")
+        raise _unsupported_unit(attribute, unit)
+
+    if attribute == "cylinders":
+        _require_unitless(attribute, unit)
+        number = _finite_number(value)
+        if not number.is_integer() or number < 0:
+            raise ValueError("cylinders must be a non-negative integer")
+        return NormalizationResult(int(number), None, "cylinders.count.identity.v1")
+
+    if attribute == "zero_to_hundred":
+        if unit != "s":
+            raise _unsupported_unit(attribute, unit)
+        return NormalizationResult(_finite_identity(value), "s", "zero_to_hundred.seconds.identity.v1")
+
+    if attribute == "top_speed":
+        if unit != "km/h":
+            raise _unsupported_unit(attribute, unit)
+        return NormalizationResult(_finite_identity(value), "km/h", "top_speed.kmh.identity.v1")
 
     if attribute == "fuel_type":
+        _require_unitless(attribute, unit)
         token = str(value).strip().casefold()
         aliases = {
             "gasoline": "gasoline", "petrol": "gasoline", "diesel": "diesel",
@@ -87,10 +120,12 @@ def normalize_fact(attribute: str, value: Any, unit: str | None) -> Normalizatio
         return NormalizationResult(aliases.get(token, token.replace(" ", "_")), None, "fuel_type.token.v1")
 
     if attribute == "transmission":
+        _require_unitless(attribute, unit)
         token = " ".join(str(value).strip().casefold().split())
         return NormalizationResult(token, None, "transmission.token.v1")
 
     if attribute == "drivetrain":
+        _require_unitless(attribute, unit)
         token = " ".join(str(value).strip().casefold().split())
         aliases = {
             "front wheel drive": "fwd", "rear wheel drive": "rwd",
