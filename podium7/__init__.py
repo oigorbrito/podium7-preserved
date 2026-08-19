@@ -1,3 +1,4 @@
+from .acceptance import AcceptanceReport, run_acceptance_slice
 from .ai_discovery import ValidatedExtractionArtifact, validate_extraction_artifact
 from .autonomy import AcquisitionCache, Checkpoint, EnrichmentJob, JobResult, JobState, RateLimiter, RetryPolicy, identify_gaps, plan_jobs, run_job
 from .document_extraction import DocumentExtractionReport, extract_ford_dark_horse_document
@@ -12,7 +13,7 @@ from .review import ReviewAction, ReviewDecision, review_conflict, review_eviden
 from .web_extraction import ExtractedWebFact, WebFieldRule, extract_autoevolution_artega_gt, extract_with_rules
 
 __all__ = [
-    "AcquisitionCache", "AutomotiveIdentity", "CandidateFact", "CanonicalFact", "Checkpoint",
+    "AcceptanceReport", "AcquisitionCache", "AutomotiveIdentity", "CandidateFact", "CanonicalFact", "Checkpoint",
     "Conflict", "ConflictState", "DecisionStatus", "DocumentExtractionReport", "EnrichmentJob",
     "EntityKind", "EvidenceStore", "ExtractedWebFact", "FusionResult", "IngestionReport",
     "JobResult", "JobState", "MatchOutcome", "NormalizationResult", "ProvenanceRecord",
@@ -21,6 +22,6 @@ __all__ = [
     "export_entity_json", "export_entity_payload", "extract_autoevolution_artega_gt",
     "extract_ford_dark_horse_document", "extract_with_rules", "fuse_candidates", "generate_candidates",
     "identify_gaps", "ingest_vehicle_makes_models_json", "normalize_fact", "plan_jobs",
-    "resolve_pair", "review_conflict", "review_evidence", "review_identity", "run_job",
-    "validate_extraction_artifact", "write_entity_json",
+    "resolve_pair", "review_conflict", "review_evidence", "review_identity", "run_acceptance_slice",
+    "run_job", "validate_extraction_artifact", "write_entity_json",
 ]
