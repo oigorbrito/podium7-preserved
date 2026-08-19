@@ -22,6 +22,9 @@ jobs:
           python-version: "3.13"
           check-latest: false
 
+      - name: Run runtime health check
+        run: python -m podium7 health
+
       - name: Run every test in isolation
         run: python scripts/run_tests_one_by_one.py
 
