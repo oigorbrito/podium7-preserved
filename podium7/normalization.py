@@ -1,0 +1,94 @@
+from __future__ import annotations
+
+from dataclasses import dataclass
+from typing import Any
+
+
+@dataclass(frozen=True)
+class NormalizationResult:
+    value: Any
+    unit: str | None
+    rule: str
+
+
+def _round(value: float) -> float:
+    return round(value, 6)
+
+
+def normalize_fact(attribute: str, value: Any, unit: str | None) -> NormalizationResult:
+    """Normalize supported automotive facts while preserving raw input elsewhere.
+
+    Canonical units in v1:
+    power=kW, torque=Nm, displacement=cc, dimensions=mm, weight=kg,
+    consumption=L/100km. Text categories use stable lowercase tokens.
+    """
+
+    if attribute == "power":
+        if unit == "kW":
+            return NormalizationResult(value, "kW", "power.kw.identity.v1")
+        if unit in {"hp", "bhp"}:
+            return NormalizationResult(_round(float(value) * 0.7456998716), "kW", "power.hp_to_kw.v1")
+
+    if attribute == "torque":
+        if unit == "Nm":
+            return NormalizationResult(value, "Nm", "torque.nm.identity.v1")
+        if unit in {"lb-ft", "lbft"}:
+            return NormalizationResult(_round(float(value) * 1.3558179483314), "Nm", "torque.lbft_to_nm.v1")
+
+    if attribute == "displacement":
+        if unit == "cc":
+            return NormalizationResult(value, "cc", "displacement.cc.identity.v1")
+        if unit in {"L", "l"}:
+            return NormalizationResult(_round(float(value) * 1000.0), "cc", "displacement.l_to_cc.v1")
+
+    if attribute in {"length", "width", "height", "wheelbase"}:
+        if unit == "mm":
+            return NormalizationResult(value, "mm", f"{attribute}.mm.identity.v1")
+        if unit in {"in", "inch", "inches"}:
+            return NormalizationResult(_round(float(value) * 25.4), "mm", f"{attribute}.in_to_mm.v1")
+
+    if attribute == "curb_weight":
+        if unit == "kg":
+            return NormalizationResult(value, "kg", "curb_weight.kg.identity.v1")
+        if unit in {"lb", "lbs"}:
+            return NormalizationResult(_round(float(value) * 0.45359237), "kg", "curb_weight.lb_to_kg.v1")
+
+    if attribute == "fuel_economy_combined":
+        if unit == "L/100km":
+            return NormalizationResult(value, "L/100km", "consumption.l100km.identity.v1")
+        if unit == "mpg-US":
+            mpg = float(value)
+            if mpg <= 0:
+                raise ValueError("mpg must be greater than zero")
+            return NormalizationResult(_round(235.214583 / mpg), "L/100km", "consumption.mpg_us_to_l100km.v1")
+
+    if attribute == "fuel_type":
+        token = str(value).strip().casefold()
+        aliases = {
+            "gasoline": "gasoline",
+            "petrol": "gasoline",
+            "diesel": "diesel",
+            "electric": "electric",
+            "electricity": "electric",
+            "hybrid": "hybrid",
+            "plug-in hybrid": "plug_in_hybrid",
+            "phev": "plug_in_hybrid",
+        }
+        return NormalizationResult(aliases.get(token, token.replace(" ", "_")), None, "fuel_type.token.v1")
+
+    if attribute == "transmission":
+        token = " ".join(str(value).strip().casefold().split())
+        return NormalizationResult(token, None, "transmission.token.v1")
+
+    if attribute == "drivetrain":
+        token = " ".join(str(value).strip().casefold().split())
+        aliases = {
+            "front wheel drive": "fwd",
+            "rear wheel drive": "rwd",
+            "all wheel drive": "awd",
+            "four wheel drive": "4wd",
+            "4 wheel drive": "4wd",
+        }
+        return NormalizationResult(aliases.get(token, token.replace(" ", "_")), None, "drivetrain.token.v1")
+
+    return NormalizationResult(value, unit, "identity.unspecified.v1")
