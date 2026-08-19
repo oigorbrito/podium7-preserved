@@ -58,11 +58,14 @@ def extract_with_rules(text: str, rules: tuple[WebFieldRule, ...]) -> list[Extra
         if ": | " not in line:
             continue
         label, raw = line.split(": | ", 1)
-        values[label.strip()] = raw.strip()
+        key = label.strip().casefold()
+        if key in values:
+            raise ValueError(f"duplicate web field {label.strip()!r}")
+        values[key] = raw.strip()
 
     extracted: list[ExtractedWebFact] = []
     for rule in rules:
-        raw = values.get(rule.label)
+        raw = values.get(rule.label.casefold())
         if raw is None:
             raise ValueError(f"required web field {rule.label!r} is missing")
         match = re.search(rule.parser, raw, flags=re.IGNORECASE)

@@ -39,6 +39,11 @@ class WebExtractionTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             extract_autoevolution_artega_gt(broken)
 
+    def test_duplicate_label_fails_explicitly(self):
+        duplicated = SNAPSHOT + "POWER: | 220.6 KW @ 6600 RPM / 300 HP @ 6600 RPM\n"
+        with self.assertRaises(ValueError):
+            extract_autoevolution_artega_gt(duplicated)
+
 
 if __name__ == "__main__":
     unittest.main()

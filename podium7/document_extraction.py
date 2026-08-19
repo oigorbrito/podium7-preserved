@@ -15,10 +15,16 @@ class DocumentExtractionReport:
 
 
 def _required(text: str, label: str) -> str:
-    match = re.search(rf"^{re.escape(label)}:\s*(.+)$", text, flags=re.MULTILINE | re.IGNORECASE)
-    if match is None:
+    matches = re.findall(
+        rf"^{re.escape(label)}:\s*(.+)$",
+        text,
+        flags=re.MULTILINE | re.IGNORECASE,
+    )
+    if not matches:
         raise ValueError(f"required document field {label!r} is missing")
-    return match.group(1).strip()
+    if len(matches) > 1:
+        raise ValueError(f"duplicate document field {label!r}")
+    return matches[0].strip()
 
 
 def extract_ford_dark_horse_document(
@@ -27,8 +33,8 @@ def extract_ford_dark_horse_document(
     entity_id: str,
     evidence_id: str,
 ) -> DocumentExtractionReport:
-    model = _required(text, "MODEL")
-    engine = _required(text, "ENGINE")
+    _required(text, "MODEL")
+    _required(text, "ENGINE")
     power_raw = _required(text, "POWER")
     torque_raw = _required(text, "TORQUE")
 

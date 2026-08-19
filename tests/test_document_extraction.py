@@ -35,6 +35,11 @@ class DocumentExtractionTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             extract_ford_dark_horse_document(broken, entity_id="entity-1", evidence_id="evidence-1")
 
+    def test_duplicate_required_field_is_rejected(self):
+        duplicated = DOCUMENT + "power: 499 cv\n"
+        with self.assertRaises(ValueError):
+            extract_ford_dark_horse_document(duplicated, entity_id="entity-1", evidence_id="evidence-1")
+
 
 if __name__ == "__main__":
     unittest.main()
