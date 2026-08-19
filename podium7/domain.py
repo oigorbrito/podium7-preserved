@@ -6,6 +6,11 @@ from enum import Enum
 from typing import Any
 
 
+def _require_text(value: str, field: str) -> None:
+    if not value.strip():
+        raise ValueError(f"{field} is required")
+
+
 class DecisionStatus(str, Enum):
     EVIDENCE_BACKED = "EVIDENCE_BACKED"
     HYPOTHESIS = "HYPOTHESIS"
@@ -34,6 +39,11 @@ class Source:
     name: str
     locator: str
 
+    def __post_init__(self) -> None:
+        _require_text(self.id, "source id")
+        _require_text(self.name, "source name")
+        _require_text(self.locator, "source locator")
+
 
 @dataclass(frozen=True)
 class RawEvidence:
@@ -43,6 +53,15 @@ class RawEvidence:
     retrieved_at: datetime
     acquisition_method: str
     raw_content_ref: str
+
+    def __post_init__(self) -> None:
+        _require_text(self.id, "evidence id")
+        _require_text(self.source_id, "evidence source_id")
+        _require_text(self.locator, "evidence locator")
+        _require_text(self.acquisition_method, "evidence acquisition_method")
+        _require_text(self.raw_content_ref, "evidence raw_content_ref")
+        if self.retrieved_at.tzinfo is None or self.retrieved_at.utcoffset() is None:
+            raise ValueError("evidence retrieved_at must be timezone-aware")
 
 
 @dataclass(frozen=True)
