@@ -99,7 +99,6 @@ def run_acceptance_slice(structured_json: str | Path, web_snapshot: str | Path) 
         structured_candidates = {fact.attribute: fact for fact in store.candidates_for_entity(structured_entity_id)}
         web_candidates = {fact.attribute: fact for fact in store.candidates_for_entity(web_entity_id)}
 
-        canonical_facts = []
         conflicts = []
         for attribute in sorted(set(structured_candidates).intersection(web_candidates)):
             result = fuse_candidates(
@@ -109,13 +108,21 @@ def run_acceptance_slice(structured_json: str | Path, web_snapshot: str | Path) 
             if result.canonical_fact is not None:
                 provenance_id = f"provenance:{result.canonical_fact.id}"
                 store.save_canonical_fact(result.canonical_fact, provenance_id)
-                canonical_facts.append(result.canonical_fact)
             if result.conflict is not None:
                 store.save_conflict(result.conflict)
                 conflicts.append(result.conflict)
 
         counts = store.snapshot_counts()
-        exported = export_entity_json(structured_entity_id, structured_identity, canonical_facts, conflicts)
+        persisted_canonical_facts = store.canonical_facts_for_entity(structured_entity_id)
+        if len(persisted_canonical_facts) != counts["canonical_facts"]:
+            raise RuntimeError("persisted canonical facts could not be reconstructed completely")
+
+        exported = export_entity_json(
+            structured_entity_id,
+            structured_identity,
+            persisted_canonical_facts,
+            conflicts,
+        )
         return AcceptanceReport(
             identity_outcome=identity_decision.outcome,
             sources=counts["sources"],
