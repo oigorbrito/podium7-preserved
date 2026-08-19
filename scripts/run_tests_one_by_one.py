@@ -9,6 +9,7 @@ import platform
 import re
 import subprocess
 import sys
+import tempfile
 from typing import Any, Iterator
 import unittest
 
@@ -180,10 +181,27 @@ def _write_report(
         status=status,
         failed_test=failed_test,
     )
-    (report_dir / "test-report.json").write_text(
-        json.dumps(report, indent=2, sort_keys=True) + "\n",
-        encoding="utf-8",
-    )
+    target = report_dir / "test-report.json"
+    payload = json.dumps(report, indent=2, sort_keys=True) + "\n"
+    temporary_path: Path | None = None
+    try:
+        with tempfile.NamedTemporaryFile(
+            mode="w",
+            encoding="utf-8",
+            dir=report_dir,
+            prefix=".test-report-",
+            suffix=".tmp",
+            delete=False,
+        ) as handle:
+            temporary_path = Path(handle.name)
+            handle.write(payload)
+            handle.flush()
+            os.fsync(handle.fileno())
+        os.replace(temporary_path, target)
+        temporary_path = None
+    finally:
+        if temporary_path is not None:
+            temporary_path.unlink(missing_ok=True)
 
 
 def main() -> int:
