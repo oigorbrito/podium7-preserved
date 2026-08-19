@@ -8,6 +8,10 @@ from pathlib import Path
 import platform
 import subprocess
 import sys
+from typing import Any
+
+
+REPORT_SCHEMA = "podium7.sequential-test-report.v1"
 
 
 def _is_test_case_class(node: ast.ClassDef) -> bool:
@@ -46,18 +50,58 @@ def _git_head(root: Path) -> str | None:
     return head or None
 
 
-def _write_report(
+def _validate_report(report: dict[str, Any]) -> None:
+    if report.get("schema") != REPORT_SCHEMA:
+        raise ValueError("unexpected test report schema")
+    status = report.get("status")
+    if status not in {"PASS", "FAIL"}:
+        raise ValueError("test report status must be PASS or FAIL")
+
+    total = report.get("tests_discovered")
+    passed = report.get("tests_passed")
+    if type(total) is not int or total < 0:
+        raise ValueError("tests_discovered must be a non-negative integer")
+    if type(passed) is not int or passed < 0 or passed > total:
+        raise ValueError("tests_passed must be between zero and tests_discovered")
+
+    failed_test = report.get("failed_test")
+    if failed_test is not None and (not isinstance(failed_test, str) or not failed_test.strip()):
+        raise ValueError("failed_test must be a non-empty string or null")
+
+    if status == "PASS":
+        if total == 0 or passed != total or failed_test is not None:
+            raise ValueError("PASS report requires all discovered tests to pass")
+    else:
+        if passed == total and total > 0:
+            raise ValueError("FAIL report cannot claim all discovered tests passed")
+
+    generated_at = report.get("generated_at")
+    if not isinstance(generated_at, str) or not generated_at.strip():
+        raise ValueError("generated_at is required")
+    parsed = datetime.fromisoformat(generated_at)
+    if parsed.tzinfo is None or parsed.utcoffset() is None:
+        raise ValueError("generated_at must be timezone-aware")
+
+    for key in ("python", "python_executable", "platform"):
+        value = report.get(key)
+        if not isinstance(value, str) or not value.strip():
+            raise ValueError(f"{key} is required")
+
+    git_commit = report.get("git_commit")
+    if git_commit is not None and (not isinstance(git_commit, str) or not git_commit.strip()):
+        raise ValueError("git_commit must be a non-empty string or null")
+
+
+def _build_report(
     root: Path,
     *,
     total: int,
     passed: int,
     status: str,
     failed_test: str | None = None,
-) -> None:
-    report_dir = root / "artifacts"
-    report_dir.mkdir(parents=True, exist_ok=True)
+) -> dict[str, Any]:
     report = {
-        "schema": "podium7.sequential-test-report.v1",
+        "schema": REPORT_SCHEMA,
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "status": status,
         "git_commit": _git_head(root),
@@ -68,6 +112,27 @@ def _write_report(
         "tests_passed": passed,
         "failed_test": failed_test,
     }
+    _validate_report(report)
+    return report
+
+
+def _write_report(
+    root: Path,
+    *,
+    total: int,
+    passed: int,
+    status: str,
+    failed_test: str | None = None,
+) -> None:
+    report_dir = root / "artifacts"
+    report_dir.mkdir(parents=True, exist_ok=True)
+    report = _build_report(
+        root,
+        total=total,
+        passed=passed,
+        status=status,
+        failed_test=failed_test,
+    )
     (report_dir / "test-report.json").write_text(
         json.dumps(report, indent=2, sort_keys=True) + "\n",
         encoding="utf-8",
