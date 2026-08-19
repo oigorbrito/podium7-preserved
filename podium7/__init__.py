@@ -10,6 +10,7 @@ from .domain import (
     RawEvidence,
     Source,
 )
+from .fusion import FusionResult, fuse_candidates
 from .identity import MatchOutcome, ResolutionDecision, blocking_key, generate_candidates, resolve_pair
 from .ingestion import IngestionReport, ingest_vehicle_makes_models_json
 from .normalization import NormalizationResult, normalize_fact
@@ -24,6 +25,7 @@ __all__ = [
     "DecisionStatus",
     "EntityKind",
     "EvidenceStore",
+    "FusionResult",
     "IngestionReport",
     "MatchOutcome",
     "NormalizationResult",
@@ -32,6 +34,7 @@ __all__ = [
     "ResolutionDecision",
     "Source",
     "blocking_key",
+    "fuse_candidates",
     "generate_candidates",
     "ingest_vehicle_makes_models_json",
     "normalize_fact",
