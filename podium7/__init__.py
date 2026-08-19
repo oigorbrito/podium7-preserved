@@ -10,6 +10,7 @@ from .domain import (
     RawEvidence,
     Source,
 )
+from .persistence import EvidenceStore
 
 __all__ = [
     "AutomotiveIdentity",
@@ -19,6 +20,7 @@ __all__ = [
     "ConflictState",
     "DecisionStatus",
     "EntityKind",
+    "EvidenceStore",
     "ProvenanceRecord",
     "RawEvidence",
     "Source",
