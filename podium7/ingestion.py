@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any
 
 from .domain import AutomotiveIdentity, CandidateFact, EntityKind, RawEvidence, Source
+from .normalization import normalize_fact
 from .persistence import EvidenceStore
 
 SOURCE_ID = "vehicle-makes-models"
@@ -46,19 +47,18 @@ def _candidate(
     value: Any,
     unit: str | None = None,
 ) -> CandidateFact:
+    normalized = normalize_fact(attribute, value, unit)
     return CandidateFact(
         id=_stable_id("candidate", f"{pointer}|{attribute}"),
         entity_candidate_id=entity_id,
         attribute=attribute,
         raw_value=value,
-        # Work Unit 4 owns semantic normalization. Until then the structured
-        # source value is carried through unchanged and no rule is claimed.
-        normalized_value=value,
-        unit=unit,
+        normalized_value=normalized.value,
+        unit=normalized.unit,
         evidence_id=evidence_id,
         extraction_method=EXTRACTION_METHOD,
         confidence=None,
-        normalization_rule=None,
+        normalization_rule=normalized.rule,
     )
 
 
@@ -68,13 +68,6 @@ def ingest_vehicle_makes_models_json(
     *,
     acquired_at: datetime | None = None,
 ) -> IngestionReport:
-    """Ingest one structured make snapshot from vehicle-makes-models.
-
-    The source JSON is preserved separately from extracted entities/facts. This
-    importer intentionally performs no semantic normalization, entity matching,
-    or fusion; those remain later pipeline stages.
-    """
-
     source_path = Path(path)
     payload = json.loads(source_path.read_text(encoding="utf-8"))
     acquired_at = acquired_at or datetime.now(timezone.utc)
