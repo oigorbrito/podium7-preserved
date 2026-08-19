@@ -21,6 +21,9 @@ from .domain import (
 )
 
 
+SCHEMA_VERSION = 1
+
+
 class EvidenceStore:
     """SQLite-backed persistence for Podium 7 domain records.
 
@@ -36,7 +39,11 @@ class EvidenceStore:
         self._connection.execute("PRAGMA foreign_keys = ON")
         self._transaction_depth = 0
         self._savepoint_counter = 0
-        self._create_schema()
+        self._initialize_schema()
+
+    @property
+    def schema_version(self) -> int:
+        return self._schema_version()
 
     def close(self) -> None:
         self._connection.close()
@@ -79,6 +86,23 @@ class EvidenceStore:
             else:
                 assert savepoint is not None
                 self._connection.execute(f"RELEASE SAVEPOINT {savepoint}")
+
+    def _schema_version(self) -> int:
+        row = self._connection.execute("PRAGMA user_version").fetchone()
+        return int(row[0])
+
+    def _initialize_schema(self) -> None:
+        current = self._schema_version()
+        if current > SCHEMA_VERSION:
+            self._connection.close()
+            raise ValueError(
+                f"unsupported persistence schema version {current}; "
+                f"maximum supported is {SCHEMA_VERSION}"
+            )
+        self._create_schema()
+        if current == 0:
+            self._connection.execute(f"PRAGMA user_version = {SCHEMA_VERSION}")
+            self._connection.commit()
 
     def _create_schema(self) -> None:
         self._connection.executescript(
