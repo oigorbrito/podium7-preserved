@@ -110,6 +110,8 @@ class CanonicalFact:
     def __post_init__(self) -> None:
         if not self.candidate_references:
             raise ValueError("canonical facts require at least one candidate reference")
+        if self.provenance.entity_id != self.entity_id:
+            raise ValueError("canonical fact provenance must reference the same entity")
         missing_derivations = tuple(
             reference
             for reference in self.candidate_references
