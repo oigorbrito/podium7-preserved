@@ -1,0 +1,17 @@
+SOURCE: https://www.autoevolution.com/cars/artega-gt-2010.html
+ACQUIRED: 2026-08-19
+VEHICLE: ARTEGA GT 3.6L V6 6AT (300 HP)
+Displacement: | 3597 cm3 (220 ci)
+Power: | 220.6 KW @ 6600 RPM / 300 HP @ 6600 RPM / 296 BHP @ 6600 RPM
+Torque: | 258 lb-ft @ 2500-5000 RPM / 350 Nm @ 2500-5000 RPM
+Fuel: | Gasoline
+Top Speed: | 168 mph (270 km/h)
+Acceleration 0-62 Mph (0-100 kph): | 4.8 s
+Drive Type: | Rear Wheel Drive
+Gearbox: | 6-speed automatic DSG
+Length: | 158.1 in (4016 mm)
+Width: | 74.1 in (1882 mm)
+Height: | 46.5 in (1181 mm)
+Wheelbase: | 103.9 in (2639 mm)
+Unladen Weight: | 2833 lbs (1285 kg)
+Combined: | 24.5 mpg US (9.6 L/100Km)
