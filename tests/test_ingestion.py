@@ -4,6 +4,7 @@ from pathlib import Path
 import tempfile
 import unittest
 
+from podium7.evidence import content_addressed_ref
 from podium7.ingestion import SOURCE_ID, _stable_id, ingest_vehicle_makes_models_json
 from podium7.persistence import EvidenceStore
 
@@ -41,12 +42,13 @@ class IngestionTests(unittest.TestCase):
         self.assertEqual(counts["candidate_facts"], 26)
 
     def test_raw_evidence_preserves_source_locator_and_snapshot_reference(self):
+        expected_ref = content_addressed_ref(SOURCE_PATH)
         with EvidenceStore() as store:
             ingest_vehicle_makes_models_json(store, SOURCE_PATH, acquired_at=ACQUIRED_AT)
             evidence = store.evidence_for_source(SOURCE_ID)
         self.assertEqual(len(evidence), 2)
         self.assertTrue(all(item.source_id == SOURCE_ID for item in evidence))
-        self.assertTrue(all(item.raw_content_ref == str(SOURCE_PATH) for item in evidence))
+        self.assertTrue(all(item.raw_content_ref == expected_ref for item in evidence))
         self.assertTrue(all(item.locator.startswith("https://github.com/gor3a/vehicle-makes-models/") for item in evidence))
 
     def test_gt_power_preserves_raw_and_normalizes_to_kw(self):

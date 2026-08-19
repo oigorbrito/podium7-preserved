@@ -9,6 +9,7 @@ from pathlib import Path
 from typing import Any
 
 from .domain import AutomotiveIdentity, CandidateFact, EntityKind, RawEvidence, Source
+from .evidence import content_addressed_ref
 from .normalization import normalize_fact
 from .persistence import EvidenceStore
 
@@ -70,6 +71,7 @@ def ingest_vehicle_makes_models_json(
 ) -> IngestionReport:
     source_path = Path(path)
     payload = json.loads(source_path.read_text(encoding="utf-8"))
+    raw_content_ref = content_addressed_ref(source_path)
     acquired_at = acquired_at or datetime.now(timezone.utc)
 
     make_count = model_count = generation_count = 0
@@ -124,7 +126,7 @@ def ingest_vehicle_makes_models_json(
                                 locator=remote_locator,
                                 retrieved_at=acquired_at,
                                 acquisition_method="pinned-github-json-snapshot",
-                                raw_content_ref=str(source_path),
+                                raw_content_ref=raw_content_ref,
                             )
                         )
                         evidence_count += 1

@@ -6,6 +6,7 @@ import hashlib
 from pathlib import Path
 
 from .domain import AutomotiveIdentity, CandidateFact, EntityKind, RawEvidence, Source
+from .evidence import content_addressed_ref
 from .export import export_entity_json
 from .fusion import fuse_candidates
 from .identity import MatchOutcome, resolve_pair
@@ -71,7 +72,7 @@ def run_acceptance_slice(structured_json: str | Path, web_snapshot: str | Path) 
                 locator=WEB_SOURCE_LOCATOR,
                 retrieved_at=acquired_at,
                 acquisition_method="verified-web-snapshot",
-                raw_content_ref=str(web_path),
+                raw_content_ref=content_addressed_ref(web_path),
             )
         )
 
