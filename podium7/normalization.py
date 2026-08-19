@@ -16,24 +16,21 @@ def _round(value: float) -> float:
 
 
 def normalize_fact(attribute: str, value: Any, unit: str | None) -> NormalizationResult:
-    """Normalize supported automotive facts while preserving raw input elsewhere.
-
-    Canonical units in v1:
-    power=kW, torque=Nm, displacement=cc, dimensions=mm, weight=kg,
-    consumption=L/100km. Text categories use stable lowercase tokens.
-    """
-
     if attribute == "power":
         if unit == "kW":
             return NormalizationResult(value, "kW", "power.kw.identity.v1")
         if unit in {"hp", "bhp"}:
             return NormalizationResult(_round(float(value) * 0.7456998716), "kW", "power.hp_to_kw.v1")
+        if unit in {"cv", "PS"}:
+            return NormalizationResult(_round(float(value) * 0.73549875), "kW", "power.metric_hp_to_kw.v1")
 
     if attribute == "torque":
         if unit == "Nm":
             return NormalizationResult(value, "Nm", "torque.nm.identity.v1")
         if unit in {"lb-ft", "lbft"}:
             return NormalizationResult(_round(float(value) * 1.3558179483314), "Nm", "torque.lbft_to_nm.v1")
+        if unit == "kgfm":
+            return NormalizationResult(_round(float(value) * 9.80665), "Nm", "torque.kgfm_to_nm.v1")
 
     if attribute == "displacement":
         if unit == "cc":
@@ -65,14 +62,9 @@ def normalize_fact(attribute: str, value: Any, unit: str | None) -> Normalizatio
     if attribute == "fuel_type":
         token = str(value).strip().casefold()
         aliases = {
-            "gasoline": "gasoline",
-            "petrol": "gasoline",
-            "diesel": "diesel",
-            "electric": "electric",
-            "electricity": "electric",
-            "hybrid": "hybrid",
-            "plug-in hybrid": "plug_in_hybrid",
-            "phev": "plug_in_hybrid",
+            "gasoline": "gasoline", "petrol": "gasoline", "diesel": "diesel",
+            "electric": "electric", "electricity": "electric", "hybrid": "hybrid",
+            "plug-in hybrid": "plug_in_hybrid", "phev": "plug_in_hybrid",
         }
         return NormalizationResult(aliases.get(token, token.replace(" ", "_")), None, "fuel_type.token.v1")
 
@@ -83,11 +75,8 @@ def normalize_fact(attribute: str, value: Any, unit: str | None) -> Normalizatio
     if attribute == "drivetrain":
         token = " ".join(str(value).strip().casefold().split())
         aliases = {
-            "front wheel drive": "fwd",
-            "rear wheel drive": "rwd",
-            "all wheel drive": "awd",
-            "four wheel drive": "4wd",
-            "4 wheel drive": "4wd",
+            "front wheel drive": "fwd", "rear wheel drive": "rwd",
+            "all wheel drive": "awd", "four wheel drive": "4wd", "4 wheel drive": "4wd",
         }
         return NormalizationResult(aliases.get(token, token.replace(" ", "_")), None, "drivetrain.token.v1")
 
