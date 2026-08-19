@@ -71,11 +71,6 @@ def resolve_pair(a: AutomotiveIdentity, b: AutomotiveIdentity) -> ResolutionDeci
     if not _identity_names(a).intersection(_identity_names(b)):
         return ResolutionDecision(MatchOutcome.NO_MATCH, "model/alias differs")
 
-    ids_a = set(a.external_identifiers)
-    ids_b = set(b.external_identifiers)
-    if ids_a and ids_b and ids_a.intersection(ids_b):
-        return ResolutionDecision(MatchOutcome.MATCH, "shared external identifier")
-
     generation_a = _token(a.generation)
     generation_b = _token(b.generation)
     if generation_a is not None and generation_b is not None and generation_a != generation_b:
@@ -89,6 +84,11 @@ def resolve_pair(a: AutomotiveIdentity, b: AutomotiveIdentity) -> ResolutionDeci
     powertrain_b = _token(b.powertrain)
     if powertrain_a is not None and powertrain_b is not None and powertrain_a != powertrain_b:
         return ResolutionDecision(MatchOutcome.NO_MATCH, "powertrain differs")
+
+    ids_a = set(a.external_identifiers)
+    ids_b = set(b.external_identifiers)
+    if ids_a and ids_b and ids_a.intersection(ids_b):
+        return ResolutionDecision(MatchOutcome.MATCH, "shared external identifier without contradictory identity evidence")
 
     if generation_a is not None and generation_a == generation_b:
         if powertrain_a is not None and powertrain_a == powertrain_b:

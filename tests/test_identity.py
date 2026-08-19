@@ -48,6 +48,31 @@ class EntityResolutionTests(unittest.TestCase):
         generated = generate_candidates(target, candidates)
         self.assertEqual([candidate_id for candidate_id, _ in generated], ["same"])
 
+    def test_shared_external_identifier_matches_without_contradiction(self) -> None:
+        a = vehicle(external_identifiers=("shared-id",))
+        b = vehicle(external_identifiers=("shared-id",))
+        decision = resolve_pair(a, b)
+        self.assertEqual(decision.outcome, MatchOutcome.MATCH)
+
+    def test_shared_external_identifier_does_not_override_explicit_contradictions(self) -> None:
+        cases = (
+            (
+                vehicle(generation="I", external_identifiers=("shared-id",)),
+                vehicle(generation="II", external_identifiers=("shared-id",)),
+            ),
+            (
+                vehicle(year_from=2013, year_to=2019, external_identifiers=("shared-id",)),
+                vehicle(year_from=2020, year_to=2024, external_identifiers=("shared-id",)),
+            ),
+            (
+                vehicle(powertrain="1.0", external_identifiers=("shared-id",)),
+                vehicle(powertrain="1.0 Turbo", external_identifiers=("shared-id",)),
+            ),
+        )
+        for a, b in cases:
+            with self.subTest(a=a, b=b):
+                self.assertEqual(resolve_pair(a, b).outcome, MatchOutcome.NO_MATCH)
+
 
 if __name__ == "__main__":
     unittest.main()
