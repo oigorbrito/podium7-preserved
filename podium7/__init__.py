@@ -10,6 +10,7 @@ from .domain import (
     RawEvidence,
     Source,
 )
+from .ingestion import IngestionReport, ingest_vehicle_makes_models_json
 from .persistence import EvidenceStore
 
 __all__ = [
@@ -21,7 +22,9 @@ __all__ = [
     "DecisionStatus",
     "EntityKind",
     "EvidenceStore",
+    "IngestionReport",
     "ProvenanceRecord",
     "RawEvidence",
     "Source",
+    "ingest_vehicle_makes_models_json",
 ]
