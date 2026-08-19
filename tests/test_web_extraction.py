@@ -36,9 +36,8 @@ class WebExtractionTests(unittest.TestCase):
 
     def test_changed_structure_fails_explicitly(self):
         broken = SNAPSHOT.replace("Power: |", "Power =>")
-        facts = extract_autoevolution_artega_gt(broken)
-        attributes = {fact.attribute for fact in facts}
-        self.assertNotIn("power", attributes)
+        with self.assertRaises(ValueError):
+            extract_autoevolution_artega_gt(broken)
 
 
 if __name__ == "__main__":
