@@ -110,6 +110,16 @@ class CanonicalFact:
     def __post_init__(self) -> None:
         if not self.candidate_references:
             raise ValueError("canonical facts require at least one candidate reference")
+        missing_derivations = tuple(
+            reference
+            for reference in self.candidate_references
+            if reference not in self.provenance.was_derived_from
+        )
+        if missing_derivations:
+            raise ValueError(
+                "canonical fact provenance must derive from every candidate reference: "
+                + ", ".join(missing_derivations)
+            )
 
 
 @dataclass(frozen=True)

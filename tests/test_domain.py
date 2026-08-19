@@ -73,6 +73,23 @@ class DomainModelTests(unittest.TestCase):
         )
         self.assertEqual(canonical.provenance.was_derived_from, ("cf-1",))
 
+    def test_canonical_fact_rejects_missing_candidate_derivation(self) -> None:
+        provenance = ProvenanceRecord(
+            entity_id="canonical-1",
+            activity_id="fusion-1",
+            was_derived_from=("cf-1",),
+        )
+        with self.assertRaises(ValueError):
+            CanonicalFact(
+                id="fact-1",
+                entity_id="canonical-1",
+                attribute="power",
+                accepted_value=110,
+                candidate_references=("cf-1", "cf-2"),
+                fusion_decision="invalid-provenance-test",
+                provenance=provenance,
+            )
+
     def test_conflict_preserves_multiple_candidates(self) -> None:
         conflict = Conflict(
             id="conflict-1",
