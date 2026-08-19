@@ -1,9 +1,17 @@
+import json
+import os
 import tempfile
 import unittest
 from datetime import datetime, timezone
 from pathlib import Path
+from unittest import mock
 
-from scripts.run_tests_one_by_one import REPORT_SCHEMA, _discover_test_ids, _validate_report
+from scripts.run_tests_one_by_one import (
+    REPORT_SCHEMA,
+    _discover_test_ids,
+    _validate_report,
+    _write_report,
+)
 
 
 class SequentialTestReportTests(unittest.TestCase):
@@ -113,6 +121,22 @@ class SequentialTestReportTests(unittest.TestCase):
                 _discover_test_ids(tests_dir),
                 ["test_indirect.IndirectTests.test_indirect"],
             )
+
+    def test_report_write_is_atomic_and_leaves_no_temp_file(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            real_replace = os.replace
+            with mock.patch("scripts.run_tests_one_by_one.os.replace", wraps=real_replace) as replace:
+                _write_report(root, total=1, passed=1, status="PASS")
+
+            target = root / "artifacts" / "test-report.json"
+            self.assertTrue(target.is_file())
+            self.assertEqual(json.loads(target.read_text(encoding="utf-8"))["status"], "PASS")
+            replace.assert_called_once()
+            source, destination = replace.call_args.args
+            self.assertNotEqual(Path(source), Path(destination))
+            self.assertEqual(Path(destination), target)
+            self.assertEqual(list(target.parent.glob(".test-report-*.tmp")), [])
 
 
 if __name__ == "__main__":
