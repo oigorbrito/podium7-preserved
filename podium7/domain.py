@@ -4,17 +4,18 @@ from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
 import json
+import math
 from typing import Any
 
 
 def _require_text(value: str, field: str) -> None:
-    if not value.strip():
+    if not isinstance(value, str) or not value.strip():
         raise ValueError(f"{field} is required")
 
 
 def _require_optional_text(value: str | None, field: str) -> None:
-    if value is not None and not value.strip():
-        raise ValueError(f"{field} must be non-empty when provided")
+    if value is not None and (not isinstance(value, str) or not value.strip()):
+        raise ValueError(f"{field} must be non-empty text when provided")
 
 
 def _require_optional_int(value: int | None, field: str) -> None:
@@ -34,6 +35,16 @@ def _require_json_value(value: Any, field: str) -> None:
         json.dumps(value, ensure_ascii=False, allow_nan=False)
     except (TypeError, ValueError) as exc:
         raise ValueError(f"{field} must be strict JSON-compatible") from exc
+
+
+def _require_probability(value: float | None, field: str) -> None:
+    if value is None:
+        return
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise ValueError(f"{field} must be numeric when provided")
+    number = float(value)
+    if not math.isfinite(number) or not 0.0 <= number <= 1.0:
+        raise ValueError(f"{field} must be finite and between 0 and 1")
 
 
 class DecisionStatus(str, Enum):
@@ -85,6 +96,8 @@ class RawEvidence:
         _require_text(self.locator, "evidence locator")
         _require_text(self.acquisition_method, "evidence acquisition_method")
         _require_text(self.raw_content_ref, "evidence raw_content_ref")
+        if not isinstance(self.retrieved_at, datetime):
+            raise ValueError("evidence retrieved_at must be a datetime")
         if self.retrieved_at.tzinfo is None or self.retrieved_at.utcoffset() is None:
             raise ValueError("evidence retrieved_at must be timezone-aware")
 
@@ -145,8 +158,7 @@ class CandidateFact:
         _require_optional_text(self.normalization_rule, "candidate normalization_rule")
         _require_json_value(self.raw_value, "candidate raw_value")
         _require_json_value(self.normalized_value, "candidate normalized_value")
-        if self.confidence is not None and not 0.0 <= self.confidence <= 1.0:
-            raise ValueError("confidence must be between 0 and 1")
+        _require_probability(self.confidence, "confidence")
 
 
 @dataclass(frozen=True)
@@ -183,6 +195,8 @@ class CanonicalFact:
         _require_text(self.attribute, "canonical attribute")
         _require_text(self.fusion_decision, "canonical fusion_decision")
         _require_json_value(self.accepted_value, "canonical accepted_value")
+        if not isinstance(self.provenance, ProvenanceRecord):
+            raise ValueError("canonical provenance must be a ProvenanceRecord")
         if not self.candidate_references:
             raise ValueError("canonical facts require at least one candidate reference")
         _require_unique_texts(self.candidate_references, "canonical candidate reference")
@@ -213,6 +227,8 @@ class Conflict:
         _require_text(self.id, "conflict id")
         _require_text(self.attribute, "conflict attribute")
         _require_text(self.reason, "conflict reason")
+        if not isinstance(self.resolution_state, ConflictState):
+            raise ValueError("resolution_state must be a ConflictState")
         if len(self.candidate_references) < 2:
             raise ValueError("a conflict requires at least two candidate references")
         _require_unique_texts(self.candidate_references, "conflict candidate reference")
