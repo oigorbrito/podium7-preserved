@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import re
-from typing import Callable
 
 from .normalization import normalize_fact
 
@@ -65,12 +64,11 @@ def extract_with_rules(text: str, rules: tuple[WebFieldRule, ...]) -> list[Extra
     for rule in rules:
         raw = values.get(rule.label)
         if raw is None:
-            continue
+            raise ValueError(f"required web field {rule.label!r} is missing")
         match = re.search(rule.parser, raw, flags=re.IGNORECASE)
         if match is None:
             raise ValueError(f"rule {rule.label!r} did not match acquired value {raw!r}")
-        captured = match.group(1)
-        parsed = _coerce(captured)
+        parsed = _coerce(match.group(1))
         normalized = normalize_fact(rule.attribute, parsed, rule.source_unit)
         extracted.append(
             ExtractedWebFact(
