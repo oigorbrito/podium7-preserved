@@ -1,27 +1,38 @@
 from __future__ import annotations
 
+import ast
 import os
 from pathlib import Path
 import subprocess
 import sys
-import unittest
 
 
-def _iter_test_ids(suite: unittest.TestSuite):
-    for item in suite:
-        if isinstance(item, unittest.TestSuite):
-            yield from _iter_test_ids(item)
-        else:
-            yield item.id()
+def _is_test_case_class(node: ast.ClassDef) -> bool:
+    for base in node.bases:
+        if isinstance(base, ast.Attribute) and base.attr == "TestCase":
+            return True
+        if isinstance(base, ast.Name) and base.id == "TestCase":
+            return True
+    return False
+
+
+def _discover_test_ids(tests_dir: Path) -> list[str]:
+    test_ids: list[str] = []
+    for path in sorted(tests_dir.glob("test_*.py")):
+        tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
+        for node in tree.body:
+            if not isinstance(node, ast.ClassDef) or not _is_test_case_class(node):
+                continue
+            for member in node.body:
+                if isinstance(member, (ast.FunctionDef, ast.AsyncFunctionDef)) and member.name.startswith("test_"):
+                    test_ids.append(f"{path.stem}.{node.name}.{member.name}")
+    return sorted(test_ids)
 
 
 def main() -> int:
     root = Path(__file__).resolve().parents[1]
     tests_dir = root / "tests"
-
-    loader = unittest.TestLoader()
-    discovered = loader.discover(str(tests_dir), pattern="test_*.py")
-    test_ids = sorted(set(_iter_test_ids(discovered)))
+    test_ids = _discover_test_ids(tests_dir)
 
     if not test_ids:
         print("FAIL — no tests discovered")
