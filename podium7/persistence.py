@@ -257,6 +257,7 @@ class EvidenceStore:
     def save_canonical_fact(self, fact: CanonicalFact, provenance_id: str) -> None:
         with self.transaction():
             self._require_candidate_references(fact.candidate_references)
+            self._require_candidate_attribute(fact.candidate_references, fact.attribute)
             self.save_provenance(provenance_id, fact.provenance)
             self._insert_once(
                 """INSERT INTO canonical_facts(
@@ -276,6 +277,7 @@ class EvidenceStore:
 
     def save_conflict(self, conflict: Conflict) -> None:
         self._require_candidate_references(conflict.candidate_references)
+        self._require_candidate_attribute(conflict.candidate_references, conflict.attribute)
         self._insert_once(
             """INSERT INTO conflicts(
                 id, attribute, candidate_references_json, reason,
@@ -435,6 +437,19 @@ class EvidenceStore:
             raise ValueError(
                 "persistence integrity error: missing candidate references: "
                 + ", ".join(missing)
+            )
+
+    def _require_candidate_attribute(self, references: tuple[str, ...], attribute: str) -> None:
+        placeholders = ",".join("?" for _ in references)
+        rows = self._connection.execute(
+            f"SELECT id, attribute FROM candidate_facts WHERE id IN ({placeholders})",
+            references,
+        ).fetchall()
+        mismatched = [row["id"] for row in rows if row["attribute"] != attribute]
+        if mismatched:
+            raise ValueError(
+                f"persistence integrity error: candidate references do not match attribute {attribute!r}: "
+                + ", ".join(mismatched)
             )
 
     def _insert_once(self, sql: str, values: tuple[Any, ...]) -> None:
