@@ -11,6 +11,7 @@ from .domain import (
     Source,
 )
 from .ingestion import IngestionReport, ingest_vehicle_makes_models_json
+from .normalization import NormalizationResult, normalize_fact
 from .persistence import EvidenceStore
 
 __all__ = [
@@ -23,8 +24,10 @@ __all__ = [
     "EntityKind",
     "EvidenceStore",
     "IngestionReport",
+    "NormalizationResult",
     "ProvenanceRecord",
     "RawEvidence",
     "Source",
     "ingest_vehicle_makes_models_json",
+    "normalize_fact",
 ]
