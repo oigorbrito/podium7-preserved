@@ -41,7 +41,7 @@ Stable repeated operations should prefer validated reusable artifacts where poss
 
 Identity resolution requires explicit representation and independent tests. String equality is not sufficient evidence of identity.
 
-### Provenance is part of the data — `STANDARD_BACKED` / `EVIDENCE_BACKED`
+### Provenance is part of the data — `EVIDENCE_BACKED`
 
 The system must be able to trace a value to evidence, source, acquisition context, transformations, and canonical-selection activity.
 
