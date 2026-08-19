@@ -81,6 +81,39 @@ class SequentialTestReportTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 _discover_test_ids(tests_dir)
 
+    def test_alias_testcase_is_discovered(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tests_dir = Path(tmp)
+            (tests_dir / "test_alias.py").write_text(
+                "import unittest\n\n"
+                "Case = unittest.TestCase\n\n"
+                "class AliasTests(Case):\n"
+                "    def test_alias(self):\n"
+                "        pass\n",
+                encoding="utf-8",
+            )
+            self.assertEqual(
+                _discover_test_ids(tests_dir),
+                ["test_alias.AliasTests.test_alias"],
+            )
+
+    def test_indirect_testcase_inheritance_is_discovered(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            tests_dir = Path(tmp)
+            (tests_dir / "test_indirect.py").write_text(
+                "import unittest\n\n"
+                "class BaseTests(unittest.TestCase):\n"
+                "    pass\n\n"
+                "class IndirectTests(BaseTests):\n"
+                "    def test_indirect(self):\n"
+                "        pass\n",
+                encoding="utf-8",
+            )
+            self.assertEqual(
+                _discover_test_ids(tests_dir),
+                ["test_indirect.IndirectTests.test_indirect"],
+            )
+
 
 if __name__ == "__main__":
     unittest.main()
