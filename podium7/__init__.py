@@ -1,3 +1,4 @@
+from .ai_discovery import ValidatedExtractionArtifact, validate_extraction_artifact
 from .document_extraction import DocumentExtractionReport, extract_ford_dark_horse_document
 from .domain import (
     AutomotiveIdentity,
@@ -38,6 +39,7 @@ __all__ = [
     "RawEvidence",
     "ResolutionDecision",
     "Source",
+    "ValidatedExtractionArtifact",
     "WebFieldRule",
     "blocking_key",
     "export_entity_json",
@@ -50,5 +52,6 @@ __all__ = [
     "ingest_vehicle_makes_models_json",
     "normalize_fact",
     "resolve_pair",
+    "validate_extraction_artifact",
     "write_entity_json",
 ]
