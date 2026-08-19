@@ -1,3 +1,4 @@
+from .document_extraction import DocumentExtractionReport, extract_ford_dark_horse_document
 from .domain import (
     AutomotiveIdentity,
     CandidateFact,
@@ -25,6 +26,7 @@ __all__ = [
     "Conflict",
     "ConflictState",
     "DecisionStatus",
+    "DocumentExtractionReport",
     "EntityKind",
     "EvidenceStore",
     "ExtractedWebFact",
@@ -41,6 +43,7 @@ __all__ = [
     "export_entity_json",
     "export_entity_payload",
     "extract_autoevolution_artega_gt",
+    "extract_ford_dark_horse_document",
     "extract_with_rules",
     "fuse_candidates",
     "generate_candidates",
