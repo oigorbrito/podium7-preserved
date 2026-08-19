@@ -12,7 +12,7 @@ class SequentialTestReportTests(unittest.TestCase):
             "schema": REPORT_SCHEMA,
             "generated_at": datetime.now(timezone.utc).isoformat(),
             "status": "PASS",
-            "git_commit": "abc123",
+            "git_commit": "a" * 40,
             "python": "3.13.0",
             "python_executable": "python",
             "platform": "test-platform",
@@ -45,6 +45,24 @@ class SequentialTestReportTests(unittest.TestCase):
     def test_generated_at_must_be_timezone_aware(self):
         report = self._base_report()
         report["generated_at"] = "2026-08-19T20:00:00"
+        with self.assertRaises(ValueError):
+            _validate_report(report)
+
+    def test_extra_report_field_is_rejected(self):
+        report = self._base_report()
+        report["unexpected"] = True
+        with self.assertRaises(ValueError):
+            _validate_report(report)
+
+    def test_missing_report_field_is_rejected(self):
+        report = self._base_report()
+        del report["platform"]
+        with self.assertRaises(ValueError):
+            _validate_report(report)
+
+    def test_malformed_git_commit_is_rejected(self):
+        report = self._base_report()
+        report["git_commit"] = "abc123"
         with self.assertRaises(ValueError):
             _validate_report(report)
 
