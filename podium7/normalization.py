@@ -42,6 +42,15 @@ def _require_unitless(attribute: str, unit: str | None) -> None:
         raise _unsupported_unit(attribute, unit)
 
 
+def _text_token(attribute: str, value: Any) -> str:
+    if not isinstance(value, str):
+        raise ValueError(f"{attribute} must be text")
+    token = " ".join(value.strip().casefold().split())
+    if not token:
+        raise ValueError(f"{attribute} must be non-empty text")
+    return token
+
+
 def normalize_fact(attribute: str, value: Any, unit: str | None) -> NormalizationResult:
     if attribute == "power":
         if unit == "kW":
@@ -111,7 +120,7 @@ def normalize_fact(attribute: str, value: Any, unit: str | None) -> Normalizatio
 
     if attribute == "fuel_type":
         _require_unitless(attribute, unit)
-        token = str(value).strip().casefold()
+        token = _text_token(attribute, value)
         aliases = {
             "gasoline": "gasoline", "petrol": "gasoline", "diesel": "diesel",
             "electric": "electric", "electricity": "electric", "hybrid": "hybrid",
@@ -121,12 +130,12 @@ def normalize_fact(attribute: str, value: Any, unit: str | None) -> Normalizatio
 
     if attribute == "transmission":
         _require_unitless(attribute, unit)
-        token = " ".join(str(value).strip().casefold().split())
+        token = _text_token(attribute, value)
         return NormalizationResult(token, None, "transmission.token.v1")
 
     if attribute == "drivetrain":
         _require_unitless(attribute, unit)
-        token = " ".join(str(value).strip().casefold().split())
+        token = _text_token(attribute, value)
         aliases = {
             "front wheel drive": "fwd", "rear wheel drive": "rwd",
             "all wheel drive": "awd", "four wheel drive": "4wd", "4 wheel drive": "4wd",
