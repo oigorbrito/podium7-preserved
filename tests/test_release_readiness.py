@@ -22,12 +22,12 @@ class ReleaseReadinessTests(unittest.TestCase):
             self.assertFalse(ready)
             self.assertIn("license status is UNKNOWN", message)
 
-    def test_declared_license_allows_release_gate(self):
+    def test_owner_declared_license_allows_release_gate(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
             (root / "docs").mkdir()
             (root / "docs" / "LICENSING-STATUS.md").write_text(
-                "# Licensing\n\n**Status:** `ENGINEERING_CHOICE`\n",
+                "# Licensing\n\nOwner license selection recorded.\n",
                 encoding="utf-8",
             )
             (root / "pyproject.toml").write_text(
