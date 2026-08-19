@@ -256,6 +256,7 @@ class EvidenceStore:
 
     def save_canonical_fact(self, fact: CanonicalFact, provenance_id: str) -> None:
         with self.transaction():
+            self._require_candidate_references(fact.candidate_references)
             self.save_provenance(provenance_id, fact.provenance)
             self._insert_once(
                 """INSERT INTO canonical_facts(
@@ -274,6 +275,7 @@ class EvidenceStore:
             )
 
     def save_conflict(self, conflict: Conflict) -> None:
+        self._require_candidate_references(conflict.candidate_references)
         self._insert_once(
             """INSERT INTO conflicts(
                 id, attribute, candidate_references_json, reason,
@@ -420,6 +422,20 @@ class EvidenceStore:
             table: self._connection.execute(f"SELECT COUNT(*) FROM {table}").fetchone()[0]
             for table in tables
         }
+
+    def _require_candidate_references(self, references: tuple[str, ...]) -> None:
+        placeholders = ",".join("?" for _ in references)
+        rows = self._connection.execute(
+            f"SELECT id FROM candidate_facts WHERE id IN ({placeholders})",
+            references,
+        ).fetchall()
+        existing = {row["id"] for row in rows}
+        missing = [reference for reference in references if reference not in existing]
+        if missing:
+            raise ValueError(
+                "persistence integrity error: missing candidate references: "
+                + ", ".join(missing)
+            )
 
     def _insert_once(self, sql: str, values: tuple[Any, ...]) -> None:
         try:

@@ -50,6 +50,18 @@ CANDIDATE = CandidateFact(
     confidence=None,
     normalization_rule="power.hp_to_kw.v1",
 )
+SECOND_CANDIDATE = CandidateFact(
+    id="candidate-2",
+    entity_candidate_id="entity-1",
+    attribute="power",
+    raw_value=301,
+    normalized_value=224.455661,
+    unit="kW",
+    evidence_id=EVIDENCE.id,
+    extraction_method="structured-json-v1",
+    confidence=None,
+    normalization_rule="power.hp_to_kw.v1",
+)
 
 
 def seed_candidate_path(store: EvidenceStore) -> None:
@@ -57,6 +69,11 @@ def seed_candidate_path(store: EvidenceStore) -> None:
     store.save_entity("entity-1", ENTITY)
     store.save_raw_evidence(EVIDENCE)
     store.save_candidate_fact(CANDIDATE)
+
+
+def seed_two_candidates(store: EvidenceStore) -> None:
+    seed_candidate_path(store)
+    store.save_candidate_fact(SECOND_CANDIDATE)
 
 
 def canonical_fact(fact_id: str = "canonical-1") -> CanonicalFact:
@@ -124,6 +141,7 @@ class PersistenceTests(unittest.TestCase):
             reason="normalized values disagree",
         )
         with EvidenceStore() as store:
+            seed_two_candidates(store)
             store.save_conflict(conflict)
             self.assertEqual(store.get_conflict(conflict.id), conflict)
 
@@ -184,6 +202,40 @@ class PersistenceTests(unittest.TestCase):
             counts = store.snapshot_counts()
             self.assertEqual(counts["provenance"], 1)
             self.assertEqual(counts["canonical_facts"], 1)
+
+    def test_canonical_save_rejects_missing_candidate_reference(self):
+        missing = CanonicalFact(
+            id="canonical-missing",
+            entity_id="entity-1",
+            attribute="power",
+            accepted_value=999,
+            candidate_references=("missing-candidate",),
+            fusion_decision="invalid-test",
+            provenance=ProvenanceRecord(
+                entity_id="entity-1",
+                activity_id="fusion-missing",
+                was_derived_from=("missing-candidate",),
+            ),
+        )
+        with EvidenceStore() as store:
+            seed_candidate_path(store)
+            with self.assertRaises(ValueError):
+                store.save_canonical_fact(missing, "provenance-missing")
+            self.assertIsNone(store.get_provenance("provenance-missing"))
+            self.assertEqual(store.snapshot_counts()["canonical_facts"], 0)
+
+    def test_conflict_rejects_missing_candidate_reference(self):
+        conflict = Conflict(
+            id="conflict-missing",
+            attribute="power",
+            candidate_references=(CANDIDATE.id, "missing-candidate"),
+            reason="invalid reference test",
+        )
+        with EvidenceStore() as store:
+            seed_candidate_path(store)
+            with self.assertRaises(ValueError):
+                store.save_conflict(conflict)
+            self.assertEqual(store.snapshot_counts()["conflicts"], 0)
 
 
 if __name__ == "__main__":
