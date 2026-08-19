@@ -24,3 +24,11 @@ jobs:
 
       - name: Run every test in isolation
         run: python scripts/run_tests_one_by_one.py
+
+      - name: Upload sequential test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: podium7-sequential-test-report
+          path: artifacts/test-report.json
+          if-no-files-found: error
