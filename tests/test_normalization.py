@@ -1,3 +1,4 @@
+import math
 import unittest
 
 from podium7.normalization import normalize_fact
@@ -51,6 +52,27 @@ class NormalizationTests(unittest.TestCase):
     def test_invalid_zero_mpg_rejected(self) -> None:
         with self.assertRaises(ValueError):
             normalize_fact("fuel_economy_combined", 0, "mpg-US")
+
+    def test_non_finite_converted_numeric_values_are_rejected(self) -> None:
+        for value in (math.nan, math.inf, -math.inf):
+            with self.subTest(value=value):
+                with self.assertRaises(ValueError):
+                    normalize_fact("power", value, "hp")
+
+    def test_non_finite_identity_numeric_values_are_rejected(self) -> None:
+        cases = (
+            ("power", "kW"),
+            ("torque", "Nm"),
+            ("displacement", "cc"),
+            ("length", "mm"),
+            ("curb_weight", "kg"),
+            ("fuel_economy_combined", "L/100km"),
+        )
+        for attribute, unit in cases:
+            for value in (math.nan, math.inf, -math.inf):
+                with self.subTest(attribute=attribute, unit=unit, value=value):
+                    with self.assertRaises(ValueError):
+                        normalize_fact(attribute, value, unit)
 
 
 if __name__ == "__main__":
