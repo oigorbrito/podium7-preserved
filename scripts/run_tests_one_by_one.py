@@ -6,12 +6,26 @@ import json
 import os
 from pathlib import Path
 import platform
+import re
 import subprocess
 import sys
 from typing import Any
 
 
 REPORT_SCHEMA = "podium7.sequential-test-report.v1"
+REPORT_KEYS = {
+    "schema",
+    "generated_at",
+    "status",
+    "git_commit",
+    "python",
+    "python_executable",
+    "platform",
+    "tests_discovered",
+    "tests_passed",
+    "failed_test",
+}
+GIT_SHA_RE = re.compile(r"^[0-9a-f]{40}$")
 
 
 def _is_test_case_class(node: ast.ClassDef) -> bool:
@@ -56,6 +70,11 @@ def _git_head(root: Path) -> str | None:
 
 
 def _validate_report(report: dict[str, Any]) -> None:
+    if set(report) != REPORT_KEYS:
+        missing = sorted(REPORT_KEYS - set(report))
+        extra = sorted(set(report) - REPORT_KEYS)
+        raise ValueError(f"unexpected test report fields; missing={missing}, extra={extra}")
+
     if report.get("schema") != REPORT_SCHEMA:
         raise ValueError("unexpected test report schema")
     status = report.get("status")
@@ -93,8 +112,8 @@ def _validate_report(report: dict[str, Any]) -> None:
             raise ValueError(f"{key} is required")
 
     git_commit = report.get("git_commit")
-    if git_commit is not None and (not isinstance(git_commit, str) or not git_commit.strip()):
-        raise ValueError("git_commit must be a non-empty string or null")
+    if git_commit is not None and (not isinstance(git_commit, str) or GIT_SHA_RE.fullmatch(git_commit) is None):
+        raise ValueError("git_commit must be a 40-character lowercase hexadecimal SHA or null")
 
 
 def _build_report(
