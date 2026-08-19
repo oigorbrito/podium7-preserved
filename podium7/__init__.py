@@ -16,6 +16,7 @@ from .identity import MatchOutcome, ResolutionDecision, blocking_key, generate_c
 from .ingestion import IngestionReport, ingest_vehicle_makes_models_json
 from .normalization import NormalizationResult, normalize_fact
 from .persistence import EvidenceStore
+from .web_extraction import ExtractedWebFact, WebFieldRule, extract_autoevolution_artega_gt, extract_with_rules
 
 __all__ = [
     "AutomotiveIdentity",
@@ -26,6 +27,7 @@ __all__ = [
     "DecisionStatus",
     "EntityKind",
     "EvidenceStore",
+    "ExtractedWebFact",
     "FusionResult",
     "IngestionReport",
     "MatchOutcome",
@@ -34,9 +36,12 @@ __all__ = [
     "RawEvidence",
     "ResolutionDecision",
     "Source",
+    "WebFieldRule",
     "blocking_key",
     "export_entity_json",
     "export_entity_payload",
+    "extract_autoevolution_artega_gt",
+    "extract_with_rules",
     "fuse_candidates",
     "generate_candidates",
     "ingest_vehicle_makes_models_json",
