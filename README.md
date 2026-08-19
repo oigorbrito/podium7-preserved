@@ -30,3 +30,13 @@ For normal unittest discovery without process isolation:
 ```bash
 python -m unittest discover -s tests -v
 ```
+
+## Windows workspace
+
+The expected local workspace is `C:\Projetos\p7`. To clone/update the repository and run every test one by one with a single command:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File "C:\Projetos\p7\scripts\update_and_test.ps1"
+```
+
+If the repository is not present yet, the runner clones it. Otherwise it performs a fast-forward-only pull before executing the sequential test runner.
