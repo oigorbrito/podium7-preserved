@@ -1,8 +1,11 @@
 from __future__ import annotations
 
 import ast
+from datetime import datetime, timezone
+import json
 import os
 from pathlib import Path
+import platform
 import subprocess
 import sys
 
@@ -29,12 +32,55 @@ def _discover_test_ids(tests_dir: Path) -> list[str]:
     return sorted(test_ids)
 
 
+def _git_head(root: Path) -> str | None:
+    completed = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=root,
+        check=False,
+        capture_output=True,
+        text=True,
+    )
+    if completed.returncode != 0:
+        return None
+    head = completed.stdout.strip()
+    return head or None
+
+
+def _write_report(
+    root: Path,
+    *,
+    total: int,
+    passed: int,
+    status: str,
+    failed_test: str | None = None,
+) -> None:
+    report_dir = root / "artifacts"
+    report_dir.mkdir(parents=True, exist_ok=True)
+    report = {
+        "schema": "podium7.sequential-test-report.v1",
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "status": status,
+        "git_commit": _git_head(root),
+        "python": platform.python_version(),
+        "python_executable": sys.executable,
+        "platform": platform.platform(),
+        "tests_discovered": total,
+        "tests_passed": passed,
+        "failed_test": failed_test,
+    }
+    (report_dir / "test-report.json").write_text(
+        json.dumps(report, indent=2, sort_keys=True) + "\n",
+        encoding="utf-8",
+    )
+
+
 def main() -> int:
     root = Path(__file__).resolve().parents[1]
     tests_dir = root / "tests"
     test_ids = _discover_test_ids(tests_dir)
 
     if not test_ids:
+        _write_report(root, total=0, passed=0, status="FAIL")
         print("FAIL — no tests discovered")
         return 2
 
@@ -46,6 +92,7 @@ def main() -> int:
     env["PYTHONPATH"] = os.pathsep.join(pythonpath_parts)
 
     total = len(test_ids)
+    passed = 0
     for index, test_id in enumerate(test_ids, start=1):
         print(f"[{index}/{total}] RUN {test_id}", flush=True)
         completed = subprocess.run(
@@ -55,11 +102,21 @@ def main() -> int:
             check=False,
         )
         if completed.returncode != 0:
+            _write_report(
+                root,
+                total=total,
+                passed=passed,
+                status="FAIL",
+                failed_test=test_id,
+            )
             print(f"[{index}/{total}] FAIL {test_id}", flush=True)
             return completed.returncode
+        passed += 1
         print(f"[{index}/{total}] PASS {test_id}", flush=True)
 
+    _write_report(root, total=total, passed=passed, status="PASS")
     print(f"PASS — {total}/{total} tests executed one by one", flush=True)
+    print("REPORT — artifacts/test-report.json", flush=True)
     return 0
 
 
