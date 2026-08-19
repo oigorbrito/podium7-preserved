@@ -57,6 +57,7 @@ def export_entity_json(
     return json.dumps(
         export_entity_payload(entity_id, identity, canonical_facts, conflicts),
         ensure_ascii=False,
+        allow_nan=False,
         sort_keys=True,
         indent=indent,
     )

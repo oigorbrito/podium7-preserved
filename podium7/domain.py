@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import datetime
 from enum import Enum
+import json
 from typing import Any
 
 
@@ -21,6 +22,13 @@ def _require_unique_texts(values: tuple[str, ...], field: str) -> None:
         _require_text(value, field)
     if len(set(values)) != len(values):
         raise ValueError(f"{field} must not contain duplicates")
+
+
+def _require_json_value(value: Any, field: str) -> None:
+    try:
+        json.dumps(value, ensure_ascii=False, allow_nan=False)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f"{field} must be strict JSON-compatible") from exc
 
 
 class DecisionStatus(str, Enum):
@@ -119,6 +127,8 @@ class CandidateFact:
         _require_text(self.extraction_method, "candidate extraction_method")
         _require_optional_text(self.unit, "candidate unit")
         _require_optional_text(self.normalization_rule, "candidate normalization_rule")
+        _require_json_value(self.raw_value, "candidate raw_value")
+        _require_json_value(self.normalized_value, "candidate normalized_value")
         if self.confidence is not None and not 0.0 <= self.confidence <= 1.0:
             raise ValueError("confidence must be between 0 and 1")
 
@@ -156,6 +166,7 @@ class CanonicalFact:
         _require_text(self.entity_id, "canonical entity_id")
         _require_text(self.attribute, "canonical attribute")
         _require_text(self.fusion_decision, "canonical fusion_decision")
+        _require_json_value(self.accepted_value, "canonical accepted_value")
         if not self.candidate_references:
             raise ValueError("canonical facts require at least one candidate reference")
         _require_unique_texts(self.candidate_references, "canonical candidate reference")
