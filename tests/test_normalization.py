@@ -7,7 +7,7 @@ class NormalizationTests(unittest.TestCase):
     def test_power_hp_to_kw(self) -> None:
         result = normalize_fact("power", 300, "hp")
         self.assertEqual(result.unit, "kW")
-        self.assertAlmostEqual(result.value, 223.709962, places=6)
+        self.assertAlmostEqual(result.value, 223.709961, places=6)
         self.assertEqual(result.rule, "power.hp_to_kw.v1")
 
     def test_torque_nm_identity(self) -> None:
