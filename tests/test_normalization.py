@@ -28,7 +28,7 @@ class NormalizationTests(unittest.TestCase):
 
     def test_weight_lb_to_kg(self) -> None:
         result = normalize_fact("curb_weight", 2833, "lb")
-        self.assertAlmostEqual(result.value, 1285.029684, places=6)
+        self.assertAlmostEqual(result.value, 1285.027184, places=6)
         self.assertEqual(result.unit, "kg")
 
     def test_consumption_mpg_us_to_l100km(self) -> None:
