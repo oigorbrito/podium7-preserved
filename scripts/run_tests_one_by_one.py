@@ -25,6 +25,7 @@ def _is_test_case_class(node: ast.ClassDef) -> bool:
 
 def _discover_test_ids(tests_dir: Path) -> list[str]:
     test_ids: list[str] = []
+    seen: set[str] = set()
     for path in sorted(tests_dir.glob("test_*.py")):
         tree = ast.parse(path.read_text(encoding="utf-8"), filename=str(path))
         for node in tree.body:
@@ -32,7 +33,11 @@ def _discover_test_ids(tests_dir: Path) -> list[str]:
                 continue
             for member in node.body:
                 if isinstance(member, (ast.FunctionDef, ast.AsyncFunctionDef)) and member.name.startswith("test_"):
-                    test_ids.append(f"{path.stem}.{node.name}.{member.name}")
+                    test_id = f"{path.stem}.{node.name}.{member.name}"
+                    if test_id in seen:
+                        raise ValueError(f"duplicate test identifier: {test_id}")
+                    seen.add(test_id)
+                    test_ids.append(test_id)
     return sorted(test_ids)
 
 
@@ -142,7 +147,12 @@ def _write_report(
 def main() -> int:
     root = Path(__file__).resolve().parents[1]
     tests_dir = root / "tests"
-    test_ids = _discover_test_ids(tests_dir)
+    try:
+        test_ids = _discover_test_ids(tests_dir)
+    except (OSError, SyntaxError, ValueError) as exc:
+        _write_report(root, total=0, passed=0, status="FAIL")
+        print(f"FAIL — test discovery error: {exc}")
+        return 2
 
     if not test_ids:
         _write_report(root, total=0, passed=0, status="FAIL")
