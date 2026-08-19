@@ -17,6 +17,11 @@ def _require_optional_text(value: str | None, field: str) -> None:
         raise ValueError(f"{field} must be non-empty when provided")
 
 
+def _require_optional_int(value: int | None, field: str) -> None:
+    if value is not None and (not isinstance(value, int) or isinstance(value, bool)):
+        raise ValueError(f"{field} must be an integer when provided")
+
+
 def _require_unique_texts(values: tuple[str, ...], field: str) -> None:
     for value in values:
         _require_text(value, field)
@@ -100,10 +105,21 @@ class AutomotiveIdentity:
     external_identifiers: tuple[str, ...] = ()
 
     def __post_init__(self) -> None:
+        if not isinstance(self.kind, EntityKind):
+            raise ValueError("kind must be an EntityKind")
+        _require_text(self.make, "make")
+        _require_optional_text(self.model, "model")
+        _require_optional_text(self.generation, "generation")
+        _require_optional_text(self.variant, "variant")
+        _require_optional_text(self.powertrain, "powertrain")
+        _require_optional_text(self.market, "market")
+        _require_optional_int(self.year_from, "year_from")
+        _require_optional_int(self.year_to, "year_to")
         if self.year_from is not None and self.year_to is not None and self.year_from > self.year_to:
             raise ValueError("year_from cannot be greater than year_to")
-        if not self.make.strip():
-            raise ValueError("make is required")
+        _require_unique_texts(self.aliases, "identity alias")
+        _require_unique_texts(self.engine_identifiers, "engine identifier")
+        _require_unique_texts(self.external_identifiers, "external identifier")
 
 
 @dataclass(frozen=True)

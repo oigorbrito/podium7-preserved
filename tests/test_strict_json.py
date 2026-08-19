@@ -1,8 +1,17 @@
+from dataclasses import dataclass
 import math
 import unittest
 
-from podium7.domain import AutomotiveIdentity, CandidateFact, CanonicalFact, EntityKind, ProvenanceRecord
+from podium7.domain import CandidateFact, CanonicalFact, ProvenanceRecord
 from podium7.export import export_entity_json
+
+
+@dataclass(frozen=True)
+class UnsafeIdentityPayload:
+    kind: str = "Model"
+    make: str = "Example"
+    model: str = "Model"
+    year_from: float = math.nan
 
 
 class StrictJsonTests(unittest.TestCase):
@@ -46,14 +55,8 @@ class StrictJsonTests(unittest.TestCase):
             )
 
     def test_export_rejects_non_finite_payload_values(self):
-        identity = AutomotiveIdentity(
-            kind=EntityKind.MODEL,
-            make="Example",
-            model="Model",
-            year_from=math.nan,
-        )
         with self.assertRaises(ValueError):
-            export_entity_json("entity-1", identity, [], [])
+            export_entity_json("entity-1", UnsafeIdentityPayload(), [], [])
 
 
 if __name__ == "__main__":
