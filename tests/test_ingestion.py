@@ -1,5 +1,7 @@
 from datetime import datetime, timezone
+import json
 from pathlib import Path
+import tempfile
 import unittest
 
 from podium7.ingestion import SOURCE_ID, _stable_id, ingest_vehicle_makes_models_json
@@ -72,6 +74,50 @@ class IngestionTests(unittest.TestCase):
             ingest_vehicle_makes_models_json(store, SOURCE_PATH, acquired_at=ACQUIRED_AT)
             with self.assertRaises(ValueError):
                 ingest_vehicle_makes_models_json(store, SOURCE_PATH, acquired_at=ACQUIRED_AT)
+
+    def test_failed_ingestion_rolls_back_partial_snapshot(self):
+        payload = {
+            "makes": [
+                {
+                    "name": "Atomic",
+                    "models": [
+                        {
+                            "name": "Good",
+                            "yearStart": 2020,
+                            "yearEnd": 2021,
+                            "generations": [
+                                {
+                                    "name": "Good (2020)",
+                                    "yearStart": 2020,
+                                    "yearEnd": 2021,
+                                    "engines": [{"label": "1.0", "powerHp": 100}],
+                                }
+                            ],
+                        },
+                        {
+                            "name": "Broken",
+                            "yearStart": 2025,
+                            "yearEnd": 2024,
+                            "generations": [
+                                {
+                                    "name": "Broken (2025)",
+                                    "yearStart": 2025,
+                                    "yearEnd": 2024,
+                                    "engines": [{"label": "1.0", "powerHp": 100}],
+                                }
+                            ],
+                        },
+                    ],
+                }
+            ]
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "malformed.json"
+            path.write_text(json.dumps(payload), encoding="utf-8")
+            with EvidenceStore() as store:
+                with self.assertRaises(ValueError):
+                    ingest_vehicle_makes_models_json(store, path, acquired_at=ACQUIRED_AT)
+                self.assertTrue(all(count == 0 for count in store.snapshot_counts().values()))
 
 
 if __name__ == "__main__":

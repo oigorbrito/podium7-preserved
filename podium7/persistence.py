@@ -1,11 +1,12 @@
 from __future__ import annotations
 
+from contextlib import contextmanager
 import json
 import sqlite3
 from dataclasses import asdict
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Iterator
 
 from .domain import (
     AutomotiveIdentity,
@@ -33,6 +34,7 @@ class EvidenceStore:
         self._connection = sqlite3.connect(str(database))
         self._connection.row_factory = sqlite3.Row
         self._connection.execute("PRAGMA foreign_keys = ON")
+        self._transaction_depth = 0
         self._create_schema()
 
     def close(self) -> None:
@@ -43,6 +45,26 @@ class EvidenceStore:
 
     def __exit__(self, exc_type: Any, exc: Any, tb: Any) -> None:
         self.close()
+
+    @contextmanager
+    def transaction(self) -> Iterator["EvidenceStore"]:
+        """Group persistence operations into one atomic SQLite transaction."""
+
+        outermost = self._transaction_depth == 0
+        if outermost:
+            self._connection.execute("BEGIN")
+        self._transaction_depth += 1
+        try:
+            yield self
+        except Exception:
+            self._transaction_depth -= 1
+            if outermost:
+                self._connection.rollback()
+            raise
+        else:
+            self._transaction_depth -= 1
+            if outermost:
+                self._connection.commit()
 
     def _create_schema(self) -> None:
         self._connection.executescript(
@@ -219,22 +241,23 @@ class EvidenceStore:
         )
 
     def save_canonical_fact(self, fact: CanonicalFact, provenance_id: str) -> None:
-        self.save_provenance(provenance_id, fact.provenance)
-        self._insert_once(
-            """INSERT INTO canonical_facts(
-                id, entity_id, attribute, accepted_value_json,
-                candidate_references_json, fusion_decision, provenance_id
-            ) VALUES (?, ?, ?, ?, ?, ?, ?)""",
-            (
-                fact.id,
-                fact.entity_id,
-                fact.attribute,
-                self._json(fact.accepted_value),
-                self._json(fact.candidate_references),
-                fact.fusion_decision,
-                provenance_id,
-            ),
-        )
+        with self.transaction():
+            self.save_provenance(provenance_id, fact.provenance)
+            self._insert_once(
+                """INSERT INTO canonical_facts(
+                    id, entity_id, attribute, accepted_value_json,
+                    candidate_references_json, fusion_decision, provenance_id
+                ) VALUES (?, ?, ?, ?, ?, ?, ?)""",
+                (
+                    fact.id,
+                    fact.entity_id,
+                    fact.attribute,
+                    self._json(fact.accepted_value),
+                    self._json(fact.candidate_references),
+                    fact.fusion_decision,
+                    provenance_id,
+                ),
+            )
 
     def save_conflict(self, conflict: Conflict) -> None:
         self._insert_once(
@@ -305,6 +328,36 @@ class EvidenceStore:
             normalization_rule=row["normalization_rule"],
         )
 
+    def get_provenance(self, provenance_id: str) -> ProvenanceRecord | None:
+        row = self._one("SELECT * FROM provenance WHERE id = ?", (provenance_id,))
+        if row is None:
+            return None
+        return ProvenanceRecord(
+            entity_id=row["entity_id"],
+            activity_id=row["activity_id"],
+            agent_id=row["agent_id"],
+            was_derived_from=tuple(json.loads(row["was_derived_from_json"])),
+            was_generated_by=row["was_generated_by"],
+            was_associated_with=row["was_associated_with"],
+        )
+
+    def get_canonical_fact(self, fact_id: str) -> CanonicalFact | None:
+        row = self._one("SELECT * FROM canonical_facts WHERE id = ?", (fact_id,))
+        if row is None:
+            return None
+        provenance = self.get_provenance(row["provenance_id"])
+        if provenance is None:
+            raise RuntimeError(f"canonical fact {fact_id!r} references missing provenance")
+        return CanonicalFact(
+            id=row["id"],
+            entity_id=row["entity_id"],
+            attribute=row["attribute"],
+            accepted_value=json.loads(row["accepted_value_json"]),
+            candidate_references=tuple(json.loads(row["candidate_references_json"])),
+            fusion_decision=row["fusion_decision"],
+            provenance=provenance,
+        )
+
     def get_conflict(self, conflict_id: str) -> Conflict | None:
         row = self._one("SELECT * FROM conflicts WHERE id = ?", (conflict_id,))
         if row is None:
@@ -332,6 +385,13 @@ class EvidenceStore:
         ).fetchall()
         return [self.get_candidate_fact(row["id"]) for row in rows if row is not None]
 
+    def canonical_facts_for_entity(self, entity_id: str) -> list[CanonicalFact]:
+        rows = self._connection.execute(
+            "SELECT id FROM canonical_facts WHERE entity_id = ? ORDER BY id",
+            (entity_id,),
+        ).fetchall()
+        return [self.get_canonical_fact(row["id"]) for row in rows if row is not None]
+
     def snapshot_counts(self) -> dict[str, int]:
         tables = (
             "sources",
@@ -349,9 +409,12 @@ class EvidenceStore:
 
     def _insert_once(self, sql: str, values: tuple[Any, ...]) -> None:
         try:
-            with self._connection:
-                self._connection.execute(sql, values)
+            self._connection.execute(sql, values)
+            if self._transaction_depth == 0:
+                self._connection.commit()
         except sqlite3.IntegrityError as exc:
+            if self._transaction_depth == 0:
+                self._connection.rollback()
             raise ValueError(f"persistence integrity error: {exc}") from exc
 
     def _one(self, sql: str, values: tuple[Any, ...]) -> sqlite3.Row | None:

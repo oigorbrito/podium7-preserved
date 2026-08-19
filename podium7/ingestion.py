@@ -72,108 +72,109 @@ def ingest_vehicle_makes_models_json(
     payload = json.loads(source_path.read_text(encoding="utf-8"))
     acquired_at = acquired_at or datetime.now(timezone.utc)
 
-    store.save_source(Source(SOURCE_ID, SOURCE_NAME, SOURCE_LOCATOR))
-
     make_count = model_count = generation_count = 0
     entity_count = evidence_count = fact_count = 0
 
-    for make_index, make in enumerate(payload.get("makes", [])):
-        make_count += 1
-        make_name = make["name"]
+    with store.transaction():
+        store.save_source(Source(SOURCE_ID, SOURCE_NAME, SOURCE_LOCATOR))
 
-        for model_index, model in enumerate(make.get("models", [])):
-            model_count += 1
-            model_name = model["name"]
+        for make_index, make in enumerate(payload.get("makes", [])):
+            make_count += 1
+            make_name = make["name"]
 
-            for generation_index, generation in enumerate(model.get("generations", [])):
-                generation_count += 1
-                generation_name = generation["name"]
+            for model_index, model in enumerate(make.get("models", [])):
+                model_count += 1
+                model_name = model["name"]
 
-                for engine_index, engine in enumerate(generation.get("engines", [])):
-                    pointer = (
-                        f"/makes/{make_index}/models/{model_index}"
-                        f"/generations/{generation_index}/engines/{engine_index}"
-                    )
-                    remote_locator = (
-                        "https://github.com/gor3a/vehicle-makes-models/blob/main/"
-                        f"data/json/{source_path.name}#{pointer}"
-                    )
-                    entity_id = _stable_id("entity", remote_locator)
-                    evidence_id = _stable_id("evidence", remote_locator)
+                for generation_index, generation in enumerate(model.get("generations", [])):
+                    generation_count += 1
+                    generation_name = generation["name"]
 
-                    store.save_entity(
-                        entity_id,
-                        AutomotiveIdentity(
-                            kind=EntityKind.POWERTRAIN,
-                            make=make_name,
-                            model=model_name,
-                            generation=generation_name,
-                            powertrain=engine.get("label"),
-                            year_from=generation.get("yearStart") or model.get("yearStart"),
-                            year_to=generation.get("yearEnd") or model.get("yearEnd"),
-                            external_identifiers=(remote_locator,),
-                        ),
-                    )
-                    entity_count += 1
-
-                    store.save_raw_evidence(
-                        RawEvidence(
-                            id=evidence_id,
-                            source_id=SOURCE_ID,
-                            locator=remote_locator,
-                            retrieved_at=acquired_at,
-                            acquisition_method="pinned-github-json-snapshot",
-                            raw_content_ref=str(source_path),
+                    for engine_index, engine in enumerate(generation.get("engines", [])):
+                        pointer = (
+                            f"/makes/{make_index}/models/{model_index}"
+                            f"/generations/{generation_index}/engines/{engine_index}"
                         )
-                    )
-                    evidence_count += 1
+                        remote_locator = (
+                            "https://github.com/gor3a/vehicle-makes-models/blob/main/"
+                            f"data/json/{source_path.name}#{pointer}"
+                        )
+                        entity_id = _stable_id("entity", remote_locator)
+                        evidence_id = _stable_id("evidence", remote_locator)
 
-                    fields: tuple[tuple[str, str, str | None], ...] = (
-                        ("fuel_type", "fuelType", None),
-                        ("cylinders", "cylinders", None),
-                        ("displacement", "displacementCc", "cc"),
-                        ("power", "powerHp", "hp"),
-                        ("torque", "torqueNm", "Nm"),
-                        ("transmission", "transmission", None),
-                        ("drivetrain", "drivetrain", None),
-                        ("zero_to_hundred", "zeroToHundredKmhS", "s"),
-                        ("top_speed", "topSpeedKmh", "km/h"),
-                        ("fuel_economy_combined", "fuelEconomyCombinedL100", "L/100km"),
-                        ("length", "lengthMm", "mm"),
-                        ("width", "widthMm", "mm"),
-                        ("height", "heightMm", "mm"),
-                        ("wheelbase", "wheelbaseMm", "mm"),
-                        ("curb_weight", "curbWeightKg", "kg"),
-                    )
+                        store.save_entity(
+                            entity_id,
+                            AutomotiveIdentity(
+                                kind=EntityKind.POWERTRAIN,
+                                make=make_name,
+                                model=model_name,
+                                generation=generation_name,
+                                powertrain=engine.get("label"),
+                                year_from=generation.get("yearStart") or model.get("yearStart"),
+                                year_to=generation.get("yearEnd") or model.get("yearEnd"),
+                                external_identifiers=(remote_locator,),
+                            ),
+                        )
+                        entity_count += 1
 
-                    for attribute, source_key, unit in fields:
-                        value = engine.get(source_key)
-                        if value is None:
-                            continue
-                        store.save_candidate_fact(
-                            _candidate(
-                                entity_id=entity_id,
-                                evidence_id=evidence_id,
-                                pointer=pointer,
-                                attribute=attribute,
-                                value=value,
-                                unit=unit,
+                        store.save_raw_evidence(
+                            RawEvidence(
+                                id=evidence_id,
+                                source_id=SOURCE_ID,
+                                locator=remote_locator,
+                                retrieved_at=acquired_at,
+                                acquisition_method="pinned-github-json-snapshot",
+                                raw_content_ref=str(source_path),
                             )
                         )
-                        fact_count += 1
+                        evidence_count += 1
 
-                    body_type = generation.get("bodyType")
-                    if body_type is not None:
-                        store.save_candidate_fact(
-                            _candidate(
-                                entity_id=entity_id,
-                                evidence_id=evidence_id,
-                                pointer=pointer,
-                                attribute="body_type",
-                                value=body_type,
-                            )
+                        fields: tuple[tuple[str, str, str | None], ...] = (
+                            ("fuel_type", "fuelType", None),
+                            ("cylinders", "cylinders", None),
+                            ("displacement", "displacementCc", "cc"),
+                            ("power", "powerHp", "hp"),
+                            ("torque", "torqueNm", "Nm"),
+                            ("transmission", "transmission", None),
+                            ("drivetrain", "drivetrain", None),
+                            ("zero_to_hundred", "zeroToHundredKmhS", "s"),
+                            ("top_speed", "topSpeedKmh", "km/h"),
+                            ("fuel_economy_combined", "fuelEconomyCombinedL100", "L/100km"),
+                            ("length", "lengthMm", "mm"),
+                            ("width", "widthMm", "mm"),
+                            ("height", "heightMm", "mm"),
+                            ("wheelbase", "wheelbaseMm", "mm"),
+                            ("curb_weight", "curbWeightKg", "kg"),
                         )
-                        fact_count += 1
+
+                        for attribute, source_key, unit in fields:
+                            value = engine.get(source_key)
+                            if value is None:
+                                continue
+                            store.save_candidate_fact(
+                                _candidate(
+                                    entity_id=entity_id,
+                                    evidence_id=evidence_id,
+                                    pointer=pointer,
+                                    attribute=attribute,
+                                    value=value,
+                                    unit=unit,
+                                )
+                            )
+                            fact_count += 1
+
+                        body_type = generation.get("bodyType")
+                        if body_type is not None:
+                            store.save_candidate_fact(
+                                _candidate(
+                                    entity_id=entity_id,
+                                    evidence_id=evidence_id,
+                                    pointer=pointer,
+                                    attribute="body_type",
+                                    value=body_type,
+                                )
+                            )
+                            fact_count += 1
 
     return IngestionReport(
         source_id=SOURCE_ID,

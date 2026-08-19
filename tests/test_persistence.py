@@ -58,6 +58,24 @@ def seed_candidate_path(store: EvidenceStore) -> None:
     store.save_candidate_fact(CANDIDATE)
 
 
+def canonical_fact(fact_id: str = "canonical-1") -> CanonicalFact:
+    provenance = ProvenanceRecord(
+        entity_id="entity-1",
+        activity_id="fusion-1",
+        was_derived_from=(CANDIDATE.id,),
+        was_generated_by="fusion.single_candidate.v1",
+    )
+    return CanonicalFact(
+        id=fact_id,
+        entity_id="entity-1",
+        attribute="power",
+        accepted_value={"value": 223.709961, "unit": "kW"},
+        candidate_references=(CANDIDATE.id,),
+        fusion_decision="single-candidate.v1",
+        provenance=provenance,
+    )
+
+
 class PersistenceTests(unittest.TestCase):
     def test_source_entity_evidence_candidate_round_trip(self):
         with EvidenceStore() as store:
@@ -109,21 +127,7 @@ class PersistenceTests(unittest.TestCase):
             self.assertEqual(store.get_conflict(conflict.id), conflict)
 
     def test_canonical_save_preserves_intermediates_and_provenance(self):
-        provenance = ProvenanceRecord(
-            entity_id="entity-1",
-            activity_id="fusion-1",
-            was_derived_from=(CANDIDATE.id,),
-            was_generated_by="fusion.single_candidate.v1",
-        )
-        canonical = CanonicalFact(
-            id="canonical-1",
-            entity_id="entity-1",
-            attribute="power",
-            accepted_value={"value": 223.709961, "unit": "kW"},
-            candidate_references=(CANDIDATE.id,),
-            fusion_decision="single-candidate.v1",
-            provenance=provenance,
-        )
+        canonical = canonical_fact()
         with EvidenceStore() as store:
             seed_candidate_path(store)
             store.save_canonical_fact(canonical, "provenance-1")
@@ -132,6 +136,36 @@ class PersistenceTests(unittest.TestCase):
             self.assertEqual(counts["candidate_facts"], 1)
             self.assertEqual(counts["provenance"], 1)
             self.assertEqual(counts["canonical_facts"], 1)
+
+    def test_canonical_fact_and_provenance_round_trip(self):
+        canonical = canonical_fact()
+        with EvidenceStore() as store:
+            seed_candidate_path(store)
+            store.save_canonical_fact(canonical, "provenance-1")
+            self.assertEqual(store.get_provenance("provenance-1"), canonical.provenance)
+            self.assertEqual(store.get_canonical_fact(canonical.id), canonical)
+            self.assertEqual(store.canonical_facts_for_entity("entity-1"), [canonical])
+
+    def test_failed_canonical_save_rolls_back_new_provenance(self):
+        canonical = canonical_fact()
+        with EvidenceStore() as store:
+            seed_candidate_path(store)
+            store.save_canonical_fact(canonical, "provenance-1")
+            with self.assertRaises(ValueError):
+                store.save_canonical_fact(canonical, "provenance-2")
+            self.assertIsNone(store.get_provenance("provenance-2"))
+            counts = store.snapshot_counts()
+            self.assertEqual(counts["provenance"], 1)
+            self.assertEqual(counts["canonical_facts"], 1)
+
+    def test_transaction_rolls_back_all_writes_on_failure(self):
+        with EvidenceStore() as store:
+            with self.assertRaises(RuntimeError):
+                with store.transaction():
+                    store.save_source(SOURCE)
+                    raise RuntimeError("abort")
+            self.assertIsNone(store.get_source(SOURCE.id))
+            self.assertEqual(store.snapshot_counts()["sources"], 0)
 
 
 if __name__ == "__main__":
