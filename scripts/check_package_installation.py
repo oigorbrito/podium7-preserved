@@ -6,7 +6,6 @@ import os
 from pathlib import Path
 import shutil
 import subprocess
-import sys
 import tarfile
 import tempfile
 import venv
@@ -89,7 +88,16 @@ def check_package_installation(root: Path) -> dict[str, object]:
         venv.EnvBuilder(with_pip=True, clear=True).create(environment)
         python = _venv_python(environment)
         subprocess.run(
-            [str(python), "-m", "pip", "install", "--no-index", "--no-deps", str(wheel)],
+            [
+                str(python),
+                "-m",
+                "pip",
+                "--disable-pip-version-check",
+                "install",
+                "--no-index",
+                "--no-deps",
+                str(wheel),
+            ],
             check=True,
             cwd=probe,
         )
