@@ -5,6 +5,7 @@ import tempfile
 import unittest
 
 from scripts.check_package_installation import (
+    _build_requirements,
     _single_artifact,
     _stage_source,
     _validate_health,
@@ -40,6 +41,27 @@ class PackageInstallationCheckTests(unittest.TestCase):
             (directory / "two.whl").write_text("", encoding="utf-8")
             with self.assertRaises(RuntimeError):
                 _single_artifact(directory, "*.whl")
+
+    def test_build_requirements_read_declared_setuptools_backend(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "pyproject.toml").write_text(
+                "[build-system]\nrequires = ['setuptools>=68']\n"
+                "build-backend = 'setuptools.build_meta'\n",
+                encoding="utf-8",
+            )
+            self.assertEqual(_build_requirements(root), ("setuptools>=68",))
+
+    def test_build_requirements_reject_unsupported_backend(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "pyproject.toml").write_text(
+                "[build-system]\nrequires = ['example']\n"
+                "build-backend = 'example.backend'\n",
+                encoding="utf-8",
+            )
+            with self.assertRaises(RuntimeError):
+                _build_requirements(root)
 
     def test_validate_health_accepts_matching_pass_schema(self):
         payload = {
