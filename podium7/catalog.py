@@ -124,13 +124,21 @@ def _optional_equal(a: str | None, b: str | None) -> bool | None:
     return _tokens(a) == _tokens(b)
 
 
-def _ranges_overlap(a_from: int | None, a_to: int | None, b_from: int | None, b_to: int | None) -> bool | None:
+def _ranges_overlap(
+    a_from: int | None,
+    a_to: int | None,
+    b_from: int | None,
+    b_to: int | None,
+) -> bool | None:
     if None in (a_from, a_to, b_from, b_to):
         return None
     return max(a_from, b_from) <= min(a_to, b_to)
 
 
-def resolve_catalog_pair(a: CatalogVehicleIdentity, b: CatalogVehicleIdentity) -> CatalogResolutionDecision:
+def resolve_catalog_pair(
+    a: CatalogVehicleIdentity,
+    b: CatalogVehicleIdentity,
+) -> CatalogResolutionDecision:
     if _tokens(a.make) != _tokens(b.make):
         return CatalogResolutionDecision(CatalogMatchOutcome.NO_MATCH, "make differs")
 
@@ -142,7 +150,10 @@ def resolve_catalog_pair(a: CatalogVehicleIdentity, b: CatalogVehicleIdentity) -
             for y in labels_b
         )
         if partial:
-            return CatalogResolutionDecision(CatalogMatchOutcome.REVIEW, "model labels partially overlap")
+            return CatalogResolutionDecision(
+                CatalogMatchOutcome.REVIEW,
+                "model labels partially overlap",
+            )
         return CatalogResolutionDecision(CatalogMatchOutcome.NO_MATCH, "model/alias differs")
 
     for field in ("generation", "variant", "powertrain", "transmission", "body_style", "market"):
@@ -157,35 +168,57 @@ def resolve_catalog_pair(a: CatalogVehicleIdentity, b: CatalogVehicleIdentity) -
             getattr(b, f"{prefix}_to"),
         )
         if overlap is False:
-            return CatalogResolutionDecision(CatalogMatchOutcome.NO_MATCH, f"{prefix} ranges do not overlap")
+            return CatalogResolutionDecision(
+                CatalogMatchOutcome.NO_MATCH,
+                f"{prefix} ranges do not overlap",
+            )
 
     ids_a = {item.key for item in a.external_identifiers}
     ids_b = {item.key for item in b.external_identifiers}
     if ids_a.intersection(ids_b):
-        return CatalogResolutionDecision(CatalogMatchOutcome.MATCH, "shared namespaced external identifier")
+        return CatalogResolutionDecision(
+            CatalogMatchOutcome.MATCH,
+            "shared namespaced external identifier",
+        )
     if ids_a and ids_b:
         return CatalogResolutionDecision(
             CatalogMatchOutcome.REVIEW,
             "external identifiers do not establish a shared identity",
         )
 
-    if a.generation is not None and b.generation is not None and a.powertrain is not None and b.powertrain is not None:
+    if (
+        a.generation is not None
+        and b.generation is not None
+        and a.powertrain is not None
+        and b.powertrain is not None
+    ):
         missing_trim = any(
             (getattr(a, field) is None) != (getattr(b, field) is None)
             for field in ("variant", "transmission", "body_style")
         )
         if missing_trim:
-            return CatalogResolutionDecision(CatalogMatchOutcome.REVIEW, "trim-defining evidence is incomplete")
+            return CatalogResolutionDecision(
+                CatalogMatchOutcome.REVIEW,
+                "trim-defining evidence is incomplete",
+            )
         return CatalogResolutionDecision(
             CatalogMatchOutcome.MATCH,
             "same model, generation and powertrain without contradiction",
         )
 
-    return CatalogResolutionDecision(CatalogMatchOutcome.REVIEW, "insufficient deterministic identity evidence")
+    return CatalogResolutionDecision(
+        CatalogMatchOutcome.REVIEW,
+        "insufficient deterministic identity evidence",
+    )
 
 
 def _identity_json(identity: CatalogVehicleIdentity) -> str:
-    return json.dumps(asdict(identity), ensure_ascii=False, sort_keys=True, separators=(",", ":"))
+    return json.dumps(
+        asdict(identity),
+        ensure_ascii=False,
+        sort_keys=True,
+        separators=(",", ":"),
+    )
 
 
 def _identity_from_json(payload: str) -> CatalogVehicleIdentity:
@@ -314,7 +347,8 @@ class CatalogStore(EvidenceStore):
                 raise RuntimeError("catalog redirect cycle detected")
             seen.add(current)
             row = self._connection.execute(
-                "SELECT canonical_id FROM catalog_v2_redirects WHERE old_id = ?", (current,)
+                "SELECT canonical_id FROM catalog_v2_redirects WHERE old_id = ?",
+                (current,),
             ).fetchone()
             if row is None:
                 return current
@@ -323,22 +357,29 @@ class CatalogStore(EvidenceStore):
     def get_catalog_vehicle(self, vehicle_id: str) -> CatalogVehicleIdentity | None:
         canonical = self.resolve_catalog_id(vehicle_id)
         row = self._connection.execute(
-            "SELECT identity_json FROM catalog_v2_vehicles WHERE id = ?", (canonical,)
+            "SELECT identity_json FROM catalog_v2_vehicles WHERE id = ?",
+            (canonical,),
         ).fetchone()
         return None if row is None else _identity_from_json(row[0])
 
-    def correct_catalog_vehicle(self, vehicle_id: str, identity: CatalogVehicleIdentity, reason: str) -> str:
+    def correct_catalog_vehicle(
+        self,
+        vehicle_id: str,
+        identity: CatalogVehicleIdentity,
+        reason: str,
+    ) -> str:
         canonical = self.resolve_catalog_id(vehicle_id)
         if not reason.strip():
             raise ValueError("correction reason is required")
         row = self._connection.execute(
-            "SELECT identity_json FROM catalog_v2_vehicles WHERE id = ?", (canonical,)
+            "SELECT identity_json FROM catalog_v2_vehicles WHERE id = ?",
+            (canonical,),
         ).fetchone()
         if row is None:
             raise ValueError("catalog vehicle does not exist")
         now = datetime.now(timezone.utc).isoformat()
         with self.transaction():
-            self._connection.execute(
+            self._insert_once(
                 "INSERT INTO catalog_v2_identity_revisions(vehicle_id, identity_json, reason, recorded_at) VALUES (?, ?, ?, ?)",
                 (canonical, row[0], reason, now),
             )
@@ -366,17 +407,21 @@ class CatalogStore(EvidenceStore):
                 ("catalog_v2_conflicts", "entity_id"),
             ):
                 self._connection.execute(
-                    f"UPDATE {table} SET {column} = ? WHERE {column} = ?", (survivor, duplicate)
+                    f"UPDATE {table} SET {column} = ? WHERE {column} = ?",
+                    (survivor, duplicate),
                 )
             self._connection.execute(
                 "UPDATE catalog_v2_redirects SET canonical_id = ? WHERE canonical_id = ?",
                 (survivor, duplicate),
             )
-            self._connection.execute(
+            self._insert_once(
                 "INSERT INTO catalog_v2_redirects(old_id, canonical_id, merged_at) VALUES (?, ?, ?)",
                 (duplicate, survivor, now),
             )
-            self._connection.execute("DELETE FROM catalog_v2_vehicles WHERE id = ?", (duplicate,))
+            self._connection.execute(
+                "DELETE FROM catalog_v2_vehicles WHERE id = ?",
+                (duplicate,),
+            )
         return survivor
 
     def save_physical_listing(self, listing: PhysicalVehicleListing) -> None:
@@ -393,7 +438,8 @@ class CatalogStore(EvidenceStore):
 
     def get_physical_listing(self, listing_id: str) -> PhysicalVehicleListing | None:
         row = self._connection.execute(
-            "SELECT * FROM catalog_v2_physical_listings WHERE listing_id = ?", (listing_id,)
+            "SELECT * FROM catalog_v2_physical_listings WHERE listing_id = ?",
+            (listing_id,),
         ).fetchone()
         if row is None:
             return None
@@ -428,7 +474,8 @@ class CatalogStore(EvidenceStore):
     def catalog_candidates_for_entity(self, vehicle_id: str) -> list[CandidateFact]:
         canonical = self.resolve_catalog_id(vehicle_id)
         rows = self._connection.execute(
-            "SELECT * FROM catalog_v2_candidate_facts WHERE entity_id = ? ORDER BY id", (canonical,)
+            "SELECT * FROM catalog_v2_candidate_facts WHERE entity_id = ? ORDER BY id",
+            (canonical,),
         ).fetchall()
         return [
             CandidateFact(
@@ -446,20 +493,54 @@ class CatalogStore(EvidenceStore):
             for row in rows
         ]
 
-    def save_catalog_canonical_fact(self, fact: CanonicalFact, provenance_id: str) -> None:
-        canonical = self.resolve_catalog_id(fact.entity_id)
-        refs = tuple(fact.candidate_references)
-        placeholders = ",".join("?" for _ in refs)
+    def _require_catalog_candidate_references(
+        self,
+        vehicle_id: str,
+        references: tuple[str, ...],
+        attribute: str,
+    ) -> str:
+        canonical = self.resolve_catalog_id(vehicle_id)
+        if not references:
+            raise ValueError("catalog candidate references are required")
+        if len(set(references)) != len(references):
+            raise ValueError("catalog candidate references must be unique")
+        placeholders = ",".join("?" for _ in references)
         rows = self._connection.execute(
-            f"SELECT id, attribute FROM catalog_v2_candidate_facts WHERE id IN ({placeholders})", refs
+            f"SELECT id, entity_id, attribute FROM catalog_v2_candidate_facts WHERE id IN ({placeholders})",
+            references,
         ).fetchall()
-        if {row["id"] for row in rows} != set(refs):
-            raise ValueError("missing catalog candidate reference")
-        if any(row["attribute"] != fact.attribute for row in rows):
-            raise ValueError("catalog candidate attribute mismatch")
+        existing = {row["id"] for row in rows}
+        missing = [reference for reference in references if reference not in existing]
+        if missing:
+            raise ValueError(
+                "missing catalog candidate references: " + ", ".join(missing)
+            )
+        wrong_entity = [row["id"] for row in rows if row["entity_id"] != canonical]
+        if wrong_entity:
+            raise ValueError(
+                "catalog candidate references belong to another vehicle: "
+                + ", ".join(wrong_entity)
+            )
+        wrong_attribute = [row["id"] for row in rows if row["attribute"] != attribute]
+        if wrong_attribute:
+            raise ValueError(
+                f"catalog candidate references do not match attribute {attribute!r}: "
+                + ", ".join(wrong_attribute)
+            )
+        return canonical
+
+    def save_catalog_canonical_fact(self, fact: CanonicalFact, provenance_id: str) -> None:
+        refs = tuple(fact.candidate_references)
+        canonical = self._require_catalog_candidate_references(
+            fact.entity_id,
+            refs,
+            fact.attribute,
+        )
         provenance = fact.provenance
+        if self.resolve_catalog_id(provenance.entity_id) != canonical:
+            raise ValueError("catalog canonical provenance belongs to another vehicle")
         with self.transaction():
-            self._connection.execute(
+            self._insert_once(
                 """INSERT INTO catalog_v2_provenance(
                     id, entity_id, activity_id, agent_id, was_derived_from_json,
                     was_generated_by, was_associated_with
@@ -474,7 +555,7 @@ class CatalogStore(EvidenceStore):
                     provenance.was_associated_with,
                 ),
             )
-            self._connection.execute(
+            self._insert_once(
                 """INSERT INTO catalog_v2_canonical_facts(
                     id, entity_id, attribute, accepted_value_json, candidate_references_json,
                     fusion_decision, provenance_id
@@ -491,6 +572,12 @@ class CatalogStore(EvidenceStore):
             )
 
     def save_catalog_conflict(self, vehicle_id: str, conflict: Conflict) -> None:
+        refs = tuple(conflict.candidate_references)
+        canonical = self._require_catalog_candidate_references(
+            vehicle_id,
+            refs,
+            conflict.attribute,
+        )
         self._insert_once(
             """INSERT INTO catalog_v2_conflicts(
                 id, entity_id, attribute, candidate_references_json, reason,
@@ -498,9 +585,9 @@ class CatalogStore(EvidenceStore):
             ) VALUES (?, ?, ?, ?, ?, ?, ?)""",
             (
                 conflict.id,
-                self.resolve_catalog_id(vehicle_id),
+                canonical,
                 conflict.attribute,
-                self._json(conflict.candidate_references),
+                self._json(refs),
                 conflict.reason,
                 conflict.resolution_state.value,
                 conflict.selected_candidate_id,
@@ -510,18 +597,24 @@ class CatalogStore(EvidenceStore):
     def redirects_to(self, vehicle_id: str) -> list[str]:
         canonical = self.resolve_catalog_id(vehicle_id)
         rows = self._connection.execute(
-            "SELECT old_id FROM catalog_v2_redirects WHERE canonical_id = ? ORDER BY old_id", (canonical,)
+            "SELECT old_id FROM catalog_v2_redirects WHERE canonical_id = ? ORDER BY old_id",
+            (canonical,),
         ).fetchall()
         return [row[0] for row in rows]
 
 
-def export_catalog_vehicle_payload(store: CatalogStore, vehicle_id: str) -> dict[str, Any]:
+def export_catalog_vehicle_payload(
+    store: CatalogStore,
+    vehicle_id: str,
+) -> dict[str, Any]:
     canonical = store.resolve_catalog_id(vehicle_id)
     identity = store.get_catalog_vehicle(canonical)
     if identity is None:
         raise ValueError("catalog vehicle does not exist")
     data = asdict(identity)
-    data["external_identifiers"] = [asdict(item) for item in identity.external_identifiers]
+    data["external_identifiers"] = [
+        asdict(item) for item in identity.external_identifiers
+    ]
     return {
         "contractVersion": "2.0",
         "entity": {"id": canonical, **data},
