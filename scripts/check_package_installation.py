@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from contextlib import contextmanager
 import json
 import os
 from pathlib import Path
@@ -8,17 +7,8 @@ import shutil
 import subprocess
 import tarfile
 import tempfile
+import tomllib
 import venv
-
-
-@contextmanager
-def _working_directory(path: Path):
-    previous = Path.cwd()
-    os.chdir(path)
-    try:
-        yield
-    finally:
-        os.chdir(previous)
 
 
 def _stage_source(root: Path, destination: Path) -> None:
@@ -51,6 +41,55 @@ def _venv_python(environment: Path) -> Path:
     return environment / "bin" / "python"
 
 
+def _build_requirements(root: Path) -> tuple[str, ...]:
+    payload = tomllib.loads((root / "pyproject.toml").read_text(encoding="utf-8"))
+    build_system = payload.get("build-system")
+    if not isinstance(build_system, dict):
+        raise RuntimeError("pyproject.toml has no valid build-system table")
+    backend = build_system.get("build-backend")
+    if backend != "setuptools.build_meta":
+        raise RuntimeError(f"unsupported build backend: {backend!r}")
+    requirements = build_system.get("requires")
+    if (
+        not isinstance(requirements, list)
+        or not requirements
+        or not all(isinstance(requirement, str) and requirement.strip() for requirement in requirements)
+    ):
+        raise RuntimeError("pyproject.toml has invalid build-system requirements")
+    return tuple(requirements)
+
+
+def _prepare_build_environment(root: Path, environment: Path) -> Path:
+    venv.EnvBuilder(with_pip=True, clear=True).create(environment)
+    python = _venv_python(environment)
+    subprocess.run(
+        [
+            str(python),
+            "-m",
+            "pip",
+            "--disable-pip-version-check",
+            "install",
+            "--no-input",
+            *_build_requirements(root),
+        ],
+        check=True,
+    )
+    return python
+
+
+def _run_build_hook(python: Path, source: Path, dist: Path, hook: str) -> None:
+    code = (
+        "import os, sys; "
+        "from setuptools import build_meta; "
+        "os.chdir(sys.argv[1]); "
+        "getattr(build_meta, sys.argv[2])(sys.argv[3])"
+    )
+    subprocess.run(
+        [str(python), "-c", code, str(source), hook, str(dist)],
+        check=True,
+    )
+
+
 def _validate_health(stdout: str) -> dict[str, object]:
     payload = json.loads(stdout.strip())
     if payload.get("status") != "PASS":
@@ -63,33 +102,31 @@ def _validate_health(stdout: str) -> dict[str, object]:
 
 
 def check_package_installation(root: Path) -> dict[str, object]:
-    from setuptools import build_meta
-
     with tempfile.TemporaryDirectory(prefix="podium7-package-check-") as tmp:
         workspace = Path(tmp)
         staged_source = workspace / "source"
         dist = workspace / "dist"
         extracted = workspace / "extracted"
-        environment = workspace / "venv"
+        build_environment = workspace / "build-venv"
+        install_environment = workspace / "install-venv"
         probe = workspace / "probe"
         dist.mkdir()
         probe.mkdir()
 
         _stage_source(root, staged_source)
-        with _working_directory(staged_source):
-            build_meta.build_sdist(str(dist))
+        build_python = _prepare_build_environment(staged_source, build_environment)
+        _run_build_hook(build_python, staged_source, dist, "build_sdist")
         sdist = _single_artifact(dist, "*.tar.gz")
 
         extracted_source = _extract_sdist(sdist, extracted)
-        with _working_directory(extracted_source):
-            build_meta.build_wheel(str(dist))
+        _run_build_hook(build_python, extracted_source, dist, "build_wheel")
         wheel = _single_artifact(dist, "*.whl")
 
-        venv.EnvBuilder(with_pip=True, clear=True).create(environment)
-        python = _venv_python(environment)
+        venv.EnvBuilder(with_pip=True, clear=True).create(install_environment)
+        install_python = _venv_python(install_environment)
         subprocess.run(
             [
-                str(python),
+                str(install_python),
                 "-m",
                 "pip",
                 "--disable-pip-version-check",
@@ -102,7 +139,7 @@ def check_package_installation(root: Path) -> dict[str, object]:
             cwd=probe,
         )
         health = subprocess.run(
-            [str(python), "-m", "podium7", "health"],
+            [str(install_python), "-m", "podium7", "health"],
             check=True,
             cwd=probe,
             capture_output=True,
