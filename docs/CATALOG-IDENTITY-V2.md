@@ -40,6 +40,14 @@ FIPE is intentionally not `STRONG`: the code is treated as supporting catalog ev
 
 A disagreement between identifiers is not treated as an automatic `NO_MATCH` unless another explicit identity dimension already contradicts. This preserves the false-merge-first posture and routes uncertain cases to review.
 
+## Publication evidence gate
+
+The minimum evidence policy for externally publishable catalog changes is defined in `CATALOG-EVIDENCE-POLICY-V2.md`.
+
+Normal creation/correction requires `EVIDENCE_BACKED` plus at least one evidence reference; corrections also require a reason. Administrative override is explicit `ENGINEERING_CHOICE` and requires both actor and reason. The policy also distinguishes semantic identity changes from informational edits so that formatting/reference-only changes are not silently treated as new identity.
+
+This gate is policy-only at this stage: it does not alter the SQLite schema or freeze an audit/provenance response format.
+
 ## Stable IDs, corrections and merges
 
 Canonical catalog IDs are opaque (`veh_<uuid>`) and are not derived from mutable attributes. Corrections preserve the ID and append an identity revision. Duplicate merges preserve the old ID as a redirect. Chained merges flatten redirects so historical aliases resolve to the live canonical entity.
@@ -58,7 +66,7 @@ A catalog candidate retains raw value, normalized value, unit, evidence ID, extr
 
 The SQLite evolution is additive. V1 tables and `PRAGMA user_version` remain owned by `EvidenceStore`. Catalog schema metadata is tracked separately in `catalog_v2_schema_metadata`, avoiding reinterpretation of legacy identity rows.
 
-The V2.1 namespace-strength policy changes resolver behavior only; it does not change the persisted catalog schema or the external JSON payload shape.
+The V2.1 namespace-strength policy and publication evidence policy change resolver/publication decision behavior only; they do not change the persisted catalog schema or the external JSON payload shape.
 
 ## Deliberately not duplicated
 
@@ -66,7 +74,6 @@ V2 does not copy V1 implementations into `domain.py`, `identity.py`, `persistenc
 
 ## Remaining production gates
 
-- define evidence requirements for creation/correction of externally published identity dimensions and administrative overrides;
 - freeze the external JSON compatibility policy;
 - add API-level lookup/redirect behavior when the consumer API is introduced;
 - freeze a separate audit/provenance response contract only when a consumer need exists.
