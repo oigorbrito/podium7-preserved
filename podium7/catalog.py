@@ -14,6 +14,8 @@ from .persistence import EvidenceStore
 
 
 CATALOG_SCHEMA_VERSION = 1
+CATALOG_CONTRACT_DEFAULT_VERSION = "2.0"
+CATALOG_CONTRACT_SUPPORTED_VERSIONS = ("2.0",)
 
 
 class CatalogMatchOutcome(str, Enum):
@@ -784,26 +786,51 @@ class CatalogStore(EvidenceStore):
         return [row[0] for row in rows]
 
 
+def _catalog_identity_contract_v2(identity: CatalogVehicleIdentity) -> dict[str, Any]:
+    return {
+        "make": identity.make,
+        "model": identity.model,
+        "generation": identity.generation,
+        "variant": identity.variant,
+        "powertrain": identity.powertrain,
+        "transmission": identity.transmission,
+        "body_style": identity.body_style,
+        "market": identity.market,
+        "manufacture_year_from": identity.manufacture_year_from,
+        "manufacture_year_to": identity.manufacture_year_to,
+        "model_year_from": identity.model_year_from,
+        "model_year_to": identity.model_year_to,
+        "aliases": list(identity.aliases),
+        "engine_identifiers": list(identity.engine_identifiers),
+        "external_identifiers": [
+            {"namespace": item.namespace, "value": item.value}
+            for item in identity.external_identifiers
+        ],
+    }
+
+
 def export_catalog_vehicle_payload(
     store: CatalogStore,
     vehicle_id: str,
+    *,
+    contract_version: str = CATALOG_CONTRACT_DEFAULT_VERSION,
 ) -> dict[str, Any]:
+    if contract_version not in CATALOG_CONTRACT_SUPPORTED_VERSIONS:
+        raise ValueError(f"unsupported catalog contract version {contract_version!r}")
     canonical = store.resolve_catalog_id(vehicle_id)
     identity = store.get_catalog_vehicle(canonical)
     if identity is None:
         raise ValueError("catalog vehicle does not exist")
-    data = asdict(identity)
-    data["external_identifiers"] = [
-        asdict(item) for item in identity.external_identifiers
-    ]
     return {
-        "contractVersion": "2.0",
-        "entity": {"id": canonical, **data},
+        "contractVersion": contract_version,
+        "entity": {"id": canonical, **_catalog_identity_contract_v2(identity)},
         "redirectsFrom": store.redirects_to(canonical),
     }
 
 
 __all__ = [
+    "CATALOG_CONTRACT_DEFAULT_VERSION",
+    "CATALOG_CONTRACT_SUPPORTED_VERSIONS",
     "CATALOG_SCHEMA_VERSION",
     "EXTERNAL_IDENTIFIER_NAMESPACE_REGISTRY",
     "CatalogChangeImpact",
