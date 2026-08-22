@@ -11,6 +11,7 @@ from scripts.run_tests_one_by_one import (
     _discover_test_ids,
     _validate_report,
     _write_report,
+    main,
 )
 
 
@@ -137,6 +138,49 @@ class SequentialTestReportTests(unittest.TestCase):
             self.assertNotEqual(Path(source), Path(destination))
             self.assertEqual(Path(destination), target)
             self.assertEqual(list(target.parent.glob(".test-report-*.tmp")), [])
+
+    def test_discovery_interrupt_writes_fail_report(self):
+        with (
+            mock.patch("scripts.run_tests_one_by_one._discover_test_ids", side_effect=KeyboardInterrupt),
+            mock.patch("scripts.run_tests_one_by_one._write_report") as write_report,
+        ):
+            result = main()
+
+        self.assertEqual(result, 130)
+        write_report.assert_called_once()
+        self.assertEqual(write_report.call_args.kwargs, {"total": 0, "passed": 0, "status": "FAIL"})
+
+    def test_test_interrupt_writes_current_failure_report(self):
+        test_id = "test_example.ExampleTests.test_example"
+        with (
+            mock.patch("scripts.run_tests_one_by_one._discover_test_ids", return_value=[test_id]),
+            mock.patch("scripts.run_tests_one_by_one.subprocess.run", side_effect=KeyboardInterrupt),
+            mock.patch("scripts.run_tests_one_by_one._write_report") as write_report,
+        ):
+            result = main()
+
+        self.assertEqual(result, 130)
+        write_report.assert_called_once()
+        self.assertEqual(
+            write_report.call_args.kwargs,
+            {"total": 1, "passed": 0, "status": "FAIL", "failed_test": test_id},
+        )
+
+    def test_subprocess_launch_error_writes_current_failure_report(self):
+        test_id = "test_example.ExampleTests.test_example"
+        with (
+            mock.patch("scripts.run_tests_one_by_one._discover_test_ids", return_value=[test_id]),
+            mock.patch("scripts.run_tests_one_by_one.subprocess.run", side_effect=OSError("launch failed")),
+            mock.patch("scripts.run_tests_one_by_one._write_report") as write_report,
+        ):
+            result = main()
+
+        self.assertEqual(result, 2)
+        write_report.assert_called_once()
+        self.assertEqual(
+            write_report.call_args.kwargs,
+            {"total": 1, "passed": 0, "status": "FAIL", "failed_test": test_id},
+        )
 
 
 if __name__ == "__main__":

@@ -209,6 +209,10 @@ def main() -> int:
     tests_dir = root / "tests"
     try:
         test_ids = _discover_test_ids(tests_dir)
+    except KeyboardInterrupt:
+        _write_report(root, total=0, passed=0, status="FAIL")
+        print("FAIL — test discovery interrupted", flush=True)
+        return 130
     except (OSError, SyntaxError, ValueError) as exc:
         _write_report(root, total=0, passed=0, status="FAIL")
         print(f"FAIL — test discovery error: {exc}")
@@ -230,12 +234,33 @@ def main() -> int:
     passed = 0
     for index, test_id in enumerate(test_ids, start=1):
         print(f"[{index}/{total}] RUN {test_id}", flush=True)
-        completed = subprocess.run(
-            [sys.executable, "-m", "unittest", test_id],
-            cwd=root,
-            env=env,
-            check=False,
-        )
+        try:
+            completed = subprocess.run(
+                [sys.executable, "-m", "unittest", test_id],
+                cwd=root,
+                env=env,
+                check=False,
+            )
+        except KeyboardInterrupt:
+            _write_report(
+                root,
+                total=total,
+                passed=passed,
+                status="FAIL",
+                failed_test=test_id,
+            )
+            print(f"[{index}/{total}] INTERRUPTED {test_id}", flush=True)
+            return 130
+        except OSError as exc:
+            _write_report(
+                root,
+                total=total,
+                passed=passed,
+                status="FAIL",
+                failed_test=test_id,
+            )
+            print(f"[{index}/{total}] ERROR {test_id}: {exc}", flush=True)
+            return 2
         if completed.returncode != 0:
             _write_report(
                 root,
