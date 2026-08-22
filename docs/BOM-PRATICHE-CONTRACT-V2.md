@@ -12,11 +12,16 @@ Consumers should join on `entity.id`, never on a presentation label. An ID survi
 
 Manufacturing year and model year are separate. Version, powertrain, transmission and body style are separate structured dimensions. External identifiers are `(namespace, value)` pairs, so equal raw values from different systems do not collide.
 
+Catalog Identity Policy V2.1 classifies external-identifier namespaces as `STRONG`, `SUPPORTING` or `REFERENCE_ONLY`. Only `STRONG` may establish an automatic catalog match by itself after contradiction checks. `SUPPORTING` never matches alone. `REFERENCE_ONLY` and unknown namespaces do not participate in automatic matching. FIPE is currently `SUPPORTING`.
+
+This policy changes matching semantics only; it does not change the `2.0` payload shape.
+
 ## Consumer rules
 
 - treat `entity.id` as the stable catalog reference;
 - resolve historical IDs before joining catalog data;
 - do not infer identity from presentation labels alone;
+- do not assume that the presence of an external identifier means it is a strong identity key;
 - do not treat candidate confidence as an automatic conflict winner;
 - surface unresolved conflicts rather than converting them into accepted facts.
 
@@ -26,8 +31,7 @@ The V2 persistence layer can associate catalog candidates, canonical facts, prov
 
 ## Remaining gates before Bom Pratiche adoption
 
-1. Freeze JSON naming/casing and compatibility policy.
-2. Define evidence requirements for externally published identity dimensions and administrative overrides.
-3. Define the external-identifier namespace registry and which namespaces are strong enough for automatic identity matching.
-4. Add API-level lookup/redirect behavior, pagination and error semantics.
-5. Freeze a separate audit/provenance response contract only when the consumer needs it.
+1. Define evidence requirements for externally published identity dimensions and administrative overrides.
+2. Freeze JSON naming/casing and compatibility policy.
+3. Add API-level lookup/redirect behavior, pagination and error semantics.
+4. Freeze a separate audit/provenance response contract only when the consumer needs it.

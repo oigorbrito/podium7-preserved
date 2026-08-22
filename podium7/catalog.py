@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from enum import Enum
@@ -19,6 +20,17 @@ class CatalogMatchOutcome(str, Enum):
     MATCH = "MATCH"
     NO_MATCH = "NO_MATCH"
     REVIEW = "REVIEW"
+
+
+class ExternalIdentifierStrength(str, Enum):
+    STRONG = "STRONG"
+    SUPPORTING = "SUPPORTING"
+    REFERENCE_ONLY = "REFERENCE_ONLY"
+
+
+EXTERNAL_IDENTIFIER_NAMESPACE_REGISTRY: Mapping[str, ExternalIdentifierStrength] = {
+    "fipe": ExternalIdentifierStrength.SUPPORTING,
+}
 
 
 @dataclass(frozen=True, order=True)
@@ -135,9 +147,27 @@ def _ranges_overlap(
     return max(a_from, b_from) <= min(a_to, b_to)
 
 
+def external_identifier_strength(
+    namespace: str,
+    namespace_registry: Mapping[str, ExternalIdentifierStrength] | None = None,
+) -> ExternalIdentifierStrength:
+    registry = (
+        EXTERNAL_IDENTIFIER_NAMESPACE_REGISTRY
+        if namespace_registry is None
+        else namespace_registry
+    )
+    normalized = namespace.casefold().strip()
+    for registered_namespace, strength in registry.items():
+        if registered_namespace.casefold().strip() == normalized:
+            return ExternalIdentifierStrength(strength)
+    return ExternalIdentifierStrength.REFERENCE_ONLY
+
+
 def resolve_catalog_pair(
     a: CatalogVehicleIdentity,
     b: CatalogVehicleIdentity,
+    *,
+    namespace_registry: Mapping[str, ExternalIdentifierStrength] | None = None,
 ) -> CatalogResolutionDecision:
     if _tokens(a.make) != _tokens(b.make):
         return CatalogResolutionDecision(CatalogMatchOutcome.NO_MATCH, "make differs")
@@ -175,15 +205,46 @@ def resolve_catalog_pair(
 
     ids_a = {item.key for item in a.external_identifiers}
     ids_b = {item.key for item in b.external_identifiers}
-    if ids_a.intersection(ids_b):
+
+    strong_a = {
+        key
+        for key in ids_a
+        if external_identifier_strength(key[0], namespace_registry)
+        is ExternalIdentifierStrength.STRONG
+    }
+    strong_b = {
+        key
+        for key in ids_b
+        if external_identifier_strength(key[0], namespace_registry)
+        is ExternalIdentifierStrength.STRONG
+    }
+    if strong_a.intersection(strong_b):
         return CatalogResolutionDecision(
             CatalogMatchOutcome.MATCH,
-            "shared namespaced external identifier",
+            "shared STRONG external identifier",
         )
-    if ids_a and ids_b:
+    if strong_a and strong_b:
         return CatalogResolutionDecision(
             CatalogMatchOutcome.REVIEW,
-            "external identifiers do not establish a shared identity",
+            "STRONG external identifiers do not establish a shared identity",
+        )
+
+    supporting_a = {
+        key
+        for key in ids_a
+        if external_identifier_strength(key[0], namespace_registry)
+        is ExternalIdentifierStrength.SUPPORTING
+    }
+    supporting_b = {
+        key
+        for key in ids_b
+        if external_identifier_strength(key[0], namespace_registry)
+        is ExternalIdentifierStrength.SUPPORTING
+    }
+    if supporting_a and supporting_b and not supporting_a.intersection(supporting_b):
+        return CatalogResolutionDecision(
+            CatalogMatchOutcome.REVIEW,
+            "SUPPORTING external identifiers do not establish a shared identity",
         )
 
     if (
@@ -624,12 +685,15 @@ def export_catalog_vehicle_payload(
 
 __all__ = [
     "CATALOG_SCHEMA_VERSION",
+    "EXTERNAL_IDENTIFIER_NAMESPACE_REGISTRY",
     "CatalogMatchOutcome",
     "CatalogResolutionDecision",
     "CatalogStore",
     "CatalogVehicleIdentity",
     "ExternalIdentifier",
+    "ExternalIdentifierStrength",
     "PhysicalVehicleListing",
     "export_catalog_vehicle_payload",
+    "external_identifier_strength",
     "resolve_catalog_pair",
 ]
