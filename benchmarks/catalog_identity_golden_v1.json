@@ -1,0 +1,319 @@
+{
+  "schema": "podium7.catalog-identity-golden.v1",
+  "datasetVersion": "1.0",
+  "createdAt": "2026-08-22",
+  "purpose": "Seed benchmark for conservative catalog identity resolution. Expected outcomes are human-curated product decisions, not resolver-generated labels.",
+  "sources": [
+    {
+      "id": "toyota-corolla-2018-global",
+      "publisher": "Toyota Motor Corporation",
+      "title": "Toyota Unveils New Corolla Sedans at China's Guangzhou International Automobile Exhibition",
+      "url": "https://global.toyota/en/newsroom/toyota/25357603.html",
+      "supports": "12th-generation Corolla sedan family, TNGA platform and hybrid availability."
+    },
+    {
+      "id": "toyota-corolla-2006-global",
+      "publisher": "Toyota Motor Corporation",
+      "title": "Toyota Launches Completely Redesigned Corolla Sedan and Corolla Fielder",
+      "url": "https://global.toyota/en/newsroom/toyota/23046809.html",
+      "supports": "10th-generation Corolla Axio sedan and 1.8-liter 2ZR-FE powertrain."
+    },
+    {
+      "id": "ford-mustang-2024-eu-spec",
+      "publisher": "Ford Motor Company",
+      "title": "2024 Ford Mustang Technical Specifications",
+      "url": "https://media.ford.com/content/dam/fordmedia/Europe/en/2024/01/NewMustang/2024_Ford_Mustang_technical_specification_EU.pdf",
+      "supports": "Mustang GT and Dark Horse trims, coupe body availability and 5.0-liter V8 powertrains."
+    },
+    {
+      "id": "ford-mustang-dark-horse-2022",
+      "publisher": "Ford Motor Company",
+      "title": "Novo Mustang Dark Horse tem o motor V8 mais potente da historia",
+      "url": "https://media.ford.com/content/fordmedia/fsa/br/pt/news/2022/12/31/novo-mustang-dark-horse-tem-o-motor-v8-mais-potente-da-historia.html",
+      "supports": "Dark Horse belongs to the seventh-generation 2024 Mustang and uses a 5.0-liter Coyote V8."
+    },
+    {
+      "id": "porsche-911-generations-2019",
+      "publisher": "Porsche AG",
+      "title": "For eternity - Porsche 911 generations",
+      "url": "https://newsroom.porsche.com/en/2019/history/porsche-klassik-911-eight-generations-dna-18914.html",
+      "supports": "911 generation identifiers including 991 and 992, plus Carrera 4S examples."
+    },
+    {
+      "id": "porsche-911-992-powertrain-2019",
+      "publisher": "Porsche AG",
+      "title": "How the new 911 got its drive",
+      "url": "https://newsroom.porsche.com/en/2019/technology/porsche-911-carrera-type-992-powertrain-boxer-engine-16978.html",
+      "supports": "992-generation 911 Carrera S and Carrera 4S use the revised 3.0-liter twin-turbo six-cylinder boxer powertrain."
+    },
+    {
+      "id": "bmw-g20-phev-reference",
+      "publisher": "BMW Group",
+      "title": "G20 PHEV Complete Vehicle Reference Manual",
+      "url": "https://bmwtechinfo.bmwgroup.com/tech_training_manual/ST1911%20G20%20PHEV%20Complete%20Vehicle.pdf",
+      "supports": "G20 330i and G20 330e comparison, including combustion/PHEV distinction and transmissions."
+    }
+  ],
+  "cases": [
+    {
+      "id": "match-toyota-corolla-12g-hybrid-sedan",
+      "expected": "MATCH",
+      "left": {
+        "make": "Toyota",
+        "model": "Corolla",
+        "generation": "12th generation",
+        "powertrain": "hybrid",
+        "body_style": "sedan"
+      },
+      "right": {
+        "make": "Toyota",
+        "model": "Corolla",
+        "generation": "12th generation",
+        "powertrain": "hybrid",
+        "body_style": "sedan",
+        "aliases": ["Corolla Sedan"]
+      },
+      "sourceIds": ["toyota-corolla-2018-global"],
+      "rationale": "Same Corolla generation, powertrain class and body style with no contradictory trim evidence."
+    },
+    {
+      "id": "match-ford-mustang-dark-horse",
+      "expected": "MATCH",
+      "left": {
+        "make": "Ford",
+        "model": "Mustang",
+        "generation": "7th generation",
+        "variant": "Dark Horse",
+        "powertrain": "5.0 V8",
+        "body_style": "coupe"
+      },
+      "right": {
+        "make": "Ford",
+        "model": "Mustang",
+        "generation": "7th generation",
+        "variant": "Dark Horse",
+        "powertrain": "5.0 V8",
+        "body_style": "coupe"
+      },
+      "sourceIds": ["ford-mustang-2024-eu-spec", "ford-mustang-dark-horse-2022"],
+      "rationale": "Both records identify the same seventh-generation Dark Horse coupe and 5.0 V8 configuration."
+    },
+    {
+      "id": "match-porsche-911-992-carrera-4s",
+      "expected": "MATCH",
+      "left": {
+        "make": "Porsche",
+        "model": "911",
+        "generation": "992",
+        "variant": "Carrera 4S",
+        "powertrain": "3.0 twin-turbo boxer six",
+        "body_style": "coupe"
+      },
+      "right": {
+        "make": "Porsche",
+        "model": "911",
+        "generation": "992",
+        "variant": "Carrera 4S",
+        "powertrain": "3.0 twin-turbo boxer six",
+        "body_style": "coupe",
+        "aliases": ["911 Carrera 4S"]
+      },
+      "sourceIds": ["porsche-911-generations-2019", "porsche-911-992-powertrain-2019"],
+      "rationale": "Same 992 Carrera 4S configuration; alias wording does not change identity."
+    },
+    {
+      "id": "match-bmw-g20-330e-alias",
+      "expected": "MATCH",
+      "left": {
+        "make": "BMW",
+        "model": "3 Series",
+        "generation": "G20",
+        "variant": "330e",
+        "powertrain": "plug-in hybrid",
+        "transmission": "8-speed automatic",
+        "body_style": "sedan",
+        "aliases": ["330e"]
+      },
+      "right": {
+        "make": "BMW",
+        "model": "330e",
+        "generation": "G20",
+        "variant": "330e",
+        "powertrain": "plug-in hybrid",
+        "transmission": "8-speed automatic",
+        "body_style": "sedan",
+        "aliases": ["3 Series"]
+      },
+      "sourceIds": ["bmw-g20-phev-reference"],
+      "rationale": "3 Series and 330e labels cross-reference the same G20 PHEV variant."
+    },
+    {
+      "id": "no-match-toyota-corolla-10g-vs-12g",
+      "expected": "NO_MATCH",
+      "left": {
+        "make": "Toyota",
+        "model": "Corolla",
+        "generation": "10th generation",
+        "powertrain": "1.8 petrol",
+        "body_style": "sedan",
+        "aliases": ["Corolla Axio"]
+      },
+      "right": {
+        "make": "Toyota",
+        "model": "Corolla",
+        "generation": "12th generation",
+        "powertrain": "hybrid",
+        "body_style": "sedan"
+      },
+      "sourceIds": ["toyota-corolla-2006-global", "toyota-corolla-2018-global"],
+      "rationale": "Different Corolla generations are distinct catalog identities even when make/model labels agree."
+    },
+    {
+      "id": "no-match-ford-mustang-gt-vs-dark-horse",
+      "expected": "NO_MATCH",
+      "left": {
+        "make": "Ford",
+        "model": "Mustang",
+        "generation": "7th generation",
+        "variant": "GT",
+        "powertrain": "5.0 V8",
+        "body_style": "coupe"
+      },
+      "right": {
+        "make": "Ford",
+        "model": "Mustang",
+        "generation": "7th generation",
+        "variant": "Dark Horse",
+        "powertrain": "5.0 V8",
+        "body_style": "coupe"
+      },
+      "sourceIds": ["ford-mustang-2024-eu-spec", "ford-mustang-dark-horse-2022"],
+      "rationale": "GT and Dark Horse are distinct trims despite sharing generation and engine family."
+    },
+    {
+      "id": "no-match-bmw-g20-330i-vs-330e",
+      "expected": "NO_MATCH",
+      "left": {
+        "make": "BMW",
+        "model": "3 Series",
+        "generation": "G20",
+        "variant": "330i",
+        "powertrain": "2.0 petrol",
+        "transmission": "8-speed automatic",
+        "body_style": "sedan",
+        "aliases": ["330i"]
+      },
+      "right": {
+        "make": "BMW",
+        "model": "3 Series",
+        "generation": "G20",
+        "variant": "330e",
+        "powertrain": "plug-in hybrid",
+        "transmission": "8-speed automatic",
+        "body_style": "sedan",
+        "aliases": ["330e"]
+      },
+      "sourceIds": ["bmw-g20-phev-reference"],
+      "rationale": "330i and 330e are different G20 variants with different powertrain identity."
+    },
+    {
+      "id": "no-match-porsche-911-991-vs-992",
+      "expected": "NO_MATCH",
+      "left": {
+        "make": "Porsche",
+        "model": "911",
+        "generation": "991",
+        "variant": "Carrera S",
+        "powertrain": "boxer six",
+        "body_style": "coupe"
+      },
+      "right": {
+        "make": "Porsche",
+        "model": "911",
+        "generation": "992",
+        "variant": "Carrera 4S",
+        "powertrain": "3.0 twin-turbo boxer six",
+        "body_style": "coupe"
+      },
+      "sourceIds": ["porsche-911-generations-2019", "porsche-911-992-powertrain-2019"],
+      "rationale": "991 and 992 are distinct generations of the 911."
+    },
+    {
+      "id": "review-toyota-corolla-body-style-missing",
+      "expected": "REVIEW",
+      "left": {
+        "make": "Toyota",
+        "model": "Corolla",
+        "generation": "12th generation",
+        "powertrain": "hybrid",
+        "body_style": "sedan"
+      },
+      "right": {
+        "make": "Toyota",
+        "model": "Corolla",
+        "generation": "12th generation",
+        "powertrain": "hybrid"
+      },
+      "sourceIds": ["toyota-corolla-2018-global"],
+      "rationale": "The source family includes multiple body forms; missing body-style evidence should not auto-merge with the sedan record."
+    },
+    {
+      "id": "review-ford-mustang-variant-missing",
+      "expected": "REVIEW",
+      "left": {
+        "make": "Ford",
+        "model": "Mustang",
+        "generation": "7th generation",
+        "variant": "Dark Horse",
+        "powertrain": "5.0 V8",
+        "body_style": "coupe"
+      },
+      "right": {
+        "make": "Ford",
+        "model": "Mustang",
+        "generation": "7th generation",
+        "powertrain": "5.0 V8",
+        "body_style": "coupe"
+      },
+      "sourceIds": ["ford-mustang-2024-eu-spec"],
+      "rationale": "GT and Dark Horse both exist with the 5.0 V8, so a record missing variant evidence is ambiguous."
+    },
+    {
+      "id": "review-porsche-911-partial-variant-label",
+      "expected": "REVIEW",
+      "left": {
+        "make": "Porsche",
+        "model": "911 Carrera 4S",
+        "generation": "992",
+        "powertrain": "3.0 twin-turbo boxer six"
+      },
+      "right": {
+        "make": "Porsche",
+        "model": "911 Carrera",
+        "generation": "992",
+        "powertrain": "3.0 twin-turbo boxer six"
+      },
+      "sourceIds": ["porsche-911-generations-2019", "porsche-911-992-powertrain-2019"],
+      "rationale": "A generic Carrera label is not enough to collapse automatically into the more specific Carrera 4S identity."
+    },
+    {
+      "id": "review-bmw-g20-generic-vs-330i-label",
+      "expected": "REVIEW",
+      "left": {
+        "make": "BMW",
+        "model": "3 Series",
+        "generation": "G20",
+        "powertrain": "2.0 petrol"
+      },
+      "right": {
+        "make": "BMW",
+        "model": "3 Series 330i",
+        "generation": "G20",
+        "variant": "330i",
+        "powertrain": "2.0 petrol"
+      },
+      "sourceIds": ["bmw-g20-phev-reference"],
+      "rationale": "A generic G20 3 Series record cannot be deterministically collapsed into the specific 330i variant."
+    }
+  ]
+}
