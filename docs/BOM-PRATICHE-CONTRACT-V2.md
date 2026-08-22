@@ -14,7 +14,7 @@ Manufacturing year and model year are separate. Version, powertrain, transmissio
 
 Catalog Identity Policy V2.1 classifies external-identifier namespaces as `STRONG`, `SUPPORTING` or `REFERENCE_ONLY`. Only `STRONG` may establish an automatic catalog match by itself after contradiction checks. `SUPPORTING` never matches alone. `REFERENCE_ONLY` and unknown namespaces do not participate in automatic matching. FIPE is currently `SUPPORTING`.
 
-This policy changes matching semantics only; it does not change the `2.0` payload shape.
+The internal publication evidence policy requires normal externally publishable creation/correction to be `EVIDENCE_BACKED` with at least one evidence reference. Corrections require a reason. Administrative overrides are explicitly `ENGINEERING_CHOICE` and require actor + reason. This policy does not change the `2.0` payload shape.
 
 ## Consumer rules
 
@@ -31,7 +31,6 @@ The V2 persistence layer can associate catalog candidates, canonical facts, prov
 
 ## Remaining gates before Bom Pratiche adoption
 
-1. Define evidence requirements for externally published identity dimensions and administrative overrides.
-2. Freeze JSON naming/casing and compatibility policy.
-3. Add API-level lookup/redirect behavior, pagination and error semantics.
-4. Freeze a separate audit/provenance response contract only when the consumer needs it.
+1. Freeze JSON naming/casing and compatibility policy.
+2. Add API-level lookup/redirect behavior, pagination and error semantics.
+3. Freeze a separate audit/provenance response contract only when the consumer needs it.
