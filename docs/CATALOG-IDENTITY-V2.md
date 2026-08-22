@@ -88,8 +88,10 @@ The V2.1 namespace-strength policy, publication evidence policy, V2 JSON compati
 
 V2 does not copy V1 implementations into `domain.py`, `identity.py`, `persistence.py`, `export.py` or `review.py`. The integration is isolated in the catalog modules and composes the existing evidence, fusion and persistence primitives.
 
-## Next validation milestone
+## Identity benchmark
 
-Build a real automotive golden dataset after these policies are stable. It should contain positive, negative and ambiguous pairs and measure false merge rate, missed duplicate rate, precision, recall and review rate. False merges remain the highest-priority error.
+`CATALOG-IDENTITY-BENCHMARK-V1.md` defines the first source-backed golden seed. Version `1.0` contains 12 balanced pairs (`4 MATCH`, `4 NO_MATCH`, `4 REVIEW`) anchored to manufacturer sources from Toyota, Ford, Porsche and BMW.
 
-A separate audit/provenance consumer API should be frozen only when a concrete consumer need exists.
+The benchmark evaluator reports false merge rate, missed duplicate rate, match precision/recall, review rate and ambiguous overcommit. The seed is a regression guard, not a statistically representative production estimate. Dataset growth should prioritize hard negatives, incomplete cross-source duplicates, market naming differences and trustworthy real external identifiers, including FIPE.
+
+False merges remain the highest-priority error. A separate audit/provenance consumer API should be frozen only when a concrete consumer need exists.
