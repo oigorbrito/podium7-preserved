@@ -1,6 +1,6 @@
 # Podium 7 Catalog Identity V2
 
-Status: **integration branch** (`feat/catalog-identity-v2`).
+Status: **Catalog Identity V2 integrated in `main`; V2.1 external-identifier policy defined here**.
 
 ## Canonical identity
 
@@ -15,8 +15,30 @@ The V2 resolver is deterministic and conservative.
 1. Explicit contradictions in make, generation, variant, powertrain, transmission, body style, market or non-overlapping year ranges produce `NO_MATCH`.
 2. Model/alias labels are compared after case/punctuation normalization and token-order normalization.
 3. Partial labels such as `Corolla XEi` vs `Corolla XEi 1.8` route to `REVIEW` rather than automatic merge.
-4. Shared namespaced external identifiers can produce `MATCH` when there is no contradictory identity evidence.
+4. External identifiers participate according to the namespace strength policy below; only a shared `STRONG` identifier can produce `MATCH` by itself, and never when explicit identity evidence contradicts.
 5. Otherwise automatic match requires explicit equal generation and powertrain; missing trim-defining data routes to `REVIEW`.
+
+## External-identifier namespace registry — V2.1
+
+Each external identifier remains a `(namespace, value)` pair. Namespace lookup is normalized case-insensitively and with surrounding whitespace removed.
+
+The resolver recognizes three strengths:
+
+- `STRONG`: a shared namespace + value may produce automatic `MATCH` after all explicit contradiction checks pass.
+- `SUPPORTING`: may support structural identity evidence but never produces `MATCH` by itself. If both sides carry registered supporting identifiers that do not agree, resolution remains `REVIEW` rather than forcing a merge or a contradiction.
+- `REFERENCE_ONLY`: available for lookup/interoperability/provenance but excluded from automatic matching decisions.
+
+Unknown namespaces default safely to `REFERENCE_ONLY`; sharing an unknown identifier therefore cannot create an automatic match. A caller may supply an explicit registry to the resolver for additional namespaces without changing the default policy.
+
+Current default registry:
+
+```text
+fipe = SUPPORTING
+```
+
+FIPE is intentionally not `STRONG`: the code is treated as supporting catalog evidence rather than universal canonical configuration identity. Promoting it to `STRONG` requires a separate documented product decision.
+
+A disagreement between identifiers is not treated as an automatic `NO_MATCH` unless another explicit identity dimension already contradicts. This preserves the false-merge-first posture and routes uncertain cases to review.
 
 ## Stable IDs, corrections and merges
 
@@ -36,13 +58,15 @@ A catalog candidate retains raw value, normalized value, unit, evidence ID, extr
 
 The SQLite evolution is additive. V1 tables and `PRAGMA user_version` remain owned by `EvidenceStore`. Catalog schema metadata is tracked separately in `catalog_v2_schema_metadata`, avoiding reinterpretation of legacy identity rows.
 
+The V2.1 namespace-strength policy changes resolver behavior only; it does not change the persisted catalog schema or the external JSON payload shape.
+
 ## Deliberately not duplicated
 
 V2 does not copy V1 implementations into `domain.py`, `identity.py`, `persistence.py`, `export.py` or `review.py`. The integration is isolated in `podium7.catalog` and composes the existing evidence, fusion and persistence primitives.
 
 ## Remaining production gates
 
-- define evidence requirements for creation/correction of externally published identity dimensions;
-- define an external-identifier namespace registry and identity strength per namespace;
+- define evidence requirements for creation/correction of externally published identity dimensions and administrative overrides;
 - freeze the external JSON compatibility policy;
-- add API-level lookup/redirect behavior when the consumer API is introduced.
+- add API-level lookup/redirect behavior when the consumer API is introduced;
+- freeze a separate audit/provenance response contract only when a consumer need exists.
