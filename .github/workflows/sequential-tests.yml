@@ -27,7 +27,7 @@ jobs:
 
       - name: Run every test in isolation
         if: always()
-        run: python scripts/run_tests_one_by_one.py
+        run: PYTHONPATH="$GITHUB_WORKSPACE" python scripts/run_tests_one_by_one.py
 
       - name: Upload sequential test report
         if: always()
