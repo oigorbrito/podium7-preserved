@@ -1,0 +1,406 @@
+{
+  "schema": "podium7.catalog-identity-golden.v1",
+  "datasetVersion": "br-1.0",
+  "createdAt": "2026-08-22",
+  "purpose": "Brazil-focused regression slice for conservative catalog identity resolution. Expected outcomes are human-curated product decisions, not resolver-generated labels.",
+  "sources": [
+    {
+      "id": "toyota-corolla-cross-global-launch",
+      "publisher": "Toyota Motor Corporation",
+      "title": "Corolla Meets SUV — Toyota Unveils Corolla Cross",
+      "url": "https://global.toyota/en/newsroom/toyota/33080318.html",
+      "supports": "2020 global debut of the Corolla Cross and the first global Corolla Cross generation."
+    },
+    {
+      "id": "toyota-corolla-cross-my25-br",
+      "publisher": "Toyota do Brasil",
+      "title": "Corolla Cross MY25 — ficha técnica",
+      "url": "https://media.toyota.com.br/4a4252a8-8234-471a-89a0-86a2e068dbfa.pdf",
+      "supports": "Brazil MY25 XRX Hybrid/XRV Hybrid and XRX/XRE/XR combustion variants, powertrains and transmissions."
+    },
+    {
+      "id": "chevrolet-onix-second-generation",
+      "publisher": "Chevrolet Brasil",
+      "title": "100 carros que marcam o centenário da Chevrolet no Brasil",
+      "url": "https://news.chevrolet.com.br/newsroom.detail.html/Pages/news/br/pt/2025/feb/0207-100carros.html",
+      "supports": "The current Onix launched in 2019 is the second generation of the product."
+    },
+    {
+      "id": "chevrolet-onix-my25-price-list",
+      "publisher": "Chevrolet Brasil",
+      "title": "Lista de preços públicos sugeridos — novembro de 2024",
+      "url": "https://www.chevrolet.com.br/content/dam/chevrolet/south-america/brazil/portuguese/index/portable-navigation/global-footer/lista-de-precos/lista-de-precos-publicos-sugeridos-novembro.pdf",
+      "supports": "Onix Premier Turbo 116cv, hatch body, model year 2025 and six-speed automatic transmission."
+    },
+    {
+      "id": "vw-tcross-2019-br-generation",
+      "publisher": "Volkswagen do Brasil",
+      "title": "O líder aprimorado: muito prazer, Novo T-Cross!",
+      "url": "https://newsroom-br.itd.vw.com.br/news/2141",
+      "supports": "Brazil T-Cross history beginning in 2019 and the 2024 update of the same model line."
+    },
+    {
+      "id": "vw-tcross-current-config",
+      "publisher": "Volkswagen do Brasil",
+      "title": "T-Cross configurador",
+      "url": "https://www.vw.com.br/pt/configurador.html/__app/t-cross--carline-.app",
+      "supports": "Current Brazil T-Cross variants including Comfortline 200 TSI and Highline 250 TSI, with flex automatic powertrains."
+    },
+    {
+      "id": "fiat-strada-second-generation",
+      "publisher": "Fiat / Stellantis Media",
+      "title": "Fiat lança Nova Strada e reinventa, mais uma vez, o segmento de picapes no Brasil",
+      "url": "https://www.media.stellantis.com/br-pt/fiat/press/fiat-lanca-nova-strada-e-reinventa-mais-uma-vez-o-segmento-de-picapes-no-brasil",
+      "supports": "The 2020 Nova Strada is the second generation and includes the 1.3 Firefly powertrain."
+    },
+    {
+      "id": "fiat-strada-2023-handbook",
+      "publisher": "Fiat",
+      "title": "Strada 2023 handbook",
+      "url": "https://servicos.fiat.com.br/content/dam/fiat/products/handbooks/281/2023/handbook-strada-2023_2023.pdf",
+      "supports": "Strada 2023 Volcano 1.3 manual, Volcano 1.3 CVT and Ranch 1.3 CVT configurations."
+    },
+    {
+      "id": "fipe-official-vehicle-index",
+      "publisher": "Fundação Instituto de Pesquisas Econômicas",
+      "title": "Preço Médio de Veículos — Tabela Fipe",
+      "url": "https://www.fipe.org.br/pt-br/indices/veiculos",
+      "supports": "Official FIPE vehicle lookup semantics, including that vehicle year refers to model year and lookup can be performed by FIPE code plus model year."
+    },
+    {
+      "id": "corsa-wind-fipe-code-secondary",
+      "publisher": "Verificar Auto",
+      "title": "Tabela FIPE GM - Chevrolet Corsa Wind 1.0 MPFI / EFI 2p",
+      "url": "https://verificarauto.com.br/tabela-fipe/carros/gm-chevrolet/corsa-wind-10-mpfi-efi-2p/",
+      "supports": "Secondary enumeration showing FIPE code 004001-0 across multiple Corsa Wind model years, used only to exercise FIPE-as-supporting behavior."
+    }
+  ],
+  "cases": [
+    {
+      "id": "br-match-corolla-cross-xrx-hybrid-my25",
+      "expected": "MATCH",
+      "left": {
+        "make": "Toyota",
+        "model": "Corolla Cross",
+        "generation": "2020 global generation",
+        "variant": "XRX Hybrid",
+        "powertrain": "1.8 hybrid flex",
+        "transmission": "Hybrid Transaxle CVT",
+        "body_style": "SUV",
+        "market": "BR",
+        "model_year_from": 2025,
+        "model_year_to": 2025
+      },
+      "right": {
+        "make": "Toyota",
+        "model": "Corolla Cross Hybrid XRX",
+        "generation": "2020 global generation",
+        "variant": "XRX Hybrid",
+        "powertrain": "1.8 hybrid flex",
+        "transmission": "Hybrid Transaxle CVT",
+        "body_style": "SUV",
+        "market": "BR",
+        "model_year_from": 2025,
+        "model_year_to": 2025,
+        "aliases": ["Corolla Cross"]
+      },
+      "sourceIds": ["toyota-corolla-cross-global-launch", "toyota-corolla-cross-my25-br"],
+      "rationale": "Same Brazil MY25 XRX Hybrid configuration; presentation order in the model label does not change identity."
+    },
+    {
+      "id": "br-match-onix-premier-turbo-my25",
+      "expected": "MATCH",
+      "left": {
+        "make": "Chevrolet",
+        "model": "Onix",
+        "generation": "2nd generation",
+        "variant": "Premier Turbo 116cv",
+        "powertrain": "1.0 turbo flex",
+        "transmission": "6-speed automatic",
+        "body_style": "hatch",
+        "market": "BR",
+        "model_year_from": 2025,
+        "model_year_to": 2025
+      },
+      "right": {
+        "make": "Chevrolet",
+        "model": "Onix",
+        "generation": "2nd generation",
+        "variant": "Premier Turbo 116cv",
+        "powertrain": "1.0 turbo flex",
+        "transmission": "6-speed automatic",
+        "body_style": "hatch",
+        "market": "BR",
+        "model_year_from": 2025,
+        "model_year_to": 2025
+      },
+      "sourceIds": ["chevrolet-onix-second-generation", "chevrolet-onix-my25-price-list"],
+      "rationale": "Same second-generation MY25 Onix Premier Turbo automatic hatch configuration."
+    },
+    {
+      "id": "br-match-tcross-highline-250-tsi",
+      "expected": "MATCH",
+      "left": {
+        "make": "Volkswagen",
+        "model": "T-Cross",
+        "generation": "2019 Brazil generation",
+        "variant": "Highline 250 TSI",
+        "powertrain": "250 TSI flex",
+        "transmission": "automatic",
+        "body_style": "SUV",
+        "market": "BR"
+      },
+      "right": {
+        "make": "Volkswagen",
+        "model": "T Cross",
+        "generation": "2019 Brazil generation",
+        "variant": "Highline 250 TSI",
+        "powertrain": "250 TSI flex",
+        "transmission": "automatic",
+        "body_style": "SUV",
+        "market": "BR"
+      },
+      "sourceIds": ["vw-tcross-2019-br-generation", "vw-tcross-current-config"],
+      "rationale": "Hyphenation difference in T-Cross does not change the same Highline 250 TSI configuration."
+    },
+    {
+      "id": "br-match-strada-ranch-13-cvt",
+      "expected": "MATCH",
+      "left": {
+        "make": "Fiat",
+        "model": "Strada",
+        "generation": "2nd generation",
+        "variant": "Ranch",
+        "powertrain": "1.3 flex",
+        "transmission": "CVT",
+        "body_style": "pickup",
+        "market": "BR"
+      },
+      "right": {
+        "make": "Fiat",
+        "model": "Strada",
+        "generation": "2nd generation",
+        "variant": "Ranch",
+        "powertrain": "1.3 flex",
+        "transmission": "CVT",
+        "body_style": "pickup",
+        "market": "BR"
+      },
+      "sourceIds": ["fiat-strada-second-generation", "fiat-strada-2023-handbook"],
+      "rationale": "Same second-generation Strada Ranch 1.3 CVT configuration."
+    },
+    {
+      "id": "br-no-match-corolla-cross-xrx-hybrid-vs-xrx-flex",
+      "expected": "NO_MATCH",
+      "left": {
+        "make": "Toyota",
+        "model": "Corolla Cross",
+        "generation": "2020 global generation",
+        "variant": "XRX Hybrid",
+        "powertrain": "1.8 hybrid flex",
+        "transmission": "Hybrid Transaxle CVT",
+        "body_style": "SUV",
+        "market": "BR",
+        "model_year_from": 2025,
+        "model_year_to": 2025
+      },
+      "right": {
+        "make": "Toyota",
+        "model": "Corolla Cross",
+        "generation": "2020 global generation",
+        "variant": "XRX",
+        "powertrain": "2.0 flex",
+        "transmission": "Direct Shift CVT",
+        "body_style": "SUV",
+        "market": "BR",
+        "model_year_from": 2025,
+        "model_year_to": 2025
+      },
+      "sourceIds": ["toyota-corolla-cross-global-launch", "toyota-corolla-cross-my25-br"],
+      "rationale": "Hybrid XRX and combustion XRX are distinct Brazil MY25 configurations with contradictory variant/powertrain/transmission evidence."
+    },
+    {
+      "id": "br-no-match-tcross-highline-vs-comfortline",
+      "expected": "NO_MATCH",
+      "left": {
+        "make": "Volkswagen",
+        "model": "T-Cross",
+        "generation": "2019 Brazil generation",
+        "variant": "Highline 250 TSI",
+        "powertrain": "250 TSI flex",
+        "transmission": "automatic",
+        "body_style": "SUV",
+        "market": "BR"
+      },
+      "right": {
+        "make": "Volkswagen",
+        "model": "T-Cross",
+        "generation": "2019 Brazil generation",
+        "variant": "Comfortline 200 TSI",
+        "powertrain": "200 TSI flex",
+        "transmission": "automatic",
+        "body_style": "SUV",
+        "market": "BR"
+      },
+      "sourceIds": ["vw-tcross-2019-br-generation", "vw-tcross-current-config"],
+      "rationale": "Highline 250 TSI and Comfortline 200 TSI are different variants with different powertrain identity."
+    },
+    {
+      "id": "br-no-match-strada-volcano-manual-vs-cvt",
+      "expected": "NO_MATCH",
+      "left": {
+        "make": "Fiat",
+        "model": "Strada",
+        "generation": "2nd generation",
+        "variant": "Volcano",
+        "powertrain": "1.3 flex",
+        "transmission": "manual",
+        "body_style": "pickup",
+        "market": "BR"
+      },
+      "right": {
+        "make": "Fiat",
+        "model": "Strada",
+        "generation": "2nd generation",
+        "variant": "Volcano",
+        "powertrain": "1.3 flex",
+        "transmission": "CVT",
+        "body_style": "pickup",
+        "market": "BR"
+      },
+      "sourceIds": ["fiat-strada-second-generation", "fiat-strada-2023-handbook"],
+      "rationale": "The same Volcano trim exists with manual and CVT transmissions; transmission contradiction makes them distinct catalog configurations."
+    },
+    {
+      "id": "br-no-match-corsa-shared-fipe-different-model-year",
+      "expected": "NO_MATCH",
+      "left": {
+        "make": "Chevrolet",
+        "model": "Corsa Wind 1.0 MPFI EFI 2p",
+        "market": "BR",
+        "model_year_from": 1995,
+        "model_year_to": 1995,
+        "external_identifiers": [
+          {"namespace": "fipe", "value": "004001-0"}
+        ]
+      },
+      "right": {
+        "make": "Chevrolet",
+        "model": "Corsa Wind 1.0 MPFI EFI 2p",
+        "market": "BR",
+        "model_year_from": 1997,
+        "model_year_to": 1997,
+        "external_identifiers": [
+          {"namespace": "fipe", "value": "004001-0"}
+        ]
+      },
+      "sourceIds": ["fipe-official-vehicle-index", "corsa-wind-fipe-code-secondary"],
+      "rationale": "FIPE lookup is model-year specific; a shared supporting FIPE code must not override an explicit model-year contradiction."
+    },
+    {
+      "id": "br-review-corolla-cross-xrx-hybrid-missing-variant",
+      "expected": "REVIEW",
+      "left": {
+        "make": "Toyota",
+        "model": "Corolla Cross",
+        "generation": "2020 global generation",
+        "variant": "XRX Hybrid",
+        "powertrain": "1.8 hybrid flex",
+        "transmission": "Hybrid Transaxle CVT",
+        "body_style": "SUV",
+        "market": "BR",
+        "model_year_from": 2025,
+        "model_year_to": 2025
+      },
+      "right": {
+        "make": "Toyota",
+        "model": "Corolla Cross",
+        "generation": "2020 global generation",
+        "powertrain": "1.8 hybrid flex",
+        "transmission": "Hybrid Transaxle CVT",
+        "body_style": "SUV",
+        "market": "BR",
+        "model_year_from": 2025,
+        "model_year_to": 2025
+      },
+      "sourceIds": ["toyota-corolla-cross-global-launch", "toyota-corolla-cross-my25-br"],
+      "rationale": "MY25 has more than one hybrid trim; a record missing variant evidence should not auto-collapse into XRX Hybrid."
+    },
+    {
+      "id": "br-review-onix-premier-missing-variant",
+      "expected": "REVIEW",
+      "left": {
+        "make": "Chevrolet",
+        "model": "Onix",
+        "generation": "2nd generation",
+        "variant": "Premier Turbo 116cv",
+        "powertrain": "1.0 turbo flex",
+        "transmission": "6-speed automatic",
+        "body_style": "hatch",
+        "market": "BR",
+        "model_year_from": 2025,
+        "model_year_to": 2025
+      },
+      "right": {
+        "make": "Chevrolet",
+        "model": "Onix",
+        "generation": "2nd generation",
+        "powertrain": "1.0 turbo flex",
+        "transmission": "6-speed automatic",
+        "body_style": "hatch",
+        "market": "BR",
+        "model_year_from": 2025,
+        "model_year_to": 2025
+      },
+      "sourceIds": ["chevrolet-onix-second-generation", "chevrolet-onix-my25-price-list"],
+      "rationale": "A source that identifies the turbo automatic hatch but omits trim is not sufficient to collapse deterministically into Premier."
+    },
+    {
+      "id": "br-review-tcross-250-tsi-missing-variant",
+      "expected": "REVIEW",
+      "left": {
+        "make": "Volkswagen",
+        "model": "T-Cross",
+        "generation": "2019 Brazil generation",
+        "variant": "Highline 250 TSI",
+        "powertrain": "250 TSI flex",
+        "transmission": "automatic",
+        "body_style": "SUV",
+        "market": "BR"
+      },
+      "right": {
+        "make": "Volkswagen",
+        "model": "T-Cross",
+        "generation": "2019 Brazil generation",
+        "powertrain": "250 TSI flex",
+        "transmission": "automatic",
+        "body_style": "SUV",
+        "market": "BR"
+      },
+      "sourceIds": ["vw-tcross-2019-br-generation", "vw-tcross-current-config"],
+      "rationale": "A generic 250 TSI T-Cross record can be incomplete with respect to trim; missing variant evidence remains reviewable."
+    },
+    {
+      "id": "br-review-shared-fipe-code-alone",
+      "expected": "REVIEW",
+      "left": {
+        "make": "Chevrolet",
+        "model": "Corsa Wind 1.0 MPFI EFI 2p",
+        "market": "BR",
+        "external_identifiers": [
+          {"namespace": "fipe", "value": "004001-0"}
+        ]
+      },
+      "right": {
+        "make": "Chevrolet",
+        "model": "Corsa Wind 1.0 MPFI EFI 2p",
+        "market": "BR",
+        "external_identifiers": [
+          {"namespace": "fipe", "value": "004001-0"}
+        ]
+      },
+      "sourceIds": ["fipe-official-vehicle-index", "corsa-wind-fipe-code-secondary"],
+      "rationale": "FIPE is SUPPORTING in Catalog Identity V2.1; a shared FIPE code without generation/powertrain/year evidence must not auto-match by itself."
+    }
+  ]
+}
