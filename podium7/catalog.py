@@ -9,7 +9,7 @@ import re
 import uuid
 from typing import Any
 
-from .domain import CandidateFact, CanonicalFact, Conflict
+from .domain import CandidateFact, CanonicalFact, Conflict, DecisionStatus
 from .persistence import EvidenceStore
 
 
@@ -26,6 +26,18 @@ class ExternalIdentifierStrength(str, Enum):
     STRONG = "STRONG"
     SUPPORTING = "SUPPORTING"
     REFERENCE_ONLY = "REFERENCE_ONLY"
+
+
+class CatalogChangeImpact(str, Enum):
+    NO_CHANGE = "NO_CHANGE"
+    INFORMATIONAL = "INFORMATIONAL"
+    IDENTITY = "IDENTITY"
+
+
+class CatalogPublicationAction(str, Enum):
+    CREATE = "CREATE"
+    CORRECTION = "CORRECTION"
+    ADMINISTRATIVE_OVERRIDE = "ADMINISTRATIVE_OVERRIDE"
 
 
 EXTERNAL_IDENTIFIER_NAMESPACE_REGISTRY: Mapping[str, ExternalIdentifierStrength] = {
@@ -161,6 +173,114 @@ def external_identifier_strength(
         if registered_namespace.casefold().strip() == normalized:
             return ExternalIdentifierStrength(strength)
     return ExternalIdentifierStrength.REFERENCE_ONLY
+
+
+def _normalized_aliases(values: tuple[str, ...]) -> set[tuple[str, ...]]:
+    return {tokens for value in values if (tokens := _tokens(value)) is not None}
+
+
+def _normalized_identifiers(values: tuple[str, ...]) -> set[str]:
+    return {value.casefold().strip() for value in values}
+
+
+def catalog_change_impact(
+    before: CatalogVehicleIdentity | None,
+    after: CatalogVehicleIdentity,
+    *,
+    namespace_registry: Mapping[str, ExternalIdentifierStrength] | None = None,
+) -> CatalogChangeImpact:
+    if before is None:
+        return CatalogChangeImpact.IDENTITY
+    if before == after:
+        return CatalogChangeImpact.NO_CHANGE
+
+    for field in ("make", "model", "generation", "variant", "powertrain", "transmission", "body_style", "market"):
+        if _tokens(getattr(before, field)) != _tokens(getattr(after, field)):
+            return CatalogChangeImpact.IDENTITY
+
+    for field in (
+        "manufacture_year_from",
+        "manufacture_year_to",
+        "model_year_from",
+        "model_year_to",
+    ):
+        if getattr(before, field) != getattr(after, field):
+            return CatalogChangeImpact.IDENTITY
+
+    if _normalized_aliases(before.aliases) != _normalized_aliases(after.aliases):
+        return CatalogChangeImpact.IDENTITY
+    if _normalized_identifiers(before.engine_identifiers) != _normalized_identifiers(after.engine_identifiers):
+        return CatalogChangeImpact.IDENTITY
+
+    before_ids = {item.key for item in before.external_identifiers}
+    after_ids = {item.key for item in after.external_identifiers}
+    changed_ids = before_ids.symmetric_difference(after_ids)
+    if any(
+        external_identifier_strength(namespace, namespace_registry)
+        is not ExternalIdentifierStrength.REFERENCE_ONLY
+        for namespace, _ in changed_ids
+    ):
+        return CatalogChangeImpact.IDENTITY
+
+    return CatalogChangeImpact.INFORMATIONAL
+
+
+def _validate_evidence_ids(evidence_ids: tuple[str, ...]) -> None:
+    if any(not isinstance(value, str) or not value.strip() for value in evidence_ids):
+        raise ValueError("evidence_ids must contain non-empty strings")
+    if len(set(evidence_ids)) != len(evidence_ids):
+        raise ValueError("evidence_ids must be unique")
+
+
+def validate_catalog_publication_change(
+    before: CatalogVehicleIdentity | None,
+    after: CatalogVehicleIdentity,
+    *,
+    action: CatalogPublicationAction,
+    decision_status: DecisionStatus,
+    evidence_ids: tuple[str, ...] = (),
+    reason: str | None = None,
+    actor_id: str | None = None,
+    namespace_registry: Mapping[str, ExternalIdentifierStrength] | None = None,
+) -> CatalogChangeImpact:
+    if not isinstance(action, CatalogPublicationAction):
+        raise ValueError("action must be a CatalogPublicationAction")
+    if not isinstance(decision_status, DecisionStatus):
+        raise ValueError("decision_status must be a DecisionStatus")
+    _validate_evidence_ids(evidence_ids)
+
+    if action is CatalogPublicationAction.CREATE and before is not None:
+        raise ValueError("CREATE requires no previous catalog identity")
+    if action in (
+        CatalogPublicationAction.CORRECTION,
+        CatalogPublicationAction.ADMINISTRATIVE_OVERRIDE,
+    ) and before is None:
+        raise ValueError(f"{action.value} requires an existing catalog identity")
+
+    impact = catalog_change_impact(
+        before,
+        after,
+        namespace_registry=namespace_registry,
+    )
+    if impact is CatalogChangeImpact.NO_CHANGE:
+        raise ValueError("publication change must modify the catalog identity")
+
+    if action is CatalogPublicationAction.ADMINISTRATIVE_OVERRIDE:
+        if decision_status is not DecisionStatus.ENGINEERING_CHOICE:
+            raise ValueError("administrative override must be ENGINEERING_CHOICE")
+        if actor_id is None or not actor_id.strip():
+            raise ValueError("administrative override requires actor_id")
+        if reason is None or not reason.strip():
+            raise ValueError("administrative override requires reason")
+        return impact
+
+    if decision_status is not DecisionStatus.EVIDENCE_BACKED:
+        raise ValueError("external publication requires EVIDENCE_BACKED status")
+    if not evidence_ids:
+        raise ValueError("external publication requires at least one evidence reference")
+    if action is CatalogPublicationAction.CORRECTION and (reason is None or not reason.strip()):
+        raise ValueError("catalog correction requires reason")
+    return impact
 
 
 def resolve_catalog_pair(
@@ -686,14 +806,18 @@ def export_catalog_vehicle_payload(
 __all__ = [
     "CATALOG_SCHEMA_VERSION",
     "EXTERNAL_IDENTIFIER_NAMESPACE_REGISTRY",
+    "CatalogChangeImpact",
     "CatalogMatchOutcome",
+    "CatalogPublicationAction",
     "CatalogResolutionDecision",
     "CatalogStore",
     "CatalogVehicleIdentity",
     "ExternalIdentifier",
     "ExternalIdentifierStrength",
     "PhysicalVehicleListing",
+    "catalog_change_impact",
     "export_catalog_vehicle_payload",
     "external_identifier_strength",
     "resolve_catalog_pair",
+    "validate_catalog_publication_change",
 ]
