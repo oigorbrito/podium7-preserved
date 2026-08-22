@@ -48,6 +48,14 @@ Normal creation/correction requires `EVIDENCE_BACKED` plus at least one evidence
 
 This gate is policy-only at this stage: it does not alter the SQLite schema or freeze an audit/provenance response format.
 
+## External JSON contract
+
+The catalog identity wire shape for contract version `2.0` is frozen in `CATALOG-JSON-CONTRACT-V2.md`.
+
+The exporter uses an explicit serializer rather than exposing `CatalogVehicleIdentity` through `asdict()`. This prevents internal model evolution from silently changing the external payload. `2.0` remains the default, unknown contract versions fail explicitly, nullable identity dimensions remain present as `null`, collections remain arrays, and historical IDs export the final canonical `entity.id` plus `redirectsFrom`.
+
+The existing naming is preserved for compatibility: top-level compatibility keys are camelCase while entity identity fields retain their established snake_case. Any incompatible shape change requires a new contract version.
+
 ## Stable IDs, corrections and merges
 
 Canonical catalog IDs are opaque (`veh_<uuid>`) and are not derived from mutable attributes. Corrections preserve the ID and append an identity revision. Duplicate merges preserve the old ID as a redirect. Chained merges flatten redirects so historical aliases resolve to the live canonical entity.
@@ -66,7 +74,7 @@ A catalog candidate retains raw value, normalized value, unit, evidence ID, extr
 
 The SQLite evolution is additive. V1 tables and `PRAGMA user_version` remain owned by `EvidenceStore`. Catalog schema metadata is tracked separately in `catalog_v2_schema_metadata`, avoiding reinterpretation of legacy identity rows.
 
-The V2.1 namespace-strength policy and publication evidence policy change resolver/publication decision behavior only; they do not change the persisted catalog schema or the external JSON payload shape.
+The V2.1 namespace-strength policy, publication evidence policy and V2 JSON compatibility contract do not require a catalog persistence schema change.
 
 ## Deliberately not duplicated
 
@@ -74,6 +82,5 @@ V2 does not copy V1 implementations into `domain.py`, `identity.py`, `persistenc
 
 ## Remaining production gates
 
-- freeze the external JSON compatibility policy;
 - add API-level lookup/redirect behavior when the consumer API is introduced;
 - freeze a separate audit/provenance response contract only when a consumer need exists.
