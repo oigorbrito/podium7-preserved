@@ -607,6 +607,26 @@ class CatalogStore(EvidenceStore):
             )
         return survivor
 
+    def catalog_vehicle_ids_page(
+        self,
+        *,
+        after_id: str | None = None,
+        limit: int = 50,
+    ) -> list[str]:
+        if isinstance(limit, bool) or not isinstance(limit, int) or limit < 1:
+            raise ValueError("limit must be a positive integer")
+        if after_id is None:
+            rows = self._connection.execute(
+                "SELECT id FROM catalog_v2_vehicles ORDER BY id LIMIT ?",
+                (limit,),
+            ).fetchall()
+        else:
+            rows = self._connection.execute(
+                "SELECT id FROM catalog_v2_vehicles WHERE id > ? ORDER BY id LIMIT ?",
+                (after_id, limit),
+            ).fetchall()
+        return [row[0] for row in rows]
+
     def save_physical_listing(self, listing: PhysicalVehicleListing) -> None:
         self._insert_once(
             "INSERT INTO catalog_v2_physical_listings(listing_id, catalog_vehicle_id, source_id, odometer_km, vin) VALUES (?, ?, ?, ?, ?)",
