@@ -56,6 +56,14 @@ The exporter uses an explicit serializer rather than exposing `CatalogVehicleIde
 
 The existing naming is preserved for compatibility: top-level compatibility keys are camelCase while entity identity fields retain their established snake_case. Any incompatible shape change requires a new contract version.
 
+## Consumer read API
+
+The transport-neutral read adapter is defined in `CATALOG-CONSUMER-API-V2.md` and implemented in `podium7.catalog_api`.
+
+It provides canonical/historical lookup, explicit redirect status, stable consumer error codes and keyset pagination over canonical IDs. `CatalogStore` exposes only the small canonical-ID page primitive needed by that adapter; pagination policy and error semantics remain outside persistence.
+
+No HTTP framework or audit endpoint is introduced by this gate.
+
 ## Stable IDs, corrections and merges
 
 Canonical catalog IDs are opaque (`veh_<uuid>`) and are not derived from mutable attributes. Corrections preserve the ID and append an identity revision. Duplicate merges preserve the old ID as a redirect. Chained merges flatten redirects so historical aliases resolve to the live canonical entity.
@@ -74,13 +82,14 @@ A catalog candidate retains raw value, normalized value, unit, evidence ID, extr
 
 The SQLite evolution is additive. V1 tables and `PRAGMA user_version` remain owned by `EvidenceStore`. Catalog schema metadata is tracked separately in `catalog_v2_schema_metadata`, avoiding reinterpretation of legacy identity rows.
 
-The V2.1 namespace-strength policy, publication evidence policy and V2 JSON compatibility contract do not require a catalog persistence schema change.
+The V2.1 namespace-strength policy, publication evidence policy, V2 JSON compatibility contract and read adapter do not require a catalog persistence schema version change.
 
 ## Deliberately not duplicated
 
-V2 does not copy V1 implementations into `domain.py`, `identity.py`, `persistence.py`, `export.py` or `review.py`. The integration is isolated in `podium7.catalog` and composes the existing evidence, fusion and persistence primitives.
+V2 does not copy V1 implementations into `domain.py`, `identity.py`, `persistence.py`, `export.py` or `review.py`. The integration is isolated in the catalog modules and composes the existing evidence, fusion and persistence primitives.
 
-## Remaining production gates
+## Next validation milestone
 
-- add API-level lookup/redirect behavior when the consumer API is introduced;
-- freeze a separate audit/provenance response contract only when a consumer need exists.
+Build a real automotive golden dataset after these policies are stable. It should contain positive, negative and ambiguous pairs and measure false merge rate, missed duplicate rate, precision, recall and review rate. False merges remain the highest-priority error.
+
+A separate audit/provenance consumer API should be frozen only when a concrete consumer need exists.
