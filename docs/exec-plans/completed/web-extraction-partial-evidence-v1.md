@@ -1,6 +1,6 @@
 # Web extraction explicit partial evidence V1
 
-Status: active — implementation and first merge-candidate validation green; final self-review/CI/integration pending
+Status: completed — integrated by PR #49 on 2026-08-23
 
 ## Outcome
 
@@ -44,7 +44,7 @@ Preserve correctly extracted source facts even when a strict reusable web artifa
 
 ## Measured source-family result
 
-First CI-backed measurement on frozen `autoevolution-source-family-1.0`:
+On frozen `autoevolution-source-family-1.0`:
 
 - strict page success remains 8/12;
 - partial-evidence cases without issues: 8;
@@ -70,4 +70,17 @@ Initial PR #49 merge-candidate CI:
 - repository isolated suite `318/318` PASS;
 - validation artifact ID `9494692401`, ZIP SHA-256 `8ed75a04a3924eef2d0c3cb7b48da94dbec6fe94616f000c1658c5e1f19f3cdc`.
 
-This initial CI predates the final provenance/documentation refinements. Final integration still requires self-review and green CI on the final PR merge candidate.
+Final PR #49 merge-candidate CI after provenance and documentation refinements:
+
+- run `32645470301`, job `97208957129`;
+- PR merge ref SHA `9f3ab64baafb3bc32cf3b22a3931abd1b087bbbd`;
+- Python `3.13.15`;
+- `HARNESS PASS`;
+- runtime health `PASS`;
+- repository isolated suite `318/318` PASS;
+- validation artifact ID `9494746311`, ZIP SHA-256 `4aa00d592595d3c89ee6c9dd4a847d8d6e9f8e1581869de62f36b924d12dd86e`;
+- PR #49 squash merge commit `bfd5b6d9e6d7f4f5189f56bef79385dd479b9d78`.
+
+## Remaining blockers
+
+None for this completed work unit. The unresolved non-scalar range semantics and heterogeneous-web generalization boundary remain tracked in `TECH-DEBT.md`; neither is silently coerced or claimed solved here.
