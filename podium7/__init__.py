@@ -8,6 +8,7 @@ from .export import export_entity_json, export_entity_payload, write_entity_json
 from .fusion import FusionResult, fuse_candidates
 from .identity import MatchOutcome, ResolutionDecision, blocking_key, generate_candidates, resolve_pair
 from .ingestion import IngestionReport, ingest_vehicle_makes_models_json
+from .inmetro_pbev import InmetroPbevRecord, acquire_inmetro_pbev_pdf, extract_inmetro_pbev_pdf, extract_inmetro_pbev_tables, inmetro_pdf_policy
 from .normalization import NormalizationResult, normalize_fact
 from .official_discovery import DiscoveryCandidate, build_fueleconomy_model_menu_locator, build_fueleconomy_options_menu_locator, build_nhtsa_models_locator, discover_fueleconomy_models, discover_fueleconomy_vehicle_options, discover_nhtsa_models
 from .persistence import EvidenceStore
@@ -18,15 +19,15 @@ from .web_extraction import ExtractedWebFact, WebFieldRule, extract_autoevolutio
 __all__ = [
     "AcceptanceReport", "AcquisitionCache", "AutomotiveIdentity", "BoundNetworkTarget", "CandidateFact", "CanonicalFact", "Checkpoint",
     "Conflict", "ConflictState", "DecisionStatus", "DiscoveryCandidate", "DocumentExtractionReport", "EnrichmentJob",
-    "EntityKind", "EvidenceStore", "ExtractedWebFact", "FusionResult", "IngestionReport",
+    "EntityKind", "EvidenceStore", "ExtractedWebFact", "FusionResult", "IngestionReport", "InmetroPbevRecord",
     "JobResult", "JobState", "MatchOutcome", "NormalizationResult", "ProvenanceRecord",
     "RateLimiter", "RawEvidence", "RecurringSourceGate", "ResolutionDecision", "RetryPolicy", "ReviewAction",
-    "ReviewDecision", "RobotsMode", "Source", "SourceOperationDecision", "SourceOperationPolicy", "ValidatedExtractionArtifact", "WebFieldRule", "acquire_bound_http", "blocking_key",
+    "ReviewDecision", "RobotsMode", "Source", "SourceOperationDecision", "SourceOperationPolicy", "ValidatedExtractionArtifact", "WebFieldRule", "acquire_bound_http", "acquire_inmetro_pbev_pdf", "blocking_key",
     "build_fueleconomy_model_menu_locator", "build_fueleconomy_options_menu_locator", "build_nhtsa_models_locator",
     "discover_fueleconomy_models", "discover_fueleconomy_vehicle_options", "discover_nhtsa_models",
     "export_entity_json", "export_entity_payload", "extract_autoevolution_artega_gt",
-    "extract_ford_dark_horse_document", "extract_with_rules", "fuse_candidates", "generate_candidates",
-    "identify_gaps", "ingest_vehicle_makes_models_json", "normalize_fact", "plan_jobs", "resolve_bound_target",
+    "extract_ford_dark_horse_document", "extract_inmetro_pbev_pdf", "extract_inmetro_pbev_tables", "extract_with_rules", "fuse_candidates", "generate_candidates",
+    "identify_gaps", "ingest_vehicle_makes_models_json", "inmetro_pdf_policy", "normalize_fact", "plan_jobs", "resolve_bound_target",
     "resolve_pair", "review_conflict", "review_evidence", "review_identity", "run_acceptance_slice",
     "run_job", "validate_extraction_artifact", "write_entity_json",
 ]

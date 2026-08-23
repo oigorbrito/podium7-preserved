@@ -1,5 +1,11 @@
 # Current work
 
-Status: none
+Status: active
 
-No implementation mission is active. Durable unresolved work remains tracked in `TECH-DEBT.md` and completed execution history is under `exec-plans/completed/`.
+Outcome: establish a bounded current Inmetro PBEV PDF acquisition-and-table-extraction path without weakening global HTTP validation.
+
+Boundaries: source-specific application/pdf policy; exact www.gov.br host; bound transport; pdfplumber table extraction; identity/source evidence only; permanent tests offline.
+
+Acceptance: explicit failures/provenance, docs, green harness/full CI, concurrency recheck, squash merge.
+
+Plan: `exec-plans/active/INMETRO-PBEV-DOCUMENT-PATH-V1.md`.
