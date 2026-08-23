@@ -20,6 +20,28 @@ This document is the durable record for external software and data-source evalua
 - `NO_EVIDENCE` — no usable prior evidence was recovered after searching durable/project artifacts.
 - `OBSOLETE_BY_ARCHITECTURE` — a historical test no longer answers a current product question; do not rerun automatically.
 
+## Confirmed historical research corpus
+
+During the 2026-08-22 reconstruction, the project owner confirmed that all of the following names had been cited and used in the earlier Podium 7 research/testing discussion. This confirmation establishes **historical inclusion in the research corpus only**. It does not, by itself, revalidate any reported metric, reproduce an experiment, or establish that Podium 7 adopted a particular architecture because of that work.
+
+| Work / benchmark / standard | Historical role recovered |
+|---|---|
+| SODIUM / SODIUM-Bench | agentic data integration / benchmark evidence |
+| WebLists / BardeenAgent | repeatable web extraction / agent-to-program evidence |
+| WideSearch | broad web collection / agent benchmark evidence |
+| WANDR | web data retrieval / precision-recall-completeness evidence |
+| WebDS | web data-science task benchmark evidence |
+| MaDI-Bench | end-to-end data integration benchmark evidence |
+| Automatic End-to-End Data Integration using LLMs | LLM-configured deterministic integration pipeline evidence |
+| KnowledgeNet | knowledge-base population benchmark evidence |
+| ComEM | entity matching benchmark evidence |
+| ALER | active-learning entity-resolution evidence |
+| PARSE | structured extraction / schema optimization evidence |
+| DTBench | document-to-table extraction benchmark evidence |
+| W3C PROV / PROV-O | provenance model / normative standard |
+
+The historical handoff also states that practical experiments and measured benchmarks were weighted more heavily for operational engineering choices than purely theoretical work when both addressed the same question. Exact paper versions, links, measured values, experimental conditions, and the precise decision each source supported still need durable reconstruction before being quoted as project-native evidence.
+
 ## Recovered software candidate inventory
 
 The following names were recovered from historical project handoffs as candidates that had been considered. No repository-native evidence has yet been recovered that establishes an `ADOPT`, `ADAPT`, `REFERENCE`, or `REJECT` decision for these entries.
@@ -77,4 +99,4 @@ For every new or repeated external-candidate evaluation, append a row or linked 
 
 ## Current gap
 
-The candidate names and evaluation methodology have been recovered, but the original per-candidate execution ledger — exact versions, commands, outputs, and final reuse decisions — has not yet been found in the repository. This gap is documentation/reconstruction work, not permission to rerun the entire historical battery.
+The candidate names, evaluation methodology, and historical research corpus have now been recovered at the inventory level, but the original per-candidate execution ledger — exact versions, commands, outputs, and final reuse decisions — has not yet been found in the repository. Exact source links, paper versions, measured values, and experiment conditions for the confirmed research corpus also remain to be reconstructed before they are treated as durable project evidence. These gaps are documentation/reconstruction work, not permission to rerun the entire historical battery.
