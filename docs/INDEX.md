@@ -38,6 +38,7 @@
 - [`DIRECT-HTTP-ACQUISITION-V1.md`](DIRECT-HTTP-ACQUISITION-V1.md) — bounded fail-closed direct HTTP transport and snapshot contract.
 - [`PUBLIC-WEB-ACQUISITION-CHARACTERIZATION-V1.md`](PUBLIC-WEB-ACQUISITION-CHARACTERIZATION-V1.md) — one live operational compatibility measurement across the retained exact public source URLs.
 - [`BROWSER-ACQUISITION-CHARACTERIZATION-V1.md`](BROWSER-ACQUISITION-CHARACTERIZATION-V1.md) — controlled Chromium measurement on the retained Autoevolution URLs refused by direct HTTP; browser fallback was not selected.
+- [`COMPLIANT-ALTERNATIVE-SOURCES-V1.md`](COMPLIANT-ALTERNATIVE-SOURCES-V1.md) — current primary-source evaluation and live selection of NHTSA vPIC/EEA paths, with Inmetro PBEV retained under an explicit resource/transport boundary.
 - [`REPEATABLE-WEB-EXTRACTION-V1.md`](REPEATABLE-WEB-EXTRACTION-V1.md)
 - [`DOCUMENT-EXTRACTION-V1.md`](DOCUMENT-EXTRACTION-V1.md)
 - [`SELECTIVE-REVIEW-V1.md`](SELECTIVE-REVIEW-V1.md)
