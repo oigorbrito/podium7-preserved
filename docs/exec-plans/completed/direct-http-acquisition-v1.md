@@ -1,6 +1,6 @@
 # Direct HTTP acquisition contract V1
 
-Status: active — implementation and local verification complete; final documented merge-candidate validation/integration pending
+Status: completed — integrated by PR #57 on 2026-08-23
 
 ## Outcome
 
@@ -8,7 +8,7 @@ Add a dependency-free, bounded direct HTTP acquisition primitive that can fetch 
 
 ## Why this unit
 
-The retained frozen corpora now have deterministic acquisition lineage, but live acquisition/navigation/source-discovery generalization remains open. The smallest next step is not a crawler/browser/agent dependency: it is a direct HTTP transport contract with explicit URL, redirect, network-target, response-size, content-type, content-encoding, status and snapshot-write rules. This establishes a reproducible acquisition boundary without claiming JavaScript navigation, source discovery, heterogeneous-web recall or production coverage.
+The retained frozen corpora had deterministic acquisition lineage, while live acquisition/navigation/source-discovery generalization remained open. The smallest next step was not a crawler/browser/agent dependency: it was a direct HTTP transport contract with explicit URL, redirect, network-target, response-size, content-type, content-encoding, status and snapshot-write rules. This establishes a reproducible acquisition boundary without claiming JavaScript navigation, source discovery, heterogeneous-web recall or production coverage.
 
 ## Acceptance criteria
 
@@ -31,14 +31,24 @@ The retained frozen corpora now have deterministic acquisition lineage, but live
 `LOCALLY_VERIFIED` on the deterministic loopback-server contract:
 
 - 20 focused direct-HTTP tests cover protected URL/network defaults, exact bytes and SHA-256, redirect following/count/revalidation/limit, HTTP status, media type, content encoding, declared and streamed size limits, empty/malformed responses, timeout, verified snapshot freeze, no-clobber behavior, explicit overwrite and failure-before-snapshot semantics;
-- package dependency set remains empty;
-- corrected implementation-head merge-candidate run `32651448029`, job `97223589802`: Python `3.13.15`, `HARNESS PASS`, runtime health PASS, repository isolated suite `373/373` PASS, validation artifact ID `9496302717`, ZIP SHA-256 `3d561b37e97e89f051ed6b036fc61ac042bc1fb90679a5e9d0581c18d31187c2`.
+- package dependency set remains empty.
 
-An intermediate strengthened-test run correctly failed because a disallowed redirect scheme was being classified by `urllib` as an HTTP-status failure before the custom `redirect_request()` hook. The implementation was changed to validate redirect `Location` before delegating to the base redirect handler; the corrected run above passes the regression. The test was not weakened or removed.
+An intermediate strengthened-test run correctly failed because a disallowed redirect scheme was being classified by `urllib` as an HTTP-status failure before the custom `redirect_request()` hook. The implementation was changed to validate redirect `Location` before delegating to the base redirect handler; the regression test was preserved and the corrected implementation passed.
 
-This evidence is local to deterministic HTTP-server behavior. The DNS/network-target check is a preflight and does not pin the validated address to the connection; DNS-rebinding resistance is therefore not claimed. Public-internet compatibility, JavaScript/browser navigation, source discovery, site-specific robots/rate/politeness behavior and production source distribution remain outside this unit.
+This evidence is local to deterministic HTTP-server behavior. The DNS/network-target check is a preflight and does not pin the validated address to the connection; DNS-rebinding resistance is therefore not claimed. Public-internet compatibility, JavaScript/browser navigation, source discovery, site-specific robots/rate/politeness behavior and production source distribution remain outside this completed unit.
 
-The implementation run above validates the corrected code head. Integration still requires green CI on the final documented merge candidate plus normal concurrency/self-review gates.
+## Final validation evidence
+
+- PR: #57 `Add bounded direct HTTP acquisition contract V1`;
+- validated branch head: `1730fdeda7a429480c25596d566ff50179111985`;
+- final merge-candidate run: `32651625757`, job `97224025709`;
+- PR merge ref SHA: `6fd6fdcba29672c1040d406d450d00edfb8a0f73`;
+- Python `3.13.15`;
+- `HARNESS PASS`;
+- runtime health `PASS`;
+- repository isolated suite `373/373` PASS;
+- validation artifact ID `9496348674`, ZIP SHA-256 `5c67156605192e3587ae21fd3842bbf2af5d4ccf1c32f00ac2929d1aa459986a`;
+- PR #57 squash merge commit: `7030ce9a88a0074b0d1e596b25eb06155e9405ee`.
 
 ## Decision classification
 
@@ -47,3 +57,7 @@ The implementation run above validates the corrected code head. Integration stil
 - exact issue/error taxonomy and limits: `ENGINEERING_CHOICE`;
 - deterministic loopback-server behavior measured above: `LOCALLY_VERIFIED`;
 - public-internet source compatibility, JavaScript navigation, discovery completeness and production coverage: `UNKNOWN` and outside this unit.
+
+## Remaining debt
+
+None for the locally measured direct-HTTP transport semantics in this V1 work unit. `TECH-DEBT.md` retains public-web operational/source compatibility, JavaScript/browser navigation, source discovery and broader production source distribution/corpus coverage as separate open measurement problems. This work does not justify selecting a generic crawler/browser/agent dependency.
