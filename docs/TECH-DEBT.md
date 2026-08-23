@@ -35,20 +35,20 @@ Completed bounded capabilities are recorded in their dedicated design records:
 - `REPEATABLE-WEB-EXTRACTION-V1.md` — retained Autoevolution extraction benchmark and measured strict/partial behavior;
 - `DIRECT-HTTP-ACQUISITION-V1.md` — fail-closed direct HTTP transport semantics and snapshot contract;
 - `NETWORK-TARGET-BINDING-V1.md` — DNS-rebinding-resistant acquisition path for arbitrary untrusted locators; each hop resolves, validates, and connects to the same validated IP set while preserving hostname TLS verification;
+- `INMETRO-PBEV-DOCUMENT-PATH-V1.md` — deliberate source-specific current Inmetro PBEV PDF acquisition and ruled-table extraction path; `pdfplumber` is an optional `pbev` extra and the global HTTP media policy remains unchanged;
 - `PUBLIC-WEB-ACQUISITION-CHARACTERIZATION-V1.md` — bounded real-network compatibility observation;
 - `BROWSER-ACQUISITION-CHARACTERIZATION-V1.md` — normal Chromium did not overcome the measured Autoevolution HTTP 403 path, so generic browser fallback was not selected;
-- `COMPLIANT-ALTERNATIVE-SOURCES-V1.md` — official alternative-source selection: NHTSA vPIC `ADAPT`, EEA `ADAPT`, FuelEconomy.gov `REFERENCE`, Inmetro PBEV `REFERENCE` under the current resource/transport boundary;
+- `COMPLIANT-ALTERNATIVE-SOURCES-V1.md` — official alternative-source selection: NHTSA vPIC `ADAPT`, EEA `ADAPT`, FuelEconomy.gov `REFERENCE`, and the historical Inmetro resource boundary that motivated the now-implemented document path;
 - `EEA-SOURCE-FAMILY-V1.md` — third bounded structured source family with explicit regulatory semantics and nonclaims;
 - `OFFICIAL-SOURCE-DISCOVERY-V1.md` — bounded NHTSA vPIC + FuelEconomy.gov candidate discovery with source-native identifiers/locators and an explicit `identity_proof=False` contract;
 - `RECURRING-SOURCE-POLICY-V1.md` — fail-closed recurring-operation robots interpretation and per-host pacing gate using stdlib robots semantics plus the existing Podium rate limiter.
 
-The generic debts “find any compliant alternative live source”, “implement EEA source-family V1”, “implement bounded official source discovery V1”, “define recurring-operation source policy”, and “strengthen network target binding before arbitrary untrusted locators” are closed.
+The generic debts “find any compliant alternative live source”, “implement EEA source-family V1”, “implement bounded official source discovery V1”, “define recurring-operation source policy”, “strengthen network target binding before arbitrary untrusted locators”, and “establish a bounded Inmetro PBEV acquisition/extraction path” are closed.
 
 Remaining acquisition/generalization debt is concrete:
 
-1. **Inmetro PBEV path, when needed.** Characterize an exact current unauthenticated machine-readable resource or a deliberate source-specific PDF/document acquisition-and-extraction path only when Brazilian coverage is an active product need. Do not weaken the default global HTTP media-type or validation policy merely to make the current PDF/401 surfaces pass.
-2. **Production source distribution and corpus breadth.** Broaden coverage only through independently inspected source-family evidence and measured failure modes. Current bounded results do not establish heterogeneous-web or production precision/recall, discovery completeness, or production-wide European/U.S./Brazilian coverage.
-3. **EEA semantic expansion.** V1 does not establish diesel/diesel-electric mappings, production-wide European coverage, or canonical retail identity from EEA type/variant/version evidence. Expand only when those semantics become decision-critical and independently benchmarked.
+1. **Production source distribution and corpus breadth.** Broaden coverage only through independently inspected source-family evidence and measured failure modes. Current bounded results do not establish heterogeneous-web or production precision/recall, discovery completeness, or production-wide European/U.S./Brazilian coverage.
+2. **EEA semantic expansion.** V1 does not establish diesel/diesel-electric mappings, production-wide European coverage, or canonical retail identity from EEA type/variant/version evidence. Expand only when those semantics become decision-critical and independently benchmarked.
 
 Browser automation can be reconsidered only if a different independently measured source family demonstrates both a genuine JavaScript requirement and successful normal-browser acquisition. Do not add a generic browser/agent layer merely because direct HTTP failed.
 
