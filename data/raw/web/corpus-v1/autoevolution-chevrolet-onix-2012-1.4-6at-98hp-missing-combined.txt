@@ -1,0 +1,14 @@
+SOURCE: https://www.autoevolution.com/cars/chevrolet-onix-2012.html
+ACQUIRED: 2026-08-23
+VEHICLE: CHEVROLET Onix 1.4L 6AT FWD (98 HP)
+Displacement: | 1398 cm3 (85 ci)
+Power: | 72 KW @ 6000 RPM / 98 HP @ 6000 RPM / 97 BHP @ 6000 RPM
+Torque: | 94 lb-ft @ 4800 RPM / 127 Nm @ 4800 RPM
+Fuel: | Gasoline
+Drive Type: | Front Wheel Drive
+Gearbox: | 6 speed automatic
+Length: | 154.7 in (3929 mm)
+Width: | 67.1 in (1704 mm)
+Height: | 58.4 in (1483 mm)
+Wheelbase: | 99.5 in (2527 mm)
+Unladen Weight: | 2443 lbs (1108 kg)

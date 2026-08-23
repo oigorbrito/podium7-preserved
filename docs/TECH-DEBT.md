@@ -26,6 +26,16 @@ The owner selected the Senatran-aligned rule on 2026-08-23. Manufacture year and
 
 `benchmarks/catalog_identity_year_semantics_challenge_v1.json` version `year-semantics-1.1` is the focused regression gate, and `CATALOG-YEAR-SEMANTICS-CHALLENGE-V1.md` records the evidence and decision. Reopen this debt only if new evidence or product requirements justify changing the selected rule.
 
+## Web extraction source-family coverage
+
+Status: `OPEN / LOCALLY_VERIFIED`
+
+`REPEATABLE-WEB-EXTRACTION-V1.md` now records a frozen 12-configuration Autoevolution source-family characterization of the existing reusable extraction artifact. On that corpus the current artifact succeeds on 8/12 configurations, emits 96/96 correct fields, and recalls 96/142 target fields. All four unsupported structures fail explicitly rather than silently dropping fields.
+
+Observed local limitations are concrete: a required field may be absent, `Unladen Weight` may be a range instead of one scalar value, and semantic labels may vary (`Combined (EPA)` versus exact `Combined`). The result establishes a coverage/generalization gap without establishing heterogeneous-web or production-wide performance.
+
+A future work unit may address this gap, but the exact remediation is not selected. Candidate directions such as optional-field schemas, variant-aware parsers, per-template reusable artifacts, or another inspectable strategy remain `ENGINEERING_CHOICE` and must preserve source evidence plus explicit failure semantics. Do not weaken validation merely to increase page success.
+
 ## Harness debt
 
 No known harness blocker after Agent Harness V1 beyond normal documentation gardening. Add future durable items here with status and a plan link when work starts.

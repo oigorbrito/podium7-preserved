@@ -1,0 +1,15 @@
+SOURCE: https://www.autoevolution.com/cars/toyota-corolla-cross-2025.html
+ACQUIRED: 2026-08-23
+VEHICLE: TOYOTA Corolla Cross 2.0L CVTi-S AWD (169 HP)
+Displacement: | 1987 cm3 (121 ci)
+Power: | 124.3 KW @ 6600 RPM / 169 HP @ 6600 RPM / 167 BHP @ 6600 RPM
+Torque: | 151 lb-ft @ 4400-4800 RPM / 205 Nm @ 4400-4800 RPM
+Fuel: | Gasoline
+Drive Type: | All Wheel Drive
+Gearbox: | CVTi-S
+Length: | 175.6 in (4460 mm)
+Width: | 71.9 in (1826 mm)
+Height: | 63.8 in (1621 mm)
+Wheelbase: | 103.9 in (2639 mm)
+Unladen Weight: | 3285 - 3325 lbs (1490 - 1508 kg)
+Combined: | 30.2 mpg US (7.8 L/100Km)

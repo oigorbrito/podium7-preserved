@@ -1,0 +1,15 @@
+SOURCE: https://www.autoevolution.com/cars/toyota-corolla-cross-2020.html
+ACQUIRED: 2026-08-23
+VEHICLE: TOYOTA Corolla Cross 1.8L e-CVT FWD (122 HP)
+Displacement: | 1798 cm3 (110 ci)
+Power: | 72.1 KW @ 5200 RPM / 98 HP @ 5200 RPM / 97 BHP @ 5200 RPM
+Torque: | 105 lb-ft @ 3600 RPM / 142 Nm @ 3600 RPM
+Fuel: | Hybrid Gasoline
+Drive Type: | Front Wheel Drive
+Gearbox: | Electric continuously variable transmission
+Length: | 175.6 in (4460 mm)
+Width: | 71.9 in (1826 mm)
+Height: | 63.8 in (1621 mm)
+Wheelbase: | 103.9 in (2639 mm)
+Unladen Weight: | 3053 lbs (1385 kg)
+Combined: | 54.7 mpg US (4.3 L/100Km)

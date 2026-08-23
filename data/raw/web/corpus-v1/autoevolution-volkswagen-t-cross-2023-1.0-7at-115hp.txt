@@ -1,0 +1,15 @@
+SOURCE: https://www.autoevolution.com/cars/volkswagen-t-cross-2023.html
+ACQUIRED: 2026-08-23
+VEHICLE: VOLKSWAGEN T-Cross 1.0L TSI 7AT FWD (115 HP)
+Displacement: | 999 cm3 (61 ci)
+Power: | 84.6 KW @ - RPM / 115 HP @ - RPM / 113 BHP @ - RPM
+Torque: | 148 lb-ft @ 2000-3500 RPM / 200 Nm @ 2000-3500 RPM
+Fuel: | Gasoline
+Drive Type: | Front Wheel Drive
+Gearbox: | 7-speed automatic DSG
+Length: | 162.5 in (4128 mm)
+Width: | 69.3 in (1760 mm)
+Height: | 61.9 in (1572 mm)
+Wheelbase: | 100.4 in (2550 mm)
+Unladen Weight: | 2857 lbs (1296 kg)
+Combined: | 40.6 mpg US (5.8 L/100Km)

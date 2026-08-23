@@ -1,0 +1,15 @@
+SOURCE: https://www.autoevolution.com/cars/nissan-100-nx-1991.html
+ACQUIRED: 2026-08-23
+VEHICLE: NISSAN 100 NX 1.6L 4AT FWD (102 HP)
+Displacement: | 1597 cm3 (97 ci)
+Power: | 75 KW @ 6000 RPM / 102 HP @ 6000 RPM / 101 BHP @ 6000 RPM
+Torque: | 100 lb-ft @ 4000 RPM / 136 Nm @ 4000 RPM
+Fuel: | Gasoline
+Drive Type: | Front Wheel Drive
+Gearbox: | 4-speed automatic
+Length: | 163 in (4140 mm)
+Width: | 66.1 in (1679 mm)
+Height: | 52 in (1321 mm)
+Wheelbase: | 95.7 in (2431 mm)
+Unladen Weight: | 2381 lbs (1080 kg)
+Combined: | 31.8 mpg US (7.4 L/100Km)

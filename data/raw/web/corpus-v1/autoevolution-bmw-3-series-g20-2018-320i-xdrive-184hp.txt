@@ -1,0 +1,15 @@
+SOURCE: https://www.autoevolution.com/cars/bmw-3-series-sedan-2018.html
+ACQUIRED: 2026-08-23
+VEHICLE: BMW 3 Series Sedan (G20) 320i xDrive 8AT AWD (184 HP)
+Displacement: | 1998 cm3 (122 ci)
+Power: | 135.3 KW @ 5000-6500 RPM / 184 HP @ 5000-6500 RPM / 181 BHP @ 5000-6500 RPM
+Torque: | 221 lb-ft @ 1350-4000 RPM / 300 Nm @ 1350-4000 RPM
+Fuel: | Gasoline
+Drive Type: | All Wheel Drive
+Gearbox: | 8-speed automatic Steptronic
+Length: | 185.4 in (4709 mm)
+Width: | 71.9 in (1826 mm)
+Height: | 56.8 in (1443 mm)
+Wheelbase: | 112.2 in (2850 mm)
+Unladen Weight: | 3560 lbs (1615 kg)
+Combined: | 37.3 mpg US (6.3 L/100Km)

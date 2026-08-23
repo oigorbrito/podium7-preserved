@@ -1,0 +1,15 @@
+SOURCE: https://www.autoevolution.com/cars/nissan-pathfinder-2025.html
+ACQUIRED: 2026-08-23
+VEHICLE: NISSAN Pathfinder 3.5L V6 FWD 9AT (288 HP)
+Displacement: | 3498 cm3 (213 ci)
+Power: | 211.8 KW @ 6400 RPM / 288 HP @ 6400 RPM / 284 BHP @ 6400 RPM
+Torque: | 259 lb-ft @ 4800 RPM / 351 Nm @ 4800 RPM
+Fuel: | Gasoline
+Drive Type: | Front Wheel Drive
+Gearbox: | 9-speed automatic
+Length: | 197.7 in (5022 mm)
+Width: | 77.9 in (1979 mm)
+Height: | 70.9 in (1801 mm)
+Wheelbase: | 114.2 in (2901 mm)
+Unladen Weight: | 4334 - 4489 lbs (1966 - 2036 kg)
+Combined (EPA): | 23.1 mpg US (10.2 L/100Km)

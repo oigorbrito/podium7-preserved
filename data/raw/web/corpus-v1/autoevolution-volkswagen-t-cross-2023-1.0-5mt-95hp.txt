@@ -1,0 +1,15 @@
+SOURCE: https://www.autoevolution.com/cars/volkswagen-t-cross-2023.html
+ACQUIRED: 2026-08-23
+VEHICLE: VOLKSWAGEN T-Cross 1.0L TSI 5MT FWD (95 HP)
+Displacement: | 999 cm3 (61 ci)
+Power: | 69.9 KW @ - RPM / 95 HP @ - RPM / 94 BHP @ - RPM
+Torque: | 129 lb-ft @ 1600-3000 RPM / 175 Nm @ 1600-3000 RPM
+Fuel: | Gasoline
+Drive Type: | Front Wheel Drive
+Gearbox: | 5-speed manual
+Length: | 162.5 in (4128 mm)
+Width: | 69.3 in (1760 mm)
+Height: | 61.9 in (1572 mm)
+Wheelbase: | 100.4 in (2550 mm)
+Unladen Weight: | 2765 lbs (1254 kg)
+Combined: | 42 mpg US (5.6 L/100Km)

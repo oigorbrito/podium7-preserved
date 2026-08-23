@@ -1,0 +1,15 @@
+SOURCE: https://www.autoevolution.com/cars/porsche-911-carrera-t-2017.html
+ACQUIRED: 2026-08-23
+VEHICLE: PORSCHE 911 Carrera T 3.0L 7MT RWD (370 HP)
+Displacement: | 2981 cm3 (182 ci)
+Power: | 272.1 KW @ 6500 RPM / 370 HP @ 6500 RPM / 365 BHP @ 6500 RPM
+Torque: | 332 lb-ft @ 1700-5000 RPM / 450 Nm @ 1700-5000 RPM
+Fuel: | Gasoline
+Drive Type: | Rear Wheel Drive
+Gearbox: | 7-speed manual
+Length: | 178.2 in (4526 mm)
+Width: | 71.2 in (1808 mm)
+Height: | 50.6 in (1285 mm)
+Wheelbase: | 96.5 in (2451 mm)
+Unladen Weight: | 3142 lbs (1425 kg)
+Combined: | 24.8 mpg US (9.5 L/100Km)
