@@ -17,4 +17,6 @@ For development or agent work, start with [`AGENTS.md`](AGENTS.md). The reposito
 
 The canonical development workflow, validation commands, Git/PR/CI policy, autonomy boundaries, definition of done, and stopping rules live only in [`docs/DEVELOPMENT-WORKFLOW.md`](docs/DEVELOPMENT-WORKFLOW.md).
 
+Collaboration and security expectations are documented in [`CONTRIBUTING.md`](CONTRIBUTING.md), [`SECURITY.md`](SECURITY.md), and [`CODE_OF_CONDUCT.md`](CODE_OF_CONDUCT.md).
+
 Volatile repository facts such as current test count, Python runtime, release readiness, benchmark counters, and scientific-reference count are generated with `python scripts/project_facts.py`; they are not maintained manually in this README or current-state documentation.
