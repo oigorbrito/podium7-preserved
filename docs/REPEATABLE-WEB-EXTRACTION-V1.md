@@ -289,3 +289,43 @@ Second-family FuelEconomy.gov gate:
 - official hyphenated drivetrain labels normalized deterministically: PASS;
 - historical Autoevolution regression suite unchanged: PASS;
 - heterogeneous-web / production generalization: **not established**.
+
+## Frozen web acquisition evidence V1
+
+The extraction corpora above previously retained source locators and snapshots but did not have one cross-family gate that proves those retained artifacts still correspond to pinned repository content. `Frozen Web Acquisition Evidence V1` adds that gate without adding a crawler, browser, or network dependency.
+
+The manifest is derived from the existing Autoevolution and FuelEconomy.gov benchmark case inventories. Snapshot identity is pinned separately in:
+
+```text
+benchmarks/web_acquisition_snapshot_pins_v1.json
+```
+
+and evaluated with:
+
+```text
+PYTHONPATH=. python scripts/run_web_acquisition_evidence.py
+```
+
+For each benchmark case the evaluator requires a source-family/case identity, an exact credential-free HTTPS source URL, a distinct retained snapshot path and a pinned Git blob identity. The current snapshot bytes must match that pin. The evaluator then creates and verifies the existing Podium SHA-256 content-addressed reference, preserving the chain from benchmark source locator to immutable local evidence. Shared source URLs are allowed when multiple configurations are represented by different snapshots; snapshot ownership itself must be unique.
+
+### Measured frozen-acquisition result — 2026-08-23
+
+`LOCALLY_VERIFIED` on the current retained two-family inventory:
+
+```text
+source families:                 2
+benchmark cases:                16
+unique exact HTTPS source URLs: 13
+declared frozen snapshots:      16
+verified frozen snapshots:      16 / 16
+verified SHA-256 content refs:   16 / 16
+acquisition-evidence issues:      0
+orphan snapshot pins:             0
+duplicate snapshot ownership:     0
+```
+
+Negative regression cases fail explicitly for missing snapshots, empty snapshots, changed snapshot bytes, missing/orphan pins, duplicate source-family case identity, duplicate snapshot ownership and non-HTTPS source locators. A mutation is not accepted by simply recomputing a new hash: the current bytes must first match the independently pinned repository blob identity.
+
+Implementation validation evidence: PR #55 initial merge-candidate run `32650010396`, job `97219999963`, Python `3.13.15`, `HARNESS PASS`, runtime health PASS and `353/353` repository tests executed one by one. Validation artifact ID `9495914846`, ZIP SHA-256 `9074cfa7f5c59fe3d86e573d5987436efcc6d70d8048b6ca4d5527bff81c33db`.
+
+This closes the retained-snapshot lineage/integrity gap for the current two frozen corpora. It does **not** establish successful live fetching of those URLs, navigation completeness, source discovery completeness, arbitrary-web coverage, production source distribution, or production-wide precision/recall. Those remain separate measurement problems and are not grounds by themselves to select a generic browser/agent dependency.

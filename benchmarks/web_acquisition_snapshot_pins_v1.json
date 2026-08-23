@@ -1,0 +1,22 @@
+{
+  "schema": "podium7.web-acquisition-snapshot-pins.v1",
+  "datasetVersion": "web-acquisition-snapshot-pins-1.0",
+  "pins": {
+    "data/raw/web/autoevolution-artega-gt-2010.txt": "715ea9a1f3935b4ce4739861597edb3aed4477b4",
+    "data/raw/web/corpus-v1/autoevolution-volkswagen-t-cross-2023-1.0-5mt-95hp.txt": "1fe9ed6c8508f366c4d196ac7f62e89ed88ff4a1",
+    "data/raw/web/corpus-v1/autoevolution-volkswagen-t-cross-2023-1.0-7at-115hp.txt": "5656b902b2938dddd2e59e97aa4eb92c229f596e",
+    "data/raw/web/corpus-v1/autoevolution-toyota-corolla-cross-2020-1.8-cvti-140hp.txt": "22749d17880b1e100b32002ab356d6afa197f88a",
+    "data/raw/web/corpus-v1/autoevolution-toyota-corolla-cross-2020-1.8-hybrid-122hp.txt": "5a512baa06b6ffe5b71568b7361e54106a8376c2",
+    "data/raw/web/corpus-v1/autoevolution-bmw-3-series-g20-2018-320i-xdrive-184hp.txt": "6feafaa76ad9e640d389c5220b7458ba268a031a",
+    "data/raw/web/corpus-v1/autoevolution-porsche-911-carrera-t-2017-370hp.txt": "9e29d4a53b8dec480156c680e5eca37662e49c6b",
+    "data/raw/web/corpus-v1/autoevolution-nissan-100-nx-1991-1.6-4at-102hp.txt": "61234f28aa97be90afee6fc814b7f81a766008c2",
+    "data/raw/web/corpus-v1/autoevolution-bmw-3-series-g20-2018-320i-rwd-184hp-missing-weight.txt": "4d34ff60ab31ad37fd6eb50b73054c5048a31928",
+    "data/raw/web/corpus-v1/autoevolution-chevrolet-onix-2012-1.4-6at-98hp-missing-combined.txt": "f0f701fbaa6aab59f42f946df4af08e549ad2aa6",
+    "data/raw/web/corpus-v1/autoevolution-toyota-corolla-cross-2025-2.0-awd-169hp-range-weight.txt": "514ba9e738607376551f71e7f650af42686e68ea",
+    "data/raw/web/corpus-v1/autoevolution-nissan-pathfinder-2025-3.5-fwd-288hp-range-weight-epa-label.txt": "5cec6c43ecc5fcc1eff22bbe76a50e32581eed63",
+    "data/raw/web/fueleconomy-v1/ford-f150-hev-2025.txt": "14423614755153c44117909ffd6a0a8c67a67b28",
+    "data/raw/web/fueleconomy-v1/toyota-rav4-prime-2021.txt": "7ee05ee12996b846a8538321a20329630737b838",
+    "data/raw/web/fueleconomy-v1/tesla-model-3-long-range-awd-2022.txt": "c68e98b0ce901bebbbf30510fa0cc8f765ed64d8",
+    "data/raw/web/fueleconomy-v1/chevrolet-bolt-ev-2017.txt": "d89edf3aae44fcd82acf747854dffd6f4ac147ce"
+  }
+}

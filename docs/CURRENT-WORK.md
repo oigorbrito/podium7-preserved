@@ -1,5 +1,9 @@
 # Current work
 
-Status: none
+Status: active
 
-No implementation mission is active. Durable unresolved work remains tracked in `TECH-DEBT.md` and completed execution history is under `exec-plans/completed/`.
+Outcome: make retained web acquisition lineage across Autoevolution and FuelEconomy.gov deterministically verifiable from source URL to frozen snapshot to SHA-256 evidence.
+
+Acceptance: benchmark-derived manifest, explicit acquisition issues, deterministic coverage metrics, reproducible CLI, no live-crawling claim, green CI.
+
+Plan: [`exec-plans/active/web-acquisition-evidence-v1.md`](exec-plans/active/web-acquisition-evidence-v1.md)
