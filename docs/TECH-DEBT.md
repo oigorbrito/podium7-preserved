@@ -26,15 +26,17 @@ The owner selected the Senatran-aligned rule on 2026-08-23. Manufacture year and
 
 `benchmarks/catalog_identity_year_semantics_challenge_v1.json` version `year-semantics-1.1` is the focused regression gate, and `CATALOG-YEAR-SEMANTICS-CHALLENGE-V1.md` records the evidence and decision. Reopen this debt only if new evidence or product requirements justify changing the selected rule.
 
-## Web extraction source-family coverage
+## Web extraction source-family coverage/generalization
 
 Status: `OPEN / LOCALLY_VERIFIED`
 
-`REPEATABLE-WEB-EXTRACTION-V1.md` now records a frozen 12-configuration Autoevolution source-family characterization of the existing reusable extraction artifact. On that corpus the current artifact succeeds on 8/12 configurations, emits 96/96 correct fields, and recalls 96/142 target fields. All four unsupported structures fail explicitly rather than silently dropping fields.
+`REPEATABLE-WEB-EXTRACTION-V1.md` records a frozen 12-configuration Autoevolution source-family characterization. Strict extraction still succeeds on 8/12 configurations, emits 96/96 correct fields and recalls 96/142 source target fields; strict unsupported structures continue to fail explicitly.
 
-Observed local limitations are concrete: a required field may be absent, `Unladen Weight` may be a range instead of one scalar value, and semantic labels may vary (`Combined (EPA)` versus exact `Combined`). The result establishes a coverage/generalization gap without establishing heterogeneous-web or production-wide performance.
+The gap is partially remediated without redefining strict success. An additive facts+issues report path preserves independently valid evidence from structurally partial pages. On the same frozen corpus it retains 140/142 source target fields, all 140 emitted fields are correct, and all four problematic configurations retain usable facts alongside explicit issues. The observed `Combined (EPA)` variation is handled only through a declared validated alias, with the exact source label preserved for provenance.
 
-A future work unit may address this gap, but the exact remediation is not selected. Candidate directions such as optional-field schemas, variant-aware parsers, per-template reusable artifacts, or another inspectable strategy remain `ENGINEERING_CHOICE` and must preserve source evidence plus explicit failure semantics. Do not weaken validation merely to increase page success.
+Two source target fields remain unresolved: the observed non-scalar `curb_weight` ranges. They are preserved as raw issue evidence and are not collapsed to arbitrary scalar weights. Fields truly absent from a source also remain explicit `MISSING_FIELD` issues rather than invented values.
+
+The remaining debt is therefore narrower but still real: select evidence-backed semantics if non-scalar automotive ranges become decision-critical, and characterize reusable extraction beyond this one source family before making heterogeneous-web or production claims. Do not weaken strict validation or convert partial evidence into a false complete-page PASS merely to increase coverage.
 
 ## Harness debt
 

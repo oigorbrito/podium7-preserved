@@ -1,5 +1,9 @@
 # Current work
 
-Status: none
+Status: active
 
-No implementation mission is active. Durable unresolved work remains tracked in `TECH-DEBT.md` and completed execution history is under `exec-plans/completed/`.
+Outcome: preserve correctly extracted web facts across partial structural failures without weakening strict extraction semantics or inventing unsupported values.
+
+Acceptance: deterministic facts+issues report path, validated label aliases, frozen-corpus measurement, explicit unsupported/missing fields, green CI.
+
+Plan: [`exec-plans/active/web-extraction-partial-evidence-v1.md`](exec-plans/active/web-extraction-partial-evidence-v1.md)

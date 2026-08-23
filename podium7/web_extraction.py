@@ -12,6 +12,7 @@ class WebFieldRule:
     attribute: str
     parser: str
     source_unit: str | None
+    label_aliases: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True)
@@ -23,6 +24,22 @@ class ExtractedWebFact:
     unit: str | None
     extraction_rule: str
     normalization_rule: str
+    source_label: str
+
+
+@dataclass(frozen=True)
+class WebExtractionIssue:
+    attribute: str
+    label: str
+    code: str
+    message: str
+    raw_value: str | None = None
+
+
+@dataclass(frozen=True)
+class WebExtractionReport:
+    facts: tuple[ExtractedWebFact, ...]
+    issues: tuple[WebExtractionIssue, ...]
 
 
 AUTOEVOLUTION_ARTEGA_GT_RULES: tuple[WebFieldRule, ...] = (
@@ -37,7 +54,13 @@ AUTOEVOLUTION_ARTEGA_GT_RULES: tuple[WebFieldRule, ...] = (
     WebFieldRule("Height", "height", r"^.*?\((\d+)\s*mm\)", "mm"),
     WebFieldRule("Wheelbase", "wheelbase", r"^.*?\((\d+)\s*mm\)", "mm"),
     WebFieldRule("Unladen Weight", "curb_weight", r"^.*?\((\d+)\s*kg\)", "kg"),
-    WebFieldRule("Combined", "fuel_economy_combined", r"^.*?\(([\d.]+)\s*L/100Km\)", "L/100km"),
+    WebFieldRule(
+        "Combined",
+        "fuel_economy_combined",
+        r"^.*?\(([\d.]+)\s*L/100Km\)",
+        "L/100km",
+        ("Combined (EPA)",),
+    ),
 )
 
 
@@ -52,25 +75,72 @@ def _coerce(value: str) -> object:
             return stripped
 
 
-def extract_with_rules(text: str, rules: tuple[WebFieldRule, ...]) -> list[ExtractedWebFact]:
-    values: dict[str, str] = {}
+def _parse_values(text: str) -> dict[str, tuple[str, str]]:
+    values: dict[str, tuple[str, str]] = {}
     for line in text.splitlines():
         if ": | " not in line:
             continue
         label, raw = line.split(": | ", 1)
-        key = label.strip().casefold()
+        normalized_label = label.strip()
+        key = normalized_label.casefold()
         if key in values:
-            raise ValueError(f"duplicate web field {label.strip()!r}")
-        values[key] = raw.strip()
+            raise ValueError(f"duplicate web field {normalized_label!r}")
+        values[key] = (normalized_label, raw.strip())
+    return values
 
+
+def extract_with_rules_report(
+    text: str,
+    rules: tuple[WebFieldRule, ...],
+) -> WebExtractionReport:
+    values = _parse_values(text)
     extracted: list[ExtractedWebFact] = []
+    issues: list[WebExtractionIssue] = []
+
     for rule in rules:
-        raw = values.get(rule.label.casefold())
-        if raw is None:
-            raise ValueError(f"required web field {rule.label!r} is missing")
+        candidate_labels = (rule.label, *rule.label_aliases)
+        matches = [values[label.casefold()] for label in candidate_labels if label.casefold() in values]
+
+        if not matches:
+            message = f"required web field {rule.label!r} is missing"
+            issues.append(
+                WebExtractionIssue(
+                    attribute=rule.attribute,
+                    label=rule.label,
+                    code="MISSING_FIELD",
+                    message=message,
+                )
+            )
+            continue
+
+        if len(matches) > 1:
+            matched_labels = ", ".join(repr(label) for label, _ in matches)
+            message = f"multiple web labels matched rule {rule.label!r}: {matched_labels}"
+            issues.append(
+                WebExtractionIssue(
+                    attribute=rule.attribute,
+                    label=rule.label,
+                    code="AMBIGUOUS_LABEL",
+                    message=message,
+                )
+            )
+            continue
+
+        source_label, raw = matches[0]
         match = re.search(rule.parser, raw, flags=re.IGNORECASE)
         if match is None:
-            raise ValueError(f"rule {rule.label!r} did not match acquired value {raw!r}")
+            message = f"rule {rule.label!r} did not match acquired value {raw!r}"
+            issues.append(
+                WebExtractionIssue(
+                    attribute=rule.attribute,
+                    label=source_label,
+                    code="PARSER_MISMATCH",
+                    message=message,
+                    raw_value=raw,
+                )
+            )
+            continue
+
         parsed = _coerce(match.group(1))
         normalized = normalize_fact(rule.attribute, parsed, rule.source_unit)
         extracted.append(
@@ -82,9 +152,18 @@ def extract_with_rules(text: str, rules: tuple[WebFieldRule, ...]) -> list[Extra
                 unit=normalized.unit,
                 extraction_rule=f"autoevolution.{rule.attribute}.v1",
                 normalization_rule=normalized.rule,
+                source_label=source_label,
             )
         )
-    return extracted
+
+    return WebExtractionReport(tuple(extracted), tuple(issues))
+
+
+def extract_with_rules(text: str, rules: tuple[WebFieldRule, ...]) -> list[ExtractedWebFact]:
+    report = extract_with_rules_report(text, rules)
+    if report.issues:
+        raise ValueError(report.issues[0].message)
+    return list(report.facts)
 
 
 def extract_autoevolution_artega_gt(text: str) -> list[ExtractedWebFact]:

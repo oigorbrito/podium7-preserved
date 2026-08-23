@@ -67,6 +67,78 @@ class AIDiscoveryTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             validate_extraction_artifact(payload)
 
+    def test_label_aliases_compile_and_are_reusable(self):
+        payload = {
+            "source_id": "x",
+            "rules": [
+                {
+                    "label": "Combined",
+                    "label_aliases": ["Combined (EPA)"],
+                    "attribute": "fuel_economy_combined",
+                    "parser": r"([\d.]+) L/100Km",
+                    "source_unit": "L/100km",
+                }
+            ],
+        }
+        artifact = validate_extraction_artifact(payload)
+        self.assertEqual(artifact.rules[0].label_aliases, ("Combined (EPA)",))
+        facts = extract_with_rules("Combined (EPA): | 9.6 L/100Km", artifact.rules)
+        self.assertEqual(facts[0].parsed_value, 9.6)
+
+    def test_alias_cannot_duplicate_canonical_label(self):
+        payload = {
+            "source_id": "x",
+            "rules": [
+                {
+                    "label": "Combined",
+                    "label_aliases": [" combined "],
+                    "attribute": "fuel_economy_combined",
+                    "parser": r"([\d.]+) L/100Km",
+                    "source_unit": "L/100km",
+                }
+            ],
+        }
+        with self.assertRaises(ValueError):
+            validate_extraction_artifact(payload)
+
+    def test_alias_cannot_collide_with_another_rule_label(self):
+        payload = {
+            "source_id": "x",
+            "rules": [
+                {
+                    "label": "Combined",
+                    "label_aliases": ["Combined (EPA)"],
+                    "attribute": "fuel_economy_combined",
+                    "parser": r"([\d.]+) L/100Km",
+                    "source_unit": "L/100km",
+                },
+                {
+                    "label": " combined (epa) ",
+                    "attribute": "power",
+                    "parser": r"(\d+) HP",
+                    "source_unit": "hp",
+                },
+            ],
+        }
+        with self.assertRaises(ValueError):
+            validate_extraction_artifact(payload)
+
+    def test_label_aliases_must_be_non_empty_strings(self):
+        payload = {
+            "source_id": "x",
+            "rules": [
+                {
+                    "label": "Power",
+                    "label_aliases": [""],
+                    "attribute": "power",
+                    "parser": r"(\d+) HP",
+                    "source_unit": "hp",
+                }
+            ],
+        }
+        with self.assertRaises(ValueError):
+            validate_extraction_artifact(payload)
+
 
 if __name__ == "__main__":
     unittest.main()

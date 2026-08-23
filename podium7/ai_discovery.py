@@ -32,15 +32,21 @@ def validate_extraction_artifact(payload: dict[str, Any]) -> ValidatedExtraction
         attribute = item.get("attribute")
         parser = item.get("parser")
         source_unit = item.get("source_unit")
+        label_aliases = item.get("label_aliases", [])
         if not all(isinstance(value, str) and value.strip() for value in (label, attribute, parser)):
             raise ValueError(f"rule {index} requires label, attribute, and parser")
         if source_unit is not None and (not isinstance(source_unit, str) or not source_unit.strip()):
             raise ValueError(f"rule {index} source_unit must be non-empty string or null")
+        if not isinstance(label_aliases, list) or any(
+            not isinstance(alias, str) or not alias.strip() for alias in label_aliases
+        ):
+            raise ValueError(f"rule {index} label_aliases must be a list of non-empty strings")
 
         normalized_label = label.strip()
         normalized_attribute = attribute.strip()
-        label_key = normalized_label.casefold()
+        normalized_aliases = tuple(alias.strip() for alias in label_aliases)
         attribute_key = normalized_attribute.casefold()
+        label_keys = tuple(value.casefold() for value in (normalized_label, *normalized_aliases))
 
         try:
             compiled = re.compile(parser)
@@ -50,16 +56,23 @@ def validate_extraction_artifact(payload: dict[str, Any]) -> ValidatedExtraction
             raise ValueError(f"rule {index} parser must contain a capture group")
         if attribute_key in seen_attributes:
             raise ValueError(f"duplicate attribute {normalized_attribute!r}")
-        if label_key in seen_labels:
-            raise ValueError(f"duplicate label {normalized_label!r}")
+        if len(set(label_keys)) != len(label_keys):
+            raise ValueError(f"rule {index} contains duplicate label aliases")
+        duplicate_labels = [
+            value for value, key in zip((normalized_label, *normalized_aliases), label_keys) if key in seen_labels
+        ]
+        if duplicate_labels:
+            raise ValueError(f"duplicate label {duplicate_labels[0]!r}")
+
         seen_attributes.add(attribute_key)
-        seen_labels.add(label_key)
+        seen_labels.update(label_keys)
         rules.append(
             WebFieldRule(
                 normalized_label,
                 normalized_attribute,
                 parser,
                 source_unit.strip() if source_unit is not None else None,
+                normalized_aliases,
             )
         )
 

@@ -5,7 +5,11 @@ import json
 from pathlib import Path
 from typing import Any
 
-from .web_extraction import AUTOEVOLUTION_ARTEGA_GT_RULES, extract_with_rules
+from .web_extraction import (
+    AUTOEVOLUTION_ARTEGA_GT_RULES,
+    extract_with_rules,
+    extract_with_rules_report,
+)
 
 
 WEB_EXTRACTION_CORPUS_SCHEMA = "podium7.web-extraction-source-family-corpus.v1"
@@ -160,6 +164,22 @@ def load_web_extraction_corpus(path: str | Path) -> WebExtractionCorpus:
     return WebExtractionCorpus(version=version, artifact=artifact, cases=tuple(cases))
 
 
+def _field_comparison(
+    parsed: dict[str, object],
+    expected_parsed: dict[str, object],
+) -> tuple[list[str], int]:
+    incorrect_fields = sorted(
+        attribute
+        for attribute, actual in parsed.items()
+        if attribute not in expected_parsed or expected_parsed[attribute] != actual
+    )
+    correct_fields = sum(
+        attribute in expected_parsed and expected_parsed[attribute] == actual
+        for attribute, actual in parsed.items()
+    )
+    return incorrect_fields, correct_fields
+
+
 def evaluate_web_extraction_corpus(dataset: WebExtractionCorpus) -> dict[str, Any]:
     results: list[dict[str, Any]] = []
     total_target_fields = 0
@@ -193,15 +213,7 @@ def evaluate_web_extraction_corpus(dataset: WebExtractionCorpus) -> dict[str, An
             continue
 
         parsed = {fact.attribute: fact.parsed_value for fact in extracted}
-        incorrect_fields = sorted(
-            attribute
-            for attribute, actual in parsed.items()
-            if attribute not in case.expected_parsed or case.expected_parsed[attribute] != actual
-        )
-        correct_fields = sum(
-            attribute in case.expected_parsed and case.expected_parsed[attribute] == actual
-            for attribute, actual in parsed.items()
-        )
+        incorrect_fields, correct_fields = _field_comparison(parsed, case.expected_parsed)
         emitted_fields = len(parsed)
         total_emitted_fields += emitted_fields
         total_correct_fields += correct_fields
@@ -251,10 +263,77 @@ def evaluate_web_extraction_corpus(dataset: WebExtractionCorpus) -> dict[str, An
     }
 
 
+def evaluate_web_extraction_partial_evidence_corpus(
+    dataset: WebExtractionCorpus,
+) -> dict[str, Any]:
+    results: list[dict[str, Any]] = []
+    total_target_fields = 0
+    total_emitted_fields = 0
+    total_correct_fields = 0
+    total_issues = 0
+
+    for case in dataset.cases:
+        total_target_fields += case.source_target_field_count
+        text = case.snapshot_path.read_text(encoding="utf-8")
+        report = extract_with_rules_report(text, AUTOEVOLUTION_ARTEGA_GT_RULES)
+        parsed = {fact.attribute: fact.parsed_value for fact in report.facts}
+        incorrect_fields, correct_fields = _field_comparison(parsed, case.expected_parsed)
+        emitted_fields = len(parsed)
+        issues = [
+            {
+                "attribute": issue.attribute,
+                "label": issue.label,
+                "code": issue.code,
+                "message": issue.message,
+                "rawValue": issue.raw_value,
+            }
+            for issue in report.issues
+        ]
+
+        total_emitted_fields += emitted_fields
+        total_correct_fields += correct_fields
+        total_issues += len(issues)
+        results.append(
+            {
+                "id": case.id,
+                "strictExpectedOutcome": case.expected_outcome,
+                "emittedFieldCount": emitted_fields,
+                "correctFieldCount": correct_fields,
+                "incorrectFields": incorrect_fields,
+                "issues": issues,
+            }
+        )
+
+    total_cases = len(results)
+    cases_with_issues = sum(bool(result["issues"]) for result in results)
+    unresolved_target_fields = total_target_fields - total_correct_fields
+
+    return {
+        "schema": "podium7.web-extraction-partial-evidence-report.v1",
+        "datasetVersion": dataset.version,
+        "artifact": dataset.artifact,
+        "totalCases": total_cases,
+        "metrics": {
+            "casesWithIssues": cases_with_issues,
+            "casesWithoutIssues": total_cases - cases_with_issues,
+            "issueCount": total_issues,
+            "targetFieldCount": total_target_fields,
+            "emittedFieldCount": total_emitted_fields,
+            "correctFieldCount": total_correct_fields,
+            "incorrectFieldCount": total_emitted_fields - total_correct_fields,
+            "unresolvedTargetFieldCount": unresolved_target_fields,
+            "fieldPrecision": _rate(total_correct_fields, total_emitted_fields),
+            "fieldRecall": _rate(total_correct_fields, total_target_fields),
+        },
+        "cases": results,
+    }
+
+
 __all__ = [
     "WEB_EXTRACTION_CORPUS_SCHEMA",
     "WebExtractionCorpus",
     "WebExtractionCorpusCase",
     "evaluate_web_extraction_corpus",
+    "evaluate_web_extraction_partial_evidence_corpus",
     "load_web_extraction_corpus",
 ]

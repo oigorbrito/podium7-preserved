@@ -6,6 +6,7 @@ from pathlib import Path
 
 from podium7.web_extraction_benchmark import (
     evaluate_web_extraction_corpus,
+    evaluate_web_extraction_partial_evidence_corpus,
     load_web_extraction_corpus,
 )
 
@@ -23,10 +24,18 @@ def main() -> int:
         default=DEFAULT_DATASET,
         help=f"corpus dataset (default: {DEFAULT_DATASET})",
     )
+    parser.add_argument(
+        "--partial-evidence",
+        action="store_true",
+        help="report retained facts plus explicit field issues instead of strict all-or-nothing extraction",
+    )
     args = parser.parse_args()
 
     dataset = load_web_extraction_corpus(args.dataset)
-    report = evaluate_web_extraction_corpus(dataset)
+    if args.partial_evidence:
+        report = evaluate_web_extraction_partial_evidence_corpus(dataset)
+    else:
+        report = evaluate_web_extraction_corpus(dataset)
     print(json.dumps(report, indent=2, sort_keys=True))
     return 0
 

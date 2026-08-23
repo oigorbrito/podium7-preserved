@@ -4,6 +4,7 @@ from pathlib import Path
 
 from podium7.web_extraction_benchmark import (
     evaluate_web_extraction_corpus,
+    evaluate_web_extraction_partial_evidence_corpus,
     load_web_extraction_corpus,
 )
 
@@ -68,6 +69,46 @@ class WebExtractionSourceFamilyCorpusTests(unittest.TestCase):
         self.assertIn(
             "rule 'Unladen Weight' did not match acquired value",
             by_id["nissan-pathfinder-2025-range-weight-epa-label"]["error"],
+        )
+
+    def test_partial_evidence_report_preserves_correct_fields_without_false_passes(self) -> None:
+        dataset = load_web_extraction_corpus(DATASET)
+        report = evaluate_web_extraction_partial_evidence_corpus(dataset)
+        metrics = report["metrics"]
+        by_id = {case["id"]: case for case in report["cases"]}
+
+        self.assertEqual(report["totalCases"], 12)
+        self.assertEqual(metrics["casesWithoutIssues"], 8)
+        self.assertEqual(metrics["casesWithIssues"], 4)
+        self.assertEqual(metrics["issueCount"], 4)
+        self.assertEqual(metrics["targetFieldCount"], 142)
+        self.assertEqual(metrics["emittedFieldCount"], 140)
+        self.assertEqual(metrics["correctFieldCount"], 140)
+        self.assertEqual(metrics["incorrectFieldCount"], 0)
+        self.assertEqual(metrics["unresolvedTargetFieldCount"], 2)
+        self.assertEqual(metrics["fieldPrecision"], 1.0)
+        self.assertEqual(metrics["fieldRecall"], 140 / 142)
+        self.assertTrue(all(not case["incorrectFields"] for case in report["cases"]))
+
+        self.assertEqual(
+            by_id["bmw-g20-320i-rwd-missing-weight"]["issues"][0]["code"],
+            "MISSING_FIELD",
+        )
+        self.assertEqual(
+            by_id["chevrolet-onix-2012-missing-combined"]["issues"][0]["code"],
+            "MISSING_FIELD",
+        )
+        self.assertEqual(
+            by_id["toyota-corolla-cross-2025-range-weight"]["issues"][0]["code"],
+            "PARSER_MISMATCH",
+        )
+        self.assertEqual(
+            by_id["nissan-pathfinder-2025-range-weight-epa-label"]["issues"][0]["code"],
+            "PARSER_MISMATCH",
+        )
+        self.assertEqual(
+            by_id["nissan-pathfinder-2025-range-weight-epa-label"]["emittedFieldCount"],
+            11,
         )
 
 
