@@ -1,0 +1,10 @@
+{
+  "schemaVersion": 1,
+  "evidenceClass": "LOCALLY_VERIFIED_SECURITY_CONTRACT",
+  "cases": [
+    {"id": "validated-ip-is-socket-target", "expected": "PASS"},
+    {"id": "mixed-global-private-resolution", "expected": "UNSAFE_NETWORK_TARGET"},
+    {"id": "rebind-global-to-private-before-connect", "expected": "UNSAFE_NETWORK_TARGET"},
+    {"id": "redirect-reresolves-and-rebinds", "expected": "PASS"}
+  ]
+}
