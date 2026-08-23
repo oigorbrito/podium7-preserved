@@ -369,6 +369,14 @@ def resolve_catalog_pair(
             "SUPPORTING external identifiers do not establish a shared identity",
         )
 
+    model_year_present_a = a.model_year_from is not None or a.model_year_to is not None
+    model_year_present_b = b.model_year_from is not None or b.model_year_to is not None
+    if model_year_present_a != model_year_present_b:
+        return CatalogResolutionDecision(
+            CatalogMatchOutcome.REVIEW,
+            "model_year evidence is incomplete",
+        )
+
     if (
         a.generation is not None
         and b.generation is not None

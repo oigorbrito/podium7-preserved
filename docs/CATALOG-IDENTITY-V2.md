@@ -1,6 +1,6 @@
 # Podium 7 Catalog Identity V2
 
-Status: **Catalog Identity V2 integrated in `main`; V2.1 external-identifier policy defined here**.
+Status: **Catalog Identity V2 integrated in `main`; V2.1 external-identifier policy and selected year semantics defined here**.
 
 ## Canonical identity
 
@@ -8,15 +8,21 @@ A catalog vehicle is separate from the legacy `AutomotiveIdentity` and from phys
 
 Legacy `year_from/year_to` is intentionally not auto-converted because its existing semantics do not distinguish manufacturing year from model year.
 
+For Brazilian vehicle data, the selected product rule follows the Senatran/RENAVAM distinction: `Ano Fabricação` and `Ano Modelo` remain separate dimensions rather than being collapsed into one generic year.
+
 ## Resolution policy
 
 The V2 resolver is deterministic and conservative.
 
 1. Explicit contradictions in make, generation, variant, powertrain, transmission, body style, market or non-overlapping year ranges produce `NO_MATCH`.
-2. Model/alias labels are compared after case/punctuation normalization and token-order normalization.
-3. Partial labels such as `Corolla XEi` vs `Corolla XEi 1.8` route to `REVIEW` rather than automatic merge.
-4. External identifiers participate according to the namespace strength policy below; only a shared `STRONG` identifier can produce `MATCH` by itself, and never when explicit identity evidence contradicts.
-5. Otherwise automatic match requires explicit equal generation and powertrain; missing trim-defining data routes to `REVIEW`.
+2. Manufacturing-year and model-year ranges are evaluated separately. Explicit non-overlap in either dimension is a contradiction; missing manufacturing-year evidence by itself is not.
+3. When model year is explicit on only one side, structural agreement alone does not justify an automatic match; the pair routes to `REVIEW` unless stronger identity evidence establishes the match.
+4. Model/alias labels are compared after case/punctuation normalization and token-order normalization.
+5. Partial labels such as `Corolla XEi` vs `Corolla XEi 1.8` route to `REVIEW` rather than automatic merge.
+6. External identifiers participate according to the namespace strength policy below; only a shared `STRONG` identifier can produce `MATCH` by itself, and never when explicit identity evidence contradicts.
+7. Otherwise automatic match requires explicit equal generation and powertrain; missing trim-defining data routes to `REVIEW`.
+
+The year rule is source-backed by official Senatran/SERPRO field semantics, FIPE's model-year lookup semantics, and manufacturer examples in `CATALOG-YEAR-SEMANTICS-CHALLENGE-V1.md`. The final canonical matching choice is a product decision recorded on 2026-08-23: preserve explicit year distinctions and prefer `REVIEW` over an unsupported automatic merge when model-year evidence is incomplete.
 
 ## External-identifier namespace registry — V2.1
 
@@ -82,7 +88,7 @@ A catalog candidate retains raw value, normalized value, unit, evidence ID, extr
 
 The SQLite evolution is additive. V1 tables and `PRAGMA user_version` remain owned by `EvidenceStore`. Catalog schema metadata is tracked separately in `catalog_v2_schema_metadata`, avoiding reinterpretation of legacy identity rows.
 
-The V2.1 namespace-strength policy, publication evidence policy, V2 JSON compatibility contract and read adapter do not require a catalog persistence schema version change.
+The V2.1 namespace-strength policy, selected year semantics, publication evidence policy, V2 JSON compatibility contract and read adapter do not require a catalog persistence schema version change.
 
 ## Deliberately not duplicated
 
@@ -90,8 +96,10 @@ V2 does not copy V1 implementations into `domain.py`, `identity.py`, `persistenc
 
 ## Identity benchmark
 
-`CATALOG-IDENTITY-BENCHMARK-V1.md` defines the first source-backed golden seed. Version `1.0` contains 12 balanced pairs (`4 MATCH`, `4 NO_MATCH`, `4 REVIEW`) anchored to manufacturer sources from Toyota, Ford, Porsche and BMW.
+`CATALOG-IDENTITY-BENCHMARK-V1.md` defines the source-backed golden/regression slices. The original version `1.0` contains 12 balanced pairs (`4 MATCH`, `4 NO_MATCH`, `4 REVIEW`) anchored to manufacturer sources from Toyota, Ford, Porsche and BMW; the Brazil slice adds a separate 12-case regional regression set.
 
-The benchmark evaluator reports false merge rate, missed duplicate rate, match precision/recall, review rate and ambiguous overcommit. The seed is a regression guard, not a statistically representative production estimate. Dataset growth should prioritize hard negatives, incomplete cross-source duplicates, market naming differences and trustworthy real external identifiers, including FIPE.
+The year-semantics slice is now a selected-policy regression gate. Version `year-semantics-1.1` contains six source-backed cases and must resolve exactly according to the Senatran-aligned product rule: `2 MATCH`, `3 NO_MATCH`, `1 REVIEW`.
+
+The benchmark evaluator reports false merge rate, missed duplicate rate, match precision/recall, review rate and ambiguous overcommit. These datasets are regression guards, not statistically representative production estimates. Dataset growth should prioritize hard negatives, incomplete cross-source duplicates, market naming differences and trustworthy real external identifiers, including FIPE.
 
 False merges remain the highest-priority error. A separate audit/provenance consumer API should be frozen only when a concrete consumer need exists.

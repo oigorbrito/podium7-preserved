@@ -6,6 +6,7 @@ import tomllib
 
 
 UNKNOWN_LICENSE_MARKER = "**Status:** `UNKNOWN`"
+PRIVATE_PROPRIETARY_MARKER = "**Status:** `PRIVATE_PROPRIETARY`"
 
 
 def _matched_license_files(root: Path, project: dict[str, object]) -> tuple[bool, str | None]:
@@ -68,6 +69,8 @@ def check_release_readiness(root: Path) -> tuple[bool, str]:
     project = pyproject["project"]
     licensing_status = (root / "docs" / "LICENSING-STATUS.md").read_text(encoding="utf-8")
 
+    if PRIVATE_PROPRIETARY_MARKER in licensing_status:
+        return False, "release blocked: software is private/proprietary and no public distribution license is granted"
     if UNKNOWN_LICENSE_MARKER in licensing_status:
         return False, "release blocked: software license status is UNKNOWN"
 

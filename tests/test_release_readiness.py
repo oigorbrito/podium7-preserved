@@ -13,6 +13,23 @@ class ReleaseReadinessTests(unittest.TestCase):
             encoding="utf-8",
         )
 
+    def test_private_proprietary_status_blocks_public_release(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            (root / "docs").mkdir()
+            (root / "docs" / "LICENSING-STATUS.md").write_text(
+                "# Licensing\n\n**Status:** `PRIVATE_PROPRIETARY`\n",
+                encoding="utf-8",
+            )
+            (root / "pyproject.toml").write_text(
+                "[project]\nname = \"podium7\"\nversion = \"0.1.0\"\n",
+                encoding="utf-8",
+            )
+            ready, message = check_release_readiness(root)
+            self.assertFalse(ready)
+            self.assertIn("private/proprietary", message)
+            self.assertIn("no public distribution license", message)
+
     def test_unknown_license_blocks_release(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)

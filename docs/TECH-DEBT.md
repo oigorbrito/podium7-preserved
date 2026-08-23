@@ -2,13 +2,13 @@
 
 Canonical tracker for durable unresolved work that should survive beyond one prompt or active plan.
 
-## External blocker: software license unresolved
+## Release policy: private/proprietary
 
-Status: `BLOCKED_EXTERNAL`
+Status: `INTENTIONAL_PRIVATE_BLOCK`
 
-`docs/LICENSING-STATUS.md` records software license status as `UNKNOWN`. Development and internal validation may continue, but public/package release remains blocked until the repository owner selects and records a license and `scripts/check_release_readiness.py` passes.
+`docs/LICENSING-STATUS.md` records software status as `PRIVATE_PROPRIETARY`. The repository is private and no public software license is granted. Development, testing and private operation may continue, while package/public release remains intentionally blocked by `scripts/check_release_readiness.py`.
 
-Do not guess or auto-select a license.
+A future MIT, Apache-2.0 or other distribution/open-source choice is deferred until the product is operational and requires a new explicit owner decision. Do not infer or generate a public license before then.
 
 ## Historical candidate/research reconstruction
 
@@ -20,13 +20,11 @@ The exact old per-candidate execution ledger for Crawl4AI, Stagehand, Browser Us
 
 ## Product debt: year-semantics resolver rule
 
-Status: `CHARACTERIZED / PRODUCT_DECISION_REQUIRED`
+Status: `CLOSED / SELECTED_POLICY`
 
-The source-backed challenge slice in `benchmarks/catalog_identity_year_semantics_challenge_v1.json` now characterizes manufacture-year versus model-year behavior. Primary evidence establishes that Senatran stores manufacture year and model year separately, FIPE keys vehicle year to model year, and Toyota publishes the same named configuration across adjacent year/model notations.
+The owner selected the Senatran-aligned rule on 2026-08-23. Manufacture year and model year remain separate identity dimensions; explicit non-overlap in either dimension is a deterministic `NO_MATCH`; missing manufacture-year evidence alone is not a contradiction; and model year present on only one side routes an otherwise structural auto-match to `REVIEW` unless stronger identity evidence establishes the match.
 
-Current resolver behavior is measured at 4/6 exact challenge labels with two ambiguous overcommits: manufacture-year-only non-overlap forces `NO_MATCH`, while missing model year can force `MATCH` even when the same named configuration exists in adjacent model years. `CATALOG-YEAR-SEMANTICS-CHALLENGE-V1.md` records the evidence and narrow policy options.
-
-Do not change resolver semantics until the product owner chooses the intended rule. Once selected, update the resolver and convert the relevant characterization cases into regression expectations. This does not block unrelated development.
+`benchmarks/catalog_identity_year_semantics_challenge_v1.json` version `year-semantics-1.1` is the focused regression gate, and `CATALOG-YEAR-SEMANTICS-CHALLENGE-V1.md` records the evidence and decision. Reopen this debt only if new evidence or product requirements justify changing the selected rule.
 
 ## Harness debt
 

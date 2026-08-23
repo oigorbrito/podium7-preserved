@@ -47,6 +47,6 @@
 
 - [`references/OPENAI-CODEX-HARNESS.md`](references/OPENAI-CODEX-HARNESS.md) — normative external references used for this harness.
 - [`generated/README.md`](generated/README.md) — policy for derived/generated repository facts.
-- [`LICENSING-STATUS.md`](LICENSING-STATUS.md) — legal/release status; this remains an external owner decision when `UNKNOWN`.
+- [`LICENSING-STATUS.md`](LICENSING-STATUS.md) — private/proprietary software status and the explicit gate for any future public-license decision.
 
 Historical design records may describe the work unit in which they were created; they are not current-state trackers unless explicitly named above. Volatile facts come from `python scripts/project_facts.py`.

@@ -24,13 +24,14 @@ class PackagingMetadataTests(unittest.TestCase):
     def test_only_podium7_package_is_declared(self):
         self.assertEqual(self.payload["tool"]["setuptools"]["packages"], ["podium7"])
 
-    def test_packaging_does_not_claim_undeclared_license(self):
+    def test_packaging_does_not_claim_public_license_while_private(self):
         project = self.payload["project"]
         self.assertNotIn("license", project)
         self.assertNotIn("license-files", project)
         self.assertFalse((self.root / "LICENSE").exists())
         status = (self.root / "docs" / "LICENSING-STATUS.md").read_text(encoding="utf-8")
-        self.assertIn("**Status:** `UNKNOWN`", status)
+        self.assertIn("**Status:** `PRIVATE_PROPRIETARY`", status)
+        self.assertIn("No public software license is granted", status)
 
 
 if __name__ == "__main__":

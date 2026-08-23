@@ -1,14 +1,11 @@
 # Current work
 
-Status: none
+Status: active
 
-There is no unmerged implementation mission recorded after the year-semantics challenge characterization.
+Outcome: implement the owner-selected Senatran-aligned year semantics and record Podium 7 as private/proprietary until a later open-source decision.
 
-For the next non-trivial mission:
+Boundaries: keep manufacture year and model year separate; preserve explicit year contradictions; route missing model-year evidence to `REVIEW` where automatic matching would otherwise overcommit; do not invent a public license.
 
-1. put the outcome, task-specific boundaries, and acceptance criteria here;
-2. create an active execution plan under [`exec-plans/active/`](exec-plans/active/README.md) when needed;
-3. follow [`DEVELOPMENT-WORKFLOW.md`](DEVELOPMENT-WORKFLOW.md) through implementation, validation, PR/CI, correction, and integration;
-4. move completed execution history out of this file into [`exec-plans/completed/`](exec-plans/completed/README.md).
+Acceptance: challenge slice becomes an exact regression gate, existing golden slices remain green, release readiness reports intentional private/proprietary blocking, repository stays private, and normal CI passes.
 
-Do not accumulate a chronological log here.
+Plan: [`exec-plans/active/senatran-years-private-license.md`](exec-plans/active/senatran-years-private-license.md)
