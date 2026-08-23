@@ -50,3 +50,28 @@ jobs:
             artifacts/test-report.json
             artifacts/project-facts.json
           if-no-files-found: error
+
+  minimum-python:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+
+      - name: Set up minimum supported Python
+        uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: "3.11"
+          check-latest: false
+
+      - name: Check repository secret hygiene
+        run: python scripts/check_repository_secrets.py
+
+      - name: Validate repository harness
+        run: python scripts/check_harness.py
+
+      - name: Run runtime health check
+        run: python -m podium7 health
+
+      - name: Run every test in isolation on Python 3.11
+        run: PYTHONPATH="$GITHUB_WORKSPACE" python scripts/run_tests_one_by_one.py
