@@ -10,6 +10,14 @@ Status: `BLOCKED_EXTERNAL`
 
 Do not guess or auto-select a license.
 
+## Research debt: historical candidate evaluation ledger incomplete
+
+Status: `OPEN`
+
+Historical handoffs recovered the external candidate inventory and evaluation methodology, but not the complete per-candidate execution ledger containing exact repository/version, commands/parameters, environment, outputs, and final reuse decision. The durable reconstruction state is in `CANDIDATE-EVALUATION-LEDGER.md`.
+
+Do not rerun the historical candidate battery wholesale. Recover durable evidence first and retest only the smallest decision-critical gap allowed by `DEVELOPMENT-WORKFLOW.md`.
+
 ## Product debt: year-semantics challenge coverage
 
 Status: `OPEN`

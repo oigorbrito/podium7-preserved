@@ -9,6 +9,7 @@
 - [`DEVELOPMENT-WORKFLOW.md`](DEVELOPMENT-WORKFLOW.md) — the single canonical source for autonomy, approvals, Git/PR/CI, validation, self-review, done, and stopping rules.
 - [`INVARIANTS.md`](INVARIANTS.md) — product and evidence invariants that every change must preserve.
 - [`TECH-DEBT.md`](TECH-DEBT.md) — durable known debt and external blockers.
+- [`CANDIDATE-EVALUATION-LEDGER.md`](CANDIDATE-EVALUATION-LEDGER.md) — recovered external candidate/source evaluation evidence, gaps, and retest policy.
 - [`exec-plans/README.md`](exec-plans/README.md) — when and how to version execution plans.
 
 ## Architecture and scientific foundation

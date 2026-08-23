@@ -44,6 +44,8 @@ Update documentation when behavior or a durable decision changes. Do not rewrite
 
 ## Validation and evidence
 
+Before repeating an external candidate/source evaluation, reconstruct the existing evidence first. Search repository history, PR/CI artifacts, durable logs/handoffs, and `CANDIDATE-EVALUATION-LEDGER.md`. Do not rerun a historical battery merely because its chat summary is missing. Retest only the smallest decision-critical gap when no recoverable result exists, the result cannot be tied to an identifiable version/environment, the prior test was incomplete for the current decision, or a later change specifically invalidates it. Record every new/repeated candidate evaluation durably in the ledger.
+
 For any code or harness change:
 
 1. Run `python scripts/check_harness.py`.
