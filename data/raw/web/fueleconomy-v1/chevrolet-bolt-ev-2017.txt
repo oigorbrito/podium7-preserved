@@ -1,0 +1,6 @@
+SOURCE: https://www.fueleconomy.gov/feg/Find.do?action=sbs&id=38187
+ACQUIRED: 2026-08-23
+VEHICLE_ID: 38187
+Combined MPG: | 119 MPGe
+Drive: | Front-Wheel Drive
+Fuel Type: | Electricity

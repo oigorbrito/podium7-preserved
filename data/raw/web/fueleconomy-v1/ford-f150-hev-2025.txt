@@ -1,0 +1,6 @@
+SOURCE: https://www.fueleconomy.gov/feg/Find.do?action=sbs&id=48897
+ACQUIRED: 2026-08-23
+VEHICLE_ID: 48897
+Combined MPG: | 23 MPG
+Drive: | Part-time 4-Wheel Drive
+Fuel Type: | Regular Gasoline

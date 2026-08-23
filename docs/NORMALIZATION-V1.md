@@ -33,9 +33,11 @@ Canonical units in v1 are:
 - curb weight: `kg`
 - fuel consumption: `L/100km`
 
-Text normalization uses stable lowercase tokens for fuel, transmission, and drivetrain.
+Text normalization uses stable lowercase tokens for fuel, transmission, and drivetrain. Drivetrain aliases cover both spaced forms and the hyphenated labels observed in official FuelEconomy.gov vocabulary, including `Front-Wheel Drive`, `All-Wheel Drive`, and `Part-time 4-Wheel Drive`; these normalize to the existing `fwd`, `awd`, and `4wd` tokens while raw source text remains preserved. The exact alias-to-token mapping is an `ENGINEERING_CHOICE`, not a claim that the external source uses Podium's canonical tokens.
 
 Mechanical horsepower uses `1 hp = 0.7456998716 kW`; pound-foot uses `1 lb-ft = 1.3558179483314 Nm`; inch uses `25.4 mm`; pound uses `0.45359237 kg`; US mpg uses `235.214583 / mpg` to derive L/100km. These are deterministic implementation choices for v1 and are not presented as conclusions from the scientific corpus.
+
+The gasoline-MPG rule is semantically narrow: it accepts `mpg-US` and does not treat MPGe as MPG. Source observations expressed as MPGe remain explicit unsupported evidence until a separate evidence-backed semantic mapping is selected; they are never passed through `235.214583 / mpg` merely because the page label contains the text `MPG`.
 
 Bounded curb weight uses strict JSON:
 
@@ -69,3 +71,5 @@ Bounded-value acceptance requires:
 - candidate and canonical persistence round-trip;
 - no Catalog JSON Contract `2.0` change;
 - repository required CI green.
+
+Second-family normalization regression additionally requires official hyphenated drivetrain labels to map deterministically while raw text remains preserved, and MPGe to remain outside the gasoline-MPG conversion rule.

@@ -1,0 +1,59 @@
+{
+  "schema": "podium7.web-extraction-fueleconomy-source-family.v1",
+  "datasetVersion": "fueleconomy-find-a-car-source-family-1.0",
+  "artifact": "FUELECONOMY_GOV_VEHICLE_RULES_V1",
+  "cases": [
+    {
+      "id": "ford-f150-hev-2025",
+      "sourceUrl": "https://www.fueleconomy.gov/feg/Find.do?action=sbs&id=48897",
+      "snapshot": "data/raw/web/fueleconomy-v1/ford-f150-hev-2025.txt",
+      "sourceTargetFieldCount": 3,
+      "expectedOutcome": "SUCCESS",
+      "expectedParsed": {
+        "fuel_economy_combined": 23,
+        "drivetrain": "Part-time 4-Wheel Drive",
+        "fuel_type": "Regular Gasoline"
+      },
+      "unsupportedTargetFields": []
+    },
+    {
+      "id": "toyota-rav4-prime-2021",
+      "sourceUrl": "https://www.fueleconomy.gov/feg/Find.do?action=sbs&id=42793",
+      "snapshot": "data/raw/web/fueleconomy-v1/toyota-rav4-prime-2021.txt",
+      "sourceTargetFieldCount": 3,
+      "expectedOutcome": "SUCCESS",
+      "expectedParsed": {
+        "fuel_economy_combined": 38,
+        "drivetrain": "All-Wheel Drive",
+        "fuel_type": "Regular Gas and Electricity"
+      },
+      "unsupportedTargetFields": []
+    },
+    {
+      "id": "tesla-model-3-long-range-awd-2022",
+      "sourceUrl": "https://www.fueleconomy.gov/feg/Find.do?action=sbs&id=45011",
+      "snapshot": "data/raw/web/fueleconomy-v1/tesla-model-3-long-range-awd-2022.txt",
+      "sourceTargetFieldCount": 3,
+      "expectedOutcome": "FAIL",
+      "expectedFailureContains": "131 MPGe",
+      "expectedParsed": {
+        "drivetrain": "All-Wheel Drive",
+        "fuel_type": "Electricity"
+      },
+      "unsupportedTargetFields": ["fuel_economy_combined"]
+    },
+    {
+      "id": "chevrolet-bolt-ev-2017",
+      "sourceUrl": "https://www.fueleconomy.gov/feg/Find.do?action=sbs&id=38187",
+      "snapshot": "data/raw/web/fueleconomy-v1/chevrolet-bolt-ev-2017.txt",
+      "sourceTargetFieldCount": 3,
+      "expectedOutcome": "FAIL",
+      "expectedFailureContains": "119 MPGe",
+      "expectedParsed": {
+        "drivetrain": "Front-Wheel Drive",
+        "fuel_type": "Electricity"
+      },
+      "unsupportedTargetFields": ["fuel_economy_combined"]
+    }
+  ]
+}

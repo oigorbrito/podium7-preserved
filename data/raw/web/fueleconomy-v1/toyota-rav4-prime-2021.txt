@@ -1,0 +1,6 @@
+SOURCE: https://www.fueleconomy.gov/feg/Find.do?action=sbs&id=42793
+ACQUIRED: 2026-08-23
+VEHICLE_ID: 42793
+Combined MPG on Gas Only: | 38 MPG
+Drive: | All-Wheel Drive
+Fuel Type: | Regular Gas and Electricity

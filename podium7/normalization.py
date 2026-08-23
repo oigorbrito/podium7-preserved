@@ -137,8 +137,12 @@ def normalize_fact(attribute: str, value: Any, unit: str | None) -> Normalizatio
         _require_unitless(attribute, unit)
         token = _text_token(attribute, value)
         aliases = {
-            "front wheel drive": "fwd", "rear wheel drive": "rwd",
-            "all wheel drive": "awd", "four wheel drive": "4wd", "4 wheel drive": "4wd",
+            "front wheel drive": "fwd", "front-wheel drive": "fwd",
+            "rear wheel drive": "rwd", "rear-wheel drive": "rwd",
+            "all wheel drive": "awd", "all-wheel drive": "awd",
+            "four wheel drive": "4wd", "four-wheel drive": "4wd",
+            "4 wheel drive": "4wd", "4-wheel drive": "4wd",
+            "part-time 4-wheel drive": "4wd",
         }
         return NormalizationResult(aliases.get(token, token.replace(" ", "_")), None, "drivetrain.token.v1")
 

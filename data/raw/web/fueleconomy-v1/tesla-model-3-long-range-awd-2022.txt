@@ -1,0 +1,6 @@
+SOURCE: https://www.fueleconomy.gov/feg/Find.do?action=sbs&id=45011
+ACQUIRED: 2026-08-23
+VEHICLE_ID: 45011
+Combined MPG: | 131 MPGe
+Drive: | All-Wheel Drive
+Fuel Type: | Electricity

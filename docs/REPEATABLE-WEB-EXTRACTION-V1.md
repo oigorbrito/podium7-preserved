@@ -168,26 +168,96 @@ The two range cases are now supported source targets. The BMW and Onix records s
 
 Validation evidence for the implemented behavior: PR #51 merge-candidate run `32646934156`, job `97212517296`, Python `3.13.15`, `HARNESS PASS`, runtime health PASS and `335/335` repository tests executed one by one. Historical V1 replay, V2 bounded extraction, persistence/fusion compatibility, alias provenance, invalid/reversed ranges and Catalog JSON Contract 2.0 regression checks all passed in that run.
 
+## Second source-family characterization — FuelEconomy.gov
+
+A second source family was selected to test whether the same deterministic extraction machinery can be reused without assuming Autoevolution labels or provenance. The source is FuelEconomy.gov `Find a Car`, operated in the U.S. Department of Energy/EPA ecosystem. Its official web-service documentation defines vehicle fields and covers model years from 1984 through current data. The benchmark retains only the minimal factual label/value observations required for the test.
+
+Official reference:
+
+- https://www.fueleconomy.gov/feg/ws/index.shtml
+
+Frozen benchmark:
+
+```text
+benchmarks/web_extraction_fueleconomy_source_family_v1.json
+```
+
+Factual observations:
+
+```text
+data/raw/web/fueleconomy-v1/
+```
+
+The four cases use FuelEconomy vehicle IDs `48897`, `42793`, `45011`, and `38187`. The separate `FUELECONOMY_GOV_VEHICLE_RULES_V1` artifact targets only three fields: combined gasoline fuel economy, drivetrain, and fuel type. Extraction-rule provenance uses the `fueleconomy_gov` namespace rather than reusing an Autoevolution rule identity.
+
+The source exposes a useful semantic boundary. Gasoline values such as `23 MPG` are accepted by the existing US-MPG normalization rule, and the PHEV label `Combined MPG on Gas Only` is an explicit alias with its exact observed label retained. Electric vehicle pages expose values such as `131 MPGe` and `119 MPGe`; the anchored gasoline-MPG parser rejects these values. Podium does not run MPGe through the MPG-to-L/100km formula merely because the strings share the letters `MPG`.
+
+Reproduce strict evaluation with:
+
+```text
+PYTHONPATH=. python scripts/run_fueleconomy_web_corpus.py
+```
+
+and facts+issues preservation with:
+
+```text
+PYTHONPATH=. python scripts/run_fueleconomy_web_corpus.py --partial-evidence
+```
+
+### Measured second-family result — 2026-08-23
+
+`LOCALLY_VERIFIED` on dataset `fueleconomy-find-a-car-source-family-1.0`:
+
+```text
+strict configurations:             4
+strict page successes:             2 / 4  (50.0%)
+strict explicit failures:          2 / 4  (50.0%)
+strict expected agreement:         4 / 4  (100%)
+strict target fields:             12
+strict emitted/correct fields:     6 / 6
+strict field precision:            1.000
+strict field recall:               6 / 12 (50.0%)
+
+partial cases without issues:      2 / 4
+partial cases with issues:         2 / 4
+partial explicit issues:           2
+partial target fields:            12
+partial emitted/correct fields:   10 / 10
+partial incorrect fields:          0
+partial unresolved target fields:  2
+partial field precision:           1.000
+partial retained field recall:    10 / 12 (83.3%)
+```
+
+The two unresolved targets are both MPGe observations. They remain explicit `PARSER_MISMATCH` evidence, while drivetrain and fuel-type facts from the same electric pages are retained correctly in partial mode. The first implementation CI exposed a separate normalization gap for official hyphenated drive labels; explicit aliases were added for labels including `Front-Wheel Drive`, `All-Wheel Drive`, and `Part-time 4-Wheel Drive`, preserving raw text while mapping to existing Podium drivetrain tokens.
+
+Implementation validation evidence: PR #53 merge-candidate run `32648780263`, job `97217035510`, Python `3.13.15`, `HARNESS PASS`, runtime health PASS and `343/343` repository tests executed one by one. Validation artifact ID `9495597465`, ZIP SHA-256 `fb0c35d3e83ede4273fecbc6133309ca8cb3782639cc99de7c426f300a6522ca`.
+
 ## Classification
 
 - discover/configure/reuse direction: `EVIDENCE_BACKED`;
 - exact source and regex rule format: `ENGINEERING_CHOICE`;
-- frozen source-family corpus design and metrics: `ENGINEERING_CHOICE`, grounded in the documented measurement gap;
-- strict historical V1 source-family precision/recall and page coverage: `LOCALLY_VERIFIED`;
-- historical V1 explicit partial-evidence retention metrics: `LOCALLY_VERIFIED`;
-- V2 bounded source-family metrics above: `LOCALLY_VERIFIED`;
+- frozen Autoevolution source-family corpus design and metrics: `ENGINEERING_CHOICE`, grounded in the documented measurement gap;
+- strict historical Autoevolution V1 source-family precision/recall and page coverage: `LOCALLY_VERIFIED`;
+- historical Autoevolution V1 explicit partial-evidence retention metrics: `LOCALLY_VERIFIED`;
+- Autoevolution V2 bounded source-family metrics above: `LOCALLY_VERIFIED`;
+- second-family FuelEconomy.gov strict/partial metrics above: `LOCALLY_VERIFIED`;
+- choosing the exact three-field FuelEconomy.gov artifact, corpus cases and source-specific namespace: `ENGINEERING_CHOICE`;
 - facts+issues report shape, declared alias mechanism and exact `source_label` provenance field: `ENGINEERING_CHOICE`;
 - preserve observed curb-weight intervals without scalar collapse: `EVIDENCE_BACKED` direction;
 - `minValue` / `maxValue` internal JSON representation and curb-weight-only V2 parser boundary: `ENGINEERING_CHOICE`;
+- refusing to reinterpret MPGe as gasoline MPG: `EVIDENCE_BACKED` semantic boundary from the observed source distinction and existing normalization contract;
+- a future canonical MPGe representation/conversion: `UNKNOWN / NOT SELECTED`;
 - heterogeneous-web / production precision and recall: `UNKNOWN`.
 
 ## Evidence boundary
 
-The source-family corpus establishes what the reusable artifacts do on the frozen Autoevolution configurations in the repository. It cannot establish:
+The two frozen source-family corpora establish repository-local reuse of deterministic extraction machinery and explicit provenance across Autoevolution and FuelEconomy.gov. They cannot establish:
 
 - performance on arbitrary websites;
 - acquisition/navigation completeness;
 - production source distribution;
+- a general semantic mapping for MPGe;
 - that all quantitative properties should accept ranges;
 - whether one global rule set, per-template rules, optional-field schemas, variant-aware parsers, or another artifact strategy is the correct broader design.
 
@@ -195,9 +265,9 @@ Any follow-up architecture choice must be driven by measured failure modes and t
 
 ## Gate
 
-Historical V1 gates remain reproducible and unchanged.
+Historical Autoevolution V1 gates remain reproducible and unchanged.
 
-Bounded V2 gate:
+Bounded Autoevolution V2 gate:
 
 - historical V1 metrics unchanged: PASS;
 - exact source range and source label preserved: PASS;
@@ -207,5 +277,15 @@ Bounded V2 gate:
 - missing source fields remain explicit issues: PASS;
 - bounded gold remains additive/versioned: PASS;
 - persistence/domain compatibility: PASS;
-- Catalog JSON Contract `2.0` unchanged: PASS;
+- Catalog JSON Contract `2.0` unchanged: PASS.
+
+Second-family FuelEconomy.gov gate:
+
+- separate source-family artifact and provenance namespace: PASS;
+- frozen factual source observations and independent gold: PASS;
+- gasoline MPG and gas-only alias supported: PASS;
+- MPGe rejected by gasoline-MPG semantics: PASS;
+- valid facts retained alongside MPGe issues: PASS;
+- official hyphenated drivetrain labels normalized deterministically: PASS;
+- historical Autoevolution regression suite unchanged: PASS;
 - heterogeneous-web / production generalization: **not established**.

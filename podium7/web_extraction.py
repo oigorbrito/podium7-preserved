@@ -86,6 +86,22 @@ AUTOEVOLUTION_ARTEGA_GT_RULES_V2: tuple[WebFieldRule, ...] = tuple(
 AUTOEVOLUTION_ARTEGA_GT_RULES = AUTOEVOLUTION_ARTEGA_GT_RULES_V2
 
 
+# Second source-family artifact. The MPG parser is deliberately anchored so
+# MPGe cannot be silently interpreted as gasoline MPG. A PHEV gas-only label
+# is an explicit alias because it carries the same gasoline-MPG semantics.
+FUELECONOMY_GOV_VEHICLE_RULES_V1: tuple[WebFieldRule, ...] = (
+    WebFieldRule(
+        "Combined MPG",
+        "fuel_economy_combined",
+        r"^(\d+(?:\.\d+)?)\s*MPG$",
+        "mpg-US",
+        ("Combined MPG on Gas Only",),
+    ),
+    WebFieldRule("Drive", "drivetrain", r"^(.+)$", None),
+    WebFieldRule("Fuel Type", "fuel_type", r"^(.+)$", None),
+)
+
+
 def _coerce(value: str) -> object:
     stripped = value.strip()
     try:
@@ -111,11 +127,19 @@ def _parse_values(text: str) -> dict[str, tuple[str, str]]:
     return values
 
 
+def _rule_namespace(value: str) -> str:
+    if not isinstance(value, str) or not re.fullmatch(r"[a-z][a-z0-9_]*", value):
+        raise ValueError("rule_namespace must be a lowercase source-family token")
+    return value
+
+
 def _bounded_fact(
     rule: WebFieldRule,
     source_label: str,
     raw: str,
     match: re.Match[str],
+    *,
+    rule_namespace: str,
 ) -> tuple[ExtractedWebFact | None, WebExtractionIssue | None]:
     minimum = _coerce(match.group(1))
     maximum = _coerce(match.group(2))
@@ -144,7 +168,7 @@ def _bounded_fact(
             parsed_value=parsed,
             normalized_value=normalized.value,
             unit=normalized.unit,
-            extraction_rule=f"autoevolution.{rule.attribute}.bounded.v2",
+            extraction_rule=f"{rule_namespace}.{rule.attribute}.bounded.v2",
             normalization_rule=normalized.rule,
             source_label=source_label,
         ),
@@ -155,7 +179,10 @@ def _bounded_fact(
 def extract_with_rules_report(
     text: str,
     rules: tuple[WebFieldRule, ...],
+    *,
+    rule_namespace: str = "autoevolution",
 ) -> WebExtractionReport:
+    namespace = _rule_namespace(rule_namespace)
     values = _parse_values(text)
     extracted: list[ExtractedWebFact] = []
     issues: list[WebExtractionIssue] = []
@@ -201,7 +228,7 @@ def extract_with_rules_report(
                     parsed_value=parsed,
                     normalized_value=normalized.value,
                     unit=normalized.unit,
-                    extraction_rule=f"autoevolution.{rule.attribute}.v1",
+                    extraction_rule=f"{namespace}.{rule.attribute}.v1",
                     normalization_rule=normalized.rule,
                     source_label=source_label,
                 )
@@ -211,7 +238,13 @@ def extract_with_rules_report(
         if rule.range_parser is not None:
             range_match = re.search(rule.range_parser, raw, flags=re.IGNORECASE)
             if range_match is not None:
-                fact, issue = _bounded_fact(rule, source_label, raw, range_match)
+                fact, issue = _bounded_fact(
+                    rule,
+                    source_label,
+                    raw,
+                    range_match,
+                    rule_namespace=namespace,
+                )
                 if issue is not None:
                     issues.append(issue)
                 elif fact is not None:
@@ -232,8 +265,13 @@ def extract_with_rules_report(
     return WebExtractionReport(tuple(extracted), tuple(issues))
 
 
-def extract_with_rules(text: str, rules: tuple[WebFieldRule, ...]) -> list[ExtractedWebFact]:
-    report = extract_with_rules_report(text, rules)
+def extract_with_rules(
+    text: str,
+    rules: tuple[WebFieldRule, ...],
+    *,
+    rule_namespace: str = "autoevolution",
+) -> list[ExtractedWebFact]:
+    report = extract_with_rules_report(text, rules, rule_namespace=rule_namespace)
     if report.issues:
         raise ValueError(report.issues[0].message)
     return list(report.facts)
@@ -241,3 +279,11 @@ def extract_with_rules(text: str, rules: tuple[WebFieldRule, ...]) -> list[Extra
 
 def extract_autoevolution_artega_gt(text: str) -> list[ExtractedWebFact]:
     return extract_with_rules(text, AUTOEVOLUTION_ARTEGA_GT_RULES)
+
+
+def extract_fueleconomy_gov_vehicle(text: str) -> list[ExtractedWebFact]:
+    return extract_with_rules(
+        text,
+        FUELECONOMY_GOV_VEHICLE_RULES_V1,
+        rule_namespace="fueleconomy_gov",
+    )

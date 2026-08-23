@@ -77,6 +77,24 @@ One source-selection decision is fully recoverable because it became executable 
 | vehicle-specification APIs | `ARCHIVED_UNRECOVERABLE` | original providers/versions were not recovered; future use requires a fresh provider/terms decision |
 | NHTSA/vPIC-derived data | `ARCHIVED_UNRECOVERABLE` | historical exact source/version not recovered; future use requires a current source-specific evaluation |
 
+## Current source-family evaluation — FuelEconomy.gov
+
+This is a new, decision-relevant evaluation rather than a reconstruction of the historical candidate battery.
+
+| Field | Recorded value |
+|---|---|
+| Capability | second-family repeatable web extraction characterization |
+| Candidate | FuelEconomy.gov Find-a-Car vehicle pages and official web-service field documentation (`https://www.fueleconomy.gov/feg/Find.do`, `https://www.fueleconomy.gov/feg/ws/index.shtml`) |
+| Version | factual observations acquired 2026-08-23; vehicle IDs `48897`, `42793`, `45011`, `38187`; dataset `fueleconomy-find-a-car-source-family-1.0` |
+| License/terms | official U.S. government source; this work unit retains only minimal factual label/value observations required by the benchmark. No third-party MSRP, tank-size, owner-reported MPG, images, or other non-target page content is retained, and this ledger makes no broader public-redistribution/legal conclusion |
+| Hypothesis | the repository-native deterministic extractor can be reused on a second, structurally different web source family without semantic overcommit |
+| Parameters | three explicit rules: combined gasoline MPG, drivetrain, fuel type; declared alias `Combined MPG on Gas Only`; anchored `MPG` parser deliberately excludes `MPGe`; strict and facts+issues evaluation |
+| Environment | Python 3.13.15 on GitHub Actions Ubuntu 24.04 merge-candidate environment; implementation validation run `32648780263`, job `97217035510` |
+| Result | PASS for the scoped characterization: strict `2/4` page successes, `6/6` emitted fields correct, precision `1.000`, recall `6/12`; partial evidence `10/10` emitted fields correct, `10/12` retained target recall, two explicit unresolved MPGe targets; repository suite `343/343` PASS in the validation run |
+| Interpretation | deterministic extraction machinery and source-specific provenance reuse across a second family are locally verified. MPGe is not gasoline MPG and remains explicit unsupported evidence. This does not establish arbitrary-web, acquisition, or production-wide precision/recall |
+| Decision | `REFERENCE` — retain as a second-family characterization/reference corpus; this work unit does not select FuelEconomy.gov as a universal or exclusive production source |
+| Evidence | `benchmarks/web_extraction_fueleconomy_source_family_v1.json`, `data/raw/web/fueleconomy-v1/`, `podium7/fueleconomy_web_benchmark.py`, `tests/test_fueleconomy_web_extraction.py`, PR #53 and CI run `32648780263` |
+
 ## Recovered partial results and their current disposition
 
 - **Autoevolution:** the historical handoff records a validated snapshot/source and a failed live-download attempt. The current repository resolves the decision-relevant part by pinning evidence and using deterministic extraction over a known Autoevolution-derived Artega GT snapshot. `REPEATABLE-WEB-EXTRACTION-V1.md` records required fields, repeated-run equality, normalization and changed-structure failure behavior. General live Autoevolution acquisition remains unclaimed, but it is not required by the current architecture.
