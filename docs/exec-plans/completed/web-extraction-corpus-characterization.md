@@ -1,6 +1,6 @@
 # Web extraction source-family corpus characterization
 
-Status: active — characterization complete; integration pending final green merge candidate
+Status: completed — integrated by PR #46 on 2026-08-23
 
 ## Outcome
 
@@ -71,11 +71,13 @@ Execution evidence:
 - PR: #46 `Characterize reusable web extraction across source-family corpus`;
 - initial measurement CI: run `32643262400`, job `97203527673`, repository suite `309/309` PASS;
 - documentation/technical-debt confirmation CI: run `32643348081`, job `97203731915`, `HARNESS PASS`, runtime health PASS, repository suite `309/309` PASS;
-- validation artifact for run `32643348081`: ID `9494197654`, SHA-256 `09ecbc58de92ee74248ef59ac3d7f3f110e0b9463d729613c63eb4b3df892bed`;
+- final merge-candidate CI after synchronizing with current `main`: run `32644783758`, job `97207268195`, Python `3.13.15`, `HARNESS PASS`, runtime health PASS, repository suite `309/309` PASS;
+- final validation artifact: ID `9494566361`, SHA-256 `cdf48fdfad4879c12901132e06b8512c5416f401ec819322f044254cd8117e4a`;
+- PR #46 squash merge commit: `dec7415aa6a3a074eaafb59fa48f362b69e6ce67`;
 - extractor/rule change required in this characterization: **NO**.
 
 The measured source-family coverage/generalization gap is recorded as `OPEN / LOCALLY_VERIFIED` in `TECH-DEBT.md`. Exact remediation remains deliberately unselected.
 
 ## Remaining blockers
 
-Only final green validation/integration of the current merge candidate; no external or product-decision blocker.
+None for this completed work unit. The broader source-family coverage/generalization gap remains separately tracked in `TECH-DEBT.md` and does not invalidate this characterization.
