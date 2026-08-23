@@ -1,6 +1,6 @@
 # Web bounded quantitative value V1
 
-Status: active — implementation complete; final merge-candidate validation/integration pending
+Status: completed — integrated by PR #51 on 2026-08-23
 
 ## Outcome
 
@@ -62,18 +62,19 @@ On the frozen 12-configuration source-family corpus:
 - partial-evidence V2 retains 142/142 source target fields, emits 142/142 correct fields, has zero incorrect emitted fields and zero unresolved source target fields;
 - the two remaining strict failures correspond to genuinely absent source fields, not unsupported range semantics.
 
-## Validation evidence
-
-Green implementation merge-candidate CI before final documentation closeout:
+## Final validation evidence
 
 - PR: #51 `Represent bounded curb weight without scalar collapse`;
-- run `32646934156`, job `97212517296`;
-- PR merge ref SHA `0b9f5859c1c747a23d9a3f4a2610e33dc0269ebd`;
-- branch head validated: `82a613a0509040d7ef376b9bff0883d36cb4bf20`;
+- final merge-candidate run: `32647078623`, job `97212869216`;
+- PR merge ref SHA: `c16a7f72e64c4028a7f3ef520ce995ff6c88345b`;
+- validated branch head: `a1de96b7d6196515dc91556c482f5eadd84afdcd`;
 - Python `3.13.15`;
 - `HARNESS PASS`;
 - runtime health `PASS`;
 - repository isolated suite `335/335` PASS;
-- validation artifact ID `9495119435`, ZIP SHA-256 `4becc996f2f7d001e306f252c75ed652d31406c531cde6a87585fd97207deba7`.
+- validation artifact ID `9495155803`, ZIP SHA-256 `f28316843bb44d9c6482fa40baef298259639dc1a0a7865e2869aa008a8bcfcb`;
+- PR #51 squash merge commit: `6efd8f575fd8bad62d4cdd83c2bee15866478b3f`.
 
-The documentation/debt closeout commits after that run do not change executable behavior. Final integration still requires green CI on the resulting merge candidate plus the normal concurrency/self-review gate.
+## Remaining blockers
+
+None for this completed work unit. Heterogeneous-web/source-family generalization remains separately tracked in `TECH-DEBT.md`. Public distribution remains intentionally blocked by the private/proprietary release policy until a later explicit owner decision.
