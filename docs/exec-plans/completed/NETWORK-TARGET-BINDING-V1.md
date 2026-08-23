@@ -1,6 +1,6 @@
 # Network Target Binding V1 execution plan
 
-Status: active
+Status: completed
 
 ## Outcome
 
@@ -19,13 +19,16 @@ Provide a bounded HTTP acquisition path that prevents DNS rebinding between targ
 
 Mature options considered: the existing stdlib `urllib` transport, Requests/urllib3, and HTTPX. The requirement is narrower than replacing the HTTP stack: Podium needs validation and the actual TCP connection to use the same resolved IP while retaining hostname-based TLS verification. Adding another HTTP client solely for this binding invariant would expand dependencies and still require an integration-specific resolver/connection hook. V1 therefore `ADAPT`s the stdlib connection primitives already in use. Classification: `ENGINEERING_CHOICE` constrained by the existing minimal transport contract.
 
-## Acceptance criteria
+## Final evidence
 
-1. All resolved addresses are validated against the network policy before connection.
-2. The TCP connection receives a validated IP literal, not the hostname that was separately validated.
-3. HTTPS keeps the original hostname for SNI/certificate validation.
-4. Redirects repeat resolution/validation/binding independently.
-5. Mixed global/private resolution and rebinding-to-private cases fail closed before connection.
-6. Existing response-size/media/status semantics remain consistent with Direct HTTP V1.
-7. Harness, focused tests, full CI, self-review, concurrency recheck, squash merge pass.
-8. After integration, archive the plan and restore `CURRENT-WORK: none`.
+- PR: #72
+- Final PR head: `bec11fcfeea0f1c115d25087984a1ff5e7142459`
+- Official CI run: `32668431881` — PASS
+- Harness: PASS
+- Runtime health: PASS
+- Sequential isolated suite: PASS
+- Concurrency recheck: `main` remained identical to base `51245f145e2d061b00ac60cb7b01099b8106e2d3`
+- Squash merge: `cdfe9c845897b3fbe5cdec21c1177b69f41015da`
+- Self-review correction before merge: redirect bodies are not consumed, avoiding an unbounded redirect-body read.
+
+All acceptance criteria passed. Network target binding is no longer open debt for the bounded arbitrary-untrusted-locator acquisition path.
