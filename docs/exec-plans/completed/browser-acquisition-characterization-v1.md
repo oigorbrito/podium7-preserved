@@ -1,6 +1,6 @@
 # Browser acquisition characterization V1
 
-Status: active — measurement complete; final repository validation/integration pending
+Status: completed — integrated by PR #61 on 2026-08-23
 
 ## Outcome
 
@@ -8,7 +8,7 @@ Measure whether a controlled headless Chromium browser can acquire source-releva
 
 ## Scope
 
-This unit is characterization, not a production browser fallback. It:
+This unit was characterization, not a production browser fallback. It:
 
 - derived the exact Autoevolution URL inventory from the retained public-web inventory;
 - used Playwright with Chromium in one temporary GitHub-hosted measurement workflow;
@@ -18,7 +18,7 @@ This unit is characterization, not a production browser fallback. It:
 - preserved per-URL failures as measurement data while unexpected implementation failures fail the workflow;
 - removed the temporary live browser workflow after the observation was captured.
 
-It does not add Playwright to package runtime dependencies, implement generic crawling/navigation, interact with consent/captcha challenges, evade site controls, discover new sources, or claim production-web success rates.
+It did not add Playwright to package runtime dependencies, implement generic crawling/navigation, interact with consent/captcha challenges, evade site controls, discover new sources, or claim production-web success rates.
 
 ## Measured live result
 
@@ -43,18 +43,22 @@ Observed setup cost included a 47.7 MB Playwright wheel, 184.3 MiB Chromium down
 
 Do **not** add a permanent Playwright/Chromium fallback for this observed Autoevolution refusal. Candidate posture: `REJECT/UNDECIDED` — rejected for this bounded failure mode because it added substantial setup with 0/9 acquisition gain; globally undecided for future independently measured source families that genuinely require JavaScript and succeed under a normal browser identity.
 
-`docs/BROWSER-ACQUISITION-CHARACTERIZATION-V1.md` preserves the measurement, limits and decision. The temporary live workflow has been removed from the branch so public site behavior and browser installation do not become permanent required CI dependencies.
+`docs/BROWSER-ACQUISITION-CHARACTERIZATION-V1.md` preserves the measurement, limits and decision. Playwright remains outside runtime/package dependencies.
 
-## Acceptance criteria
+## Final validation evidence
 
-- deterministic inventory/filtering and report aggregation tests without Playwright or public network access;
-- exactly 9 unique retained Autoevolution URLs in the live sample;
-- conservative explicit failure codes for HTTP status, empty body, block-page indicators and insufficient source relevance;
-- one observed GitHub-hosted Chromium measurement with Playwright/browser versions and artifact evidence;
-- temporary live workflow removed before final merge;
-- final merge candidate passes repository harness, runtime health and every isolated test;
-- branch is 0 commits behind `main` before squash merge;
-- completed plan archived and `CURRENT-WORK` cleared in a housekeeping PR.
+- PR: #61 `Characterize controlled browser acquisition on refused source URLs`;
+- validated branch head: `07b58ac1cf76f9843a939b60b113fa4acc8c4a71`;
+- final merge-candidate ref: `7f346f612626d7db1dfa1a84debc7277e703d3a9`;
+- final validation run: `32654313054`, job `97230589573`;
+- Python `3.13.15`;
+- `HARNESS PASS`;
+- runtime health `PASS`;
+- repository isolated suite **389/389 PASS**;
+- validation artifact ID `9497041986`;
+- validation ZIP SHA-256 `ab95a7c0a2e26984a0f2d898338768cac79813e3b0ae33d7483a887a8d963480`;
+- clean pre-merge concurrency check: branch behind `0` commits;
+- PR #61 squash merge commit: `6e9f26598ced90acad06374523a3279a0a77cc7f`.
 
 ## Decision classification
 
@@ -62,3 +66,7 @@ Do **not** add a permanent Playwright/Chromium fallback for this observed Autoev
 - observed browser results: `LOCALLY_VERIFIED` for run `32654062805` and its recorded runner/time/browser/sample;
 - permanent browser fallback for the current observed Autoevolution refusal: `ENGINEERING_CHOICE` not selected because the measured gain was zero;
 - browser utility for other source families: `UNKNOWN` until separately measured.
+
+## Remaining debt
+
+None for this bounded browser-characterization work unit. `TECH-DEBT.md` retains compliant alternative live source paths for refused sources, source discovery, robots/rate/politeness policy, broader production source distribution/corpus coverage and stronger SSRF/DNS-rebinding defenses as separate future problems.
