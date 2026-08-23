@@ -18,11 +18,15 @@ The scientific corpus, decision-relevant benchmark measurements, primary publica
 
 The exact old per-candidate execution ledger for Crawl4AI, Stagehand, Browser Use, Firecrawl, ScrapeGraphAI, Docling and Splink was not recoverable from the available durable evidence. This is archived rather than left as active debt because the current repository does not depend on those packages and repository-native implementations now cover the relevant active capabilities. Do not rerun the historical battery merely to reconstruct history. If a future work unit makes one of those candidates decision-critical again, evaluate the then-current version narrowly and record the result durably.
 
-## Product debt: year-semantics challenge coverage
+## Product debt: year-semantics resolver rule
 
-Status: `OPEN`
+Status: `CHARACTERIZED / PRODUCT_DECISION_REQUIRED`
 
-A separate challenge-oriented dataset may be useful to characterize manufacture-year versus model-year edge cases and adjacent singleton model-year records. This is not a current development blocker. Do not change resolver semantics without focused evidence and a product decision.
+The source-backed challenge slice in `benchmarks/catalog_identity_year_semantics_challenge_v1.json` now characterizes manufacture-year versus model-year behavior. Primary evidence establishes that Senatran stores manufacture year and model year separately, FIPE keys vehicle year to model year, and Toyota publishes the same named configuration across adjacent year/model notations.
+
+Current resolver behavior is measured at 4/6 exact challenge labels with two ambiguous overcommits: manufacture-year-only non-overlap forces `NO_MATCH`, while missing model year can force `MATCH` even when the same named configuration exists in adjacent model years. `CATALOG-YEAR-SEMANTICS-CHALLENGE-V1.md` records the evidence and narrow policy options.
+
+Do not change resolver semantics until the product owner chooses the intended rule. Once selected, update the resolver and convert the relevant characterization cases into regression expectations. This does not block unrelated development.
 
 ## Harness debt
 

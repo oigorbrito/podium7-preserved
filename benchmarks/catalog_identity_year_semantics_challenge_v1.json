@@ -1,0 +1,253 @@
+{
+  "schema": "podium7.catalog-identity-golden.v1",
+  "datasetVersion": "year-semantics-challenge-1.0",
+  "createdAt": "2026-08-23",
+  "purpose": "Challenge slice for manufacture-year versus model-year semantics. Expected REVIEW labels identify cases where current evidence does not justify deterministic merge or rejection without a product rule.",
+  "sources": [
+    {
+      "id": "senatran-renavam-fields",
+      "publisher": "Secretaria Nacional de Trânsito / SERPRO",
+      "title": "Consulta Online Senatran — Veículo",
+      "url": "https://centraldeajuda.serpro.gov.br/consultasenatran/veiculo/",
+      "supports": "RENAVAM exposes Ano Fabricação and Ano Modelo as separate vehicle fields."
+    },
+    {
+      "id": "fipe-official-year-semantics",
+      "publisher": "Fundação Instituto de Pesquisas Econômicas",
+      "title": "Preço Médio de Veículos — Tabela Fipe",
+      "url": "https://www.fipe.org.br/pt-br/indices/veiculos",
+      "supports": "FIPE explicitly states that the vehicle year used in its lookup refers to model year."
+    },
+    {
+      "id": "toyota-corolla-cross-2024-2025",
+      "publisher": "Toyota do Brasil",
+      "title": "Preços Públicos — Maio 2024",
+      "url": "https://media.toyota.com.br/dbff4f05-d6ed-47e8-bb7d-073369a7cff7.pdf",
+      "supports": "Corolla Cross XRX Hybrid is published with 2024 / 2025 year/model notation."
+    },
+    {
+      "id": "toyota-corolla-cross-2025-2026",
+      "publisher": "Toyota do Brasil",
+      "title": "Preços Públicos — Junho 2025",
+      "url": "https://media.toyota.com.br/197da502-db1f-45c6-9608-16fdd530929a.pdf",
+      "supports": "Corolla Cross XRX Hybrid is published with 2025 / 2026 year/model notation."
+    }
+  ],
+  "cases": [
+    {
+      "id": "challenge-review-manufacture-year-conflict-same-model-year",
+      "expected": "REVIEW",
+      "left": {
+        "make": "Toyota",
+        "model": "Corolla Cross",
+        "generation": "2020 global generation",
+        "variant": "XRX Hybrid",
+        "powertrain": "1.8 hybrid flex",
+        "transmission": "Hybrid Transaxle CVT",
+        "body_style": "SUV",
+        "market": "BR",
+        "manufacture_year_from": 2024,
+        "manufacture_year_to": 2024,
+        "model_year_from": 2025,
+        "model_year_to": 2025
+      },
+      "right": {
+        "make": "Toyota",
+        "model": "Corolla Cross",
+        "generation": "2020 global generation",
+        "variant": "XRX Hybrid",
+        "powertrain": "1.8 hybrid flex",
+        "transmission": "Hybrid Transaxle CVT",
+        "body_style": "SUV",
+        "market": "BR",
+        "manufacture_year_from": 2025,
+        "manufacture_year_to": 2025,
+        "model_year_from": 2025,
+        "model_year_to": 2025
+      },
+      "sourceIds": [
+        "senatran-renavam-fields",
+        "fipe-official-year-semantics",
+        "toyota-corolla-cross-2024-2025"
+      ],
+      "rationale": "Manufacture year and model year are distinct official fields. With the same model-year and configuration, manufacture-year disagreement alone is not enough evidence in the current research record to force either MATCH or NO_MATCH; a product rule is required, so the conservative challenge expectation is REVIEW."
+    },
+    {
+      "id": "control-match-missing-manufacture-year-same-model-year",
+      "expected": "MATCH",
+      "left": {
+        "make": "Toyota",
+        "model": "Corolla Cross",
+        "generation": "2020 global generation",
+        "variant": "XRX Hybrid",
+        "powertrain": "1.8 hybrid flex",
+        "transmission": "Hybrid Transaxle CVT",
+        "body_style": "SUV",
+        "market": "BR",
+        "manufacture_year_from": 2024,
+        "manufacture_year_to": 2024,
+        "model_year_from": 2025,
+        "model_year_to": 2025
+      },
+      "right": {
+        "make": "Toyota",
+        "model": "Corolla Cross",
+        "generation": "2020 global generation",
+        "variant": "XRX Hybrid",
+        "powertrain": "1.8 hybrid flex",
+        "transmission": "Hybrid Transaxle CVT",
+        "body_style": "SUV",
+        "market": "BR",
+        "model_year_from": 2025,
+        "model_year_to": 2025
+      },
+      "sourceIds": [
+        "senatran-renavam-fields",
+        "fipe-official-year-semantics",
+        "toyota-corolla-cross-2024-2025"
+      ],
+      "rationale": "One observation omits manufacture year but agrees on explicit model-year and all other identity-defining configuration evidence; absence of manufacture-year data is not a contradiction."
+    },
+    {
+      "id": "control-no-match-adjacent-model-years",
+      "expected": "NO_MATCH",
+      "left": {
+        "make": "Toyota",
+        "model": "Corolla Cross",
+        "generation": "2020 global generation",
+        "variant": "XRX Hybrid",
+        "powertrain": "1.8 hybrid flex",
+        "transmission": "Hybrid Transaxle CVT",
+        "body_style": "SUV",
+        "market": "BR",
+        "model_year_from": 2025,
+        "model_year_to": 2025
+      },
+      "right": {
+        "make": "Toyota",
+        "model": "Corolla Cross",
+        "generation": "2020 global generation",
+        "variant": "XRX Hybrid",
+        "powertrain": "1.8 hybrid flex",
+        "transmission": "Hybrid Transaxle CVT",
+        "body_style": "SUV",
+        "market": "BR",
+        "model_year_from": 2026,
+        "model_year_to": 2026
+      },
+      "sourceIds": [
+        "fipe-official-year-semantics",
+        "toyota-corolla-cross-2024-2025",
+        "toyota-corolla-cross-2025-2026"
+      ],
+      "rationale": "FIPE treats model year as an explicit lookup dimension, and Toyota publishes the same named configuration in adjacent model years; explicit non-overlapping model-year singleton ranges remain distinct catalog identities under the current product policy."
+    },
+    {
+      "id": "challenge-review-missing-model-year-across-adjacent-years",
+      "expected": "REVIEW",
+      "left": {
+        "make": "Toyota",
+        "model": "Corolla Cross",
+        "generation": "2020 global generation",
+        "variant": "XRX Hybrid",
+        "powertrain": "1.8 hybrid flex",
+        "transmission": "Hybrid Transaxle CVT",
+        "body_style": "SUV",
+        "market": "BR",
+        "model_year_from": 2025,
+        "model_year_to": 2025
+      },
+      "right": {
+        "make": "Toyota",
+        "model": "Corolla Cross",
+        "generation": "2020 global generation",
+        "variant": "XRX Hybrid",
+        "powertrain": "1.8 hybrid flex",
+        "transmission": "Hybrid Transaxle CVT",
+        "body_style": "SUV",
+        "market": "BR"
+      },
+      "sourceIds": [
+        "fipe-official-year-semantics",
+        "toyota-corolla-cross-2024-2025",
+        "toyota-corolla-cross-2025-2026"
+      ],
+      "rationale": "The same named XRX Hybrid configuration is published in adjacent model years. A record with model year missing cannot be deterministically collapsed into one singleton model-year identity without additional evidence, so REVIEW is the conservative challenge expectation."
+    },
+    {
+      "id": "control-match-overlapping-manufacture-range-same-model-year",
+      "expected": "MATCH",
+      "left": {
+        "make": "Toyota",
+        "model": "Corolla Cross",
+        "generation": "2020 global generation",
+        "variant": "XRX Hybrid",
+        "powertrain": "1.8 hybrid flex",
+        "transmission": "Hybrid Transaxle CVT",
+        "body_style": "SUV",
+        "market": "BR",
+        "manufacture_year_from": 2024,
+        "manufacture_year_to": 2025,
+        "model_year_from": 2025,
+        "model_year_to": 2025
+      },
+      "right": {
+        "make": "Toyota",
+        "model": "Corolla Cross",
+        "generation": "2020 global generation",
+        "variant": "XRX Hybrid",
+        "powertrain": "1.8 hybrid flex",
+        "transmission": "Hybrid Transaxle CVT",
+        "body_style": "SUV",
+        "market": "BR",
+        "manufacture_year_from": 2025,
+        "manufacture_year_to": 2025,
+        "model_year_from": 2025,
+        "model_year_to": 2025
+      },
+      "sourceIds": [
+        "senatran-renavam-fields",
+        "fipe-official-year-semantics"
+      ],
+      "rationale": "The manufacture-year ranges overlap and the explicit model year and configuration agree, so there is no year contradiction under the current range policy."
+    },
+    {
+      "id": "control-no-match-model-year-conflict-with-same-manufacture-year",
+      "expected": "NO_MATCH",
+      "left": {
+        "make": "Toyota",
+        "model": "Corolla Cross",
+        "generation": "2020 global generation",
+        "variant": "XRX Hybrid",
+        "powertrain": "1.8 hybrid flex",
+        "transmission": "Hybrid Transaxle CVT",
+        "body_style": "SUV",
+        "market": "BR",
+        "manufacture_year_from": 2025,
+        "manufacture_year_to": 2025,
+        "model_year_from": 2025,
+        "model_year_to": 2025
+      },
+      "right": {
+        "make": "Toyota",
+        "model": "Corolla Cross",
+        "generation": "2020 global generation",
+        "variant": "XRX Hybrid",
+        "powertrain": "1.8 hybrid flex",
+        "transmission": "Hybrid Transaxle CVT",
+        "body_style": "SUV",
+        "market": "BR",
+        "manufacture_year_from": 2025,
+        "manufacture_year_to": 2025,
+        "model_year_from": 2026,
+        "model_year_to": 2026
+      },
+      "sourceIds": [
+        "senatran-renavam-fields",
+        "fipe-official-year-semantics",
+        "toyota-corolla-cross-2025-2026"
+      ],
+      "rationale": "Even with the same manufacture year, explicit non-overlapping model-year singleton ranges are a deterministic contradiction under the current catalog policy."
+    }
+  ]
+}

@@ -2,7 +2,7 @@
 
 Status: none
 
-There is no unmerged implementation mission recorded after Agent Harness V1.
+There is no unmerged implementation mission recorded after the year-semantics challenge characterization.
 
 For the next non-trivial mission:
 
