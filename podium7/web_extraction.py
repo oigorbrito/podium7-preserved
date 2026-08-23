@@ -3,7 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 import re
 
-from .normalization import normalize_fact
+from .normalization import normalize_bounded_fact, normalize_fact
 
 
 @dataclass(frozen=True)
@@ -13,6 +13,7 @@ class WebFieldRule:
     parser: str
     source_unit: str | None
     label_aliases: tuple[str, ...] = ()
+    range_parser: str | None = None
 
 
 @dataclass(frozen=True)
@@ -42,7 +43,7 @@ class WebExtractionReport:
     issues: tuple[WebExtractionIssue, ...]
 
 
-AUTOEVOLUTION_ARTEGA_GT_RULES: tuple[WebFieldRule, ...] = (
+AUTOEVOLUTION_ARTEGA_GT_RULES_V1: tuple[WebFieldRule, ...] = (
     WebFieldRule("Displacement", "displacement", r"^(\d+)\s*cm3", "cc"),
     WebFieldRule("Power", "power", r"^[\d.]+\s*KW.*?/\s*(\d+)\s*HP", "hp"),
     WebFieldRule("Torque", "torque", r"^.*?/\s*(\d+)\s*Nm", "Nm"),
@@ -62,6 +63,27 @@ AUTOEVOLUTION_ARTEGA_GT_RULES: tuple[WebFieldRule, ...] = (
         ("Combined (EPA)",),
     ),
 )
+
+
+AUTOEVOLUTION_ARTEGA_GT_RULES_V2: tuple[WebFieldRule, ...] = tuple(
+    WebFieldRule(
+        label=rule.label,
+        attribute=rule.attribute,
+        parser=rule.parser,
+        source_unit=rule.source_unit,
+        label_aliases=rule.label_aliases,
+        range_parser=(
+            r"^.*?\((\d+)\s*-\s*(\d+)\s*kg\)"
+            if rule.attribute == "curb_weight"
+            else None
+        ),
+    )
+    for rule in AUTOEVOLUTION_ARTEGA_GT_RULES_V1
+)
+
+# Current reusable artifact. V1 remains named above so historical benchmark
+# evidence can be replayed without silently applying newer parsing semantics.
+AUTOEVOLUTION_ARTEGA_GT_RULES = AUTOEVOLUTION_ARTEGA_GT_RULES_V2
 
 
 def _coerce(value: str) -> object:
@@ -87,6 +109,47 @@ def _parse_values(text: str) -> dict[str, tuple[str, str]]:
             raise ValueError(f"duplicate web field {normalized_label!r}")
         values[key] = (normalized_label, raw.strip())
     return values
+
+
+def _bounded_fact(
+    rule: WebFieldRule,
+    source_label: str,
+    raw: str,
+    match: re.Match[str],
+) -> tuple[ExtractedWebFact | None, WebExtractionIssue | None]:
+    minimum = _coerce(match.group(1))
+    maximum = _coerce(match.group(2))
+    parsed = {"minValue": minimum, "maxValue": maximum}
+    try:
+        normalized = normalize_bounded_fact(
+            rule.attribute,
+            minimum,
+            maximum,
+            rule.source_unit,
+        )
+    except ValueError as exc:
+        message = f"bounded rule {rule.label!r} rejected acquired value {raw!r}: {exc}"
+        return None, WebExtractionIssue(
+            attribute=rule.attribute,
+            label=source_label,
+            code="INVALID_BOUNDED_VALUE",
+            message=message,
+            raw_value=raw,
+        )
+
+    return (
+        ExtractedWebFact(
+            attribute=rule.attribute,
+            raw_value=raw,
+            parsed_value=parsed,
+            normalized_value=normalized.value,
+            unit=normalized.unit,
+            extraction_rule=f"autoevolution.{rule.attribute}.bounded.v2",
+            normalization_rule=normalized.rule,
+            source_label=source_label,
+        ),
+        None,
+    )
 
 
 def extract_with_rules_report(
@@ -128,31 +191,41 @@ def extract_with_rules_report(
 
         source_label, raw = matches[0]
         match = re.search(rule.parser, raw, flags=re.IGNORECASE)
-        if match is None:
-            message = f"rule {rule.label!r} did not match acquired value {raw!r}"
-            issues.append(
-                WebExtractionIssue(
+        if match is not None:
+            parsed = _coerce(match.group(1))
+            normalized = normalize_fact(rule.attribute, parsed, rule.source_unit)
+            extracted.append(
+                ExtractedWebFact(
                     attribute=rule.attribute,
-                    label=source_label,
-                    code="PARSER_MISMATCH",
-                    message=message,
                     raw_value=raw,
+                    parsed_value=parsed,
+                    normalized_value=normalized.value,
+                    unit=normalized.unit,
+                    extraction_rule=f"autoevolution.{rule.attribute}.v1",
+                    normalization_rule=normalized.rule,
+                    source_label=source_label,
                 )
             )
             continue
 
-        parsed = _coerce(match.group(1))
-        normalized = normalize_fact(rule.attribute, parsed, rule.source_unit)
-        extracted.append(
-            ExtractedWebFact(
+        if rule.range_parser is not None:
+            range_match = re.search(rule.range_parser, raw, flags=re.IGNORECASE)
+            if range_match is not None:
+                fact, issue = _bounded_fact(rule, source_label, raw, range_match)
+                if issue is not None:
+                    issues.append(issue)
+                elif fact is not None:
+                    extracted.append(fact)
+                continue
+
+        message = f"rule {rule.label!r} did not match acquired value {raw!r}"
+        issues.append(
+            WebExtractionIssue(
                 attribute=rule.attribute,
+                label=source_label,
+                code="PARSER_MISMATCH",
+                message=message,
                 raw_value=raw,
-                parsed_value=parsed,
-                normalized_value=normalized.value,
-                unit=normalized.unit,
-                extraction_rule=f"autoevolution.{rule.attribute}.v1",
-                normalization_rule=normalized.rule,
-                source_label=source_label,
             )
         )
 

@@ -1,7 +1,7 @@
 import math
 import unittest
 
-from podium7.normalization import normalize_fact
+from podium7.normalization import normalize_bounded_fact, normalize_fact
 
 
 class NormalizationTests(unittest.TestCase):
@@ -31,6 +31,36 @@ class NormalizationTests(unittest.TestCase):
         result = normalize_fact("curb_weight", 2833, "lb")
         self.assertAlmostEqual(result.value, 1285.027184, places=6)
         self.assertEqual(result.unit, "kg")
+
+    def test_bounded_weight_kg_preserves_explicit_bounds(self) -> None:
+        result = normalize_bounded_fact("curb_weight", 1490, 1508, "kg")
+        self.assertEqual(result.value, {"minValue": 1490, "maxValue": 1508})
+        self.assertEqual(result.unit, "kg")
+        self.assertEqual(result.rule, "curb_weight.bounded_to_kg.v1")
+
+    def test_bounded_weight_lb_normalizes_each_bound(self) -> None:
+        result = normalize_bounded_fact("curb_weight", 3285, 3325, "lb")
+        self.assertEqual(
+            result.value,
+            {"minValue": 1490.050935, "maxValue": 1508.19463},
+        )
+        self.assertEqual(result.unit, "kg")
+
+    def test_bounded_weight_rejects_reversed_bounds(self) -> None:
+        with self.assertRaisesRegex(ValueError, "minimum cannot exceed maximum"):
+            normalize_bounded_fact("curb_weight", 1508, 1490, "kg")
+
+    def test_bounded_weight_rejects_non_finite_bounds(self) -> None:
+        for value in (math.nan, math.inf, -math.inf):
+            with self.subTest(value=value):
+                with self.assertRaises(ValueError):
+                    normalize_bounded_fact("curb_weight", value, 1508, "kg")
+                with self.assertRaises(ValueError):
+                    normalize_bounded_fact("curb_weight", 1490, value, "kg")
+
+    def test_bounded_normalization_is_deliberately_narrow(self) -> None:
+        with self.assertRaisesRegex(ValueError, "bounded normalization is unsupported"):
+            normalize_bounded_fact("power", 100, 120, "kW")
 
     def test_consumption_mpg_us_to_l100km(self) -> None:
         result = normalize_fact("fuel_economy_combined", 24.5, "mpg-US")

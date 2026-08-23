@@ -2,17 +2,21 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import json
+import math
 from pathlib import Path
 from typing import Any
 
 from .web_extraction import (
-    AUTOEVOLUTION_ARTEGA_GT_RULES,
+    AUTOEVOLUTION_ARTEGA_GT_RULES_V1,
+    AUTOEVOLUTION_ARTEGA_GT_RULES_V2,
+    WebFieldRule,
     extract_with_rules,
     extract_with_rules_report,
 )
 
 
 WEB_EXTRACTION_CORPUS_SCHEMA = "podium7.web-extraction-source-family-corpus.v1"
+WEB_EXTRACTION_BOUNDED_GOLD_SCHEMA = "podium7.web-extraction-bounded-gold.v1"
 
 
 @dataclass(frozen=True)
@@ -34,6 +38,14 @@ class WebExtractionCorpus:
     version: str
     artifact: str
     cases: tuple[WebExtractionCorpusCase, ...]
+
+
+@dataclass(frozen=True)
+class WebExtractionBoundedGold:
+    version: str
+    base_dataset_version: str
+    artifact: str
+    expected_by_case: dict[str, dict[str, object]]
 
 
 def _rate(numerator: int, denominator: int) -> float | None:
@@ -95,7 +107,7 @@ def load_web_extraction_corpus(path: str | Path) -> WebExtractionCorpus:
             not isinstance(source_target_field_count, int)
             or isinstance(source_target_field_count, bool)
             or source_target_field_count <= 0
-            or source_target_field_count > len(AUTOEVOLUTION_ARTEGA_GT_RULES)
+            or source_target_field_count > len(AUTOEVOLUTION_ARTEGA_GT_RULES_V1)
         ):
             raise ValueError(f"case {case_id!r} has invalid sourceTargetFieldCount")
 
@@ -131,7 +143,7 @@ def load_web_extraction_corpus(path: str | Path) -> WebExtractionCorpus:
             raise ValueError(f"case {case_id!r} has invalid labelVariants")
 
         if expected_outcome == "SUCCESS":
-            if source_target_field_count != len(AUTOEVOLUTION_ARTEGA_GT_RULES):
+            if source_target_field_count != len(AUTOEVOLUTION_ARTEGA_GT_RULES_V1):
                 raise ValueError(f"case {case_id!r} SUCCESS must expose every artifact target field")
             if len(expected_parsed) != source_target_field_count:
                 raise ValueError(f"case {case_id!r} SUCCESS gold facts must cover every target field")
@@ -164,6 +176,81 @@ def load_web_extraction_corpus(path: str | Path) -> WebExtractionCorpus:
     return WebExtractionCorpus(version=version, artifact=artifact, cases=tuple(cases))
 
 
+def _bounded_value(value: object, *, case_id: str, attribute: str) -> dict[str, object]:
+    if not isinstance(value, dict) or set(value) != {"minValue", "maxValue"}:
+        raise ValueError(
+            f"bounded gold {case_id!r} attribute {attribute!r} requires minValue/maxValue"
+        )
+    minimum = value["minValue"]
+    maximum = value["maxValue"]
+    for name, bound in (("minValue", minimum), ("maxValue", maximum)):
+        if isinstance(bound, bool) or not isinstance(bound, (int, float)):
+            raise ValueError(f"bounded gold {case_id!r} {name} must be numeric")
+        if not math.isfinite(float(bound)):
+            raise ValueError(f"bounded gold {case_id!r} {name} must be finite")
+    if float(minimum) > float(maximum):
+        raise ValueError(f"bounded gold {case_id!r} minimum cannot exceed maximum")
+    return {"minValue": minimum, "maxValue": maximum}
+
+
+def load_web_extraction_bounded_gold(
+    path: str | Path,
+    base_dataset: WebExtractionCorpus,
+) -> WebExtractionBoundedGold:
+    payload = json.loads(Path(path).read_text(encoding="utf-8"))
+    if payload.get("schema") != WEB_EXTRACTION_BOUNDED_GOLD_SCHEMA:
+        raise ValueError("unsupported web extraction bounded gold schema")
+
+    version = payload.get("datasetVersion")
+    if not isinstance(version, str) or not version.strip():
+        raise ValueError("bounded gold datasetVersion is required")
+    if payload.get("baseDatasetVersion") != base_dataset.version:
+        raise ValueError("bounded gold baseDatasetVersion does not match source-family corpus")
+    artifact = payload.get("artifact")
+    if artifact != "AUTOEVOLUTION_ARTEGA_GT_RULES_V2":
+        raise ValueError("bounded gold artifact is unsupported")
+
+    base_by_id = {case.id: case for case in base_dataset.cases}
+    raw_cases = payload.get("cases")
+    if not isinstance(raw_cases, list) or not raw_cases:
+        raise ValueError("bounded gold cases are required")
+
+    expected_by_case: dict[str, dict[str, object]] = {}
+    for raw in raw_cases:
+        case_id = raw.get("id")
+        if not isinstance(case_id, str) or case_id not in base_by_id:
+            raise ValueError(f"bounded gold references unknown case {case_id!r}")
+        if case_id in expected_by_case:
+            raise ValueError(f"duplicate bounded gold case id {case_id!r}")
+        expected = raw.get("expectedParsed")
+        if not isinstance(expected, dict) or not expected:
+            raise ValueError(f"bounded gold case {case_id!r} requires expectedParsed")
+
+        base_case = base_by_id[case_id]
+        expected_attributes = set(expected)
+        if expected_attributes != set(base_case.non_scalar_target_fields):
+            raise ValueError(
+                f"bounded gold case {case_id!r} must cover exactly its non-scalar target fields"
+            )
+        expected_by_case[case_id] = {
+            attribute: _bounded_value(value, case_id=case_id, attribute=attribute)
+            for attribute, value in expected.items()
+        }
+
+    required_case_ids = {
+        case.id for case in base_dataset.cases if case.non_scalar_target_fields
+    }
+    if set(expected_by_case) != required_case_ids:
+        raise ValueError("bounded gold must cover every non-scalar source target case")
+
+    return WebExtractionBoundedGold(
+        version=version,
+        base_dataset_version=base_dataset.version,
+        artifact=artifact,
+        expected_by_case=expected_by_case,
+    )
+
+
 def _field_comparison(
     parsed: dict[str, object],
     expected_parsed: dict[str, object],
@@ -180,7 +267,15 @@ def _field_comparison(
     return incorrect_fields, correct_fields
 
 
-def evaluate_web_extraction_corpus(dataset: WebExtractionCorpus) -> dict[str, Any]:
+def _strict_report(
+    dataset: WebExtractionCorpus,
+    *,
+    rules: tuple[WebFieldRule, ...],
+    artifact: str,
+    report_dataset_version: str,
+    expected_overrides: dict[str, dict[str, object]] | None = None,
+) -> dict[str, Any]:
+    overrides = expected_overrides or {}
     results: list[dict[str, Any]] = []
     total_target_fields = 0
     total_emitted_fields = 0
@@ -188,20 +283,23 @@ def evaluate_web_extraction_corpus(dataset: WebExtractionCorpus) -> dict[str, An
 
     for case in dataset.cases:
         total_target_fields += case.source_target_field_count
+        expected_parsed = {**case.expected_parsed, **overrides.get(case.id, {})}
+        expected_outcome = "SUCCESS" if case.id in overrides else case.expected_outcome
+        expected_failure_contains = None if case.id in overrides else case.expected_failure_contains
         text = case.snapshot_path.read_text(encoding="utf-8")
         try:
-            extracted = extract_with_rules(text, AUTOEVOLUTION_ARTEGA_GT_RULES)
+            extracted = extract_with_rules(text, rules)
         except ValueError as exc:
             error = str(exc)
             expected_match = (
-                case.expected_outcome == "FAIL"
-                and case.expected_failure_contains is not None
-                and case.expected_failure_contains in error
+                expected_outcome == "FAIL"
+                and expected_failure_contains is not None
+                and expected_failure_contains in error
             )
             results.append(
                 {
                     "id": case.id,
-                    "expectedOutcome": case.expected_outcome,
+                    "expectedOutcome": expected_outcome,
                     "actualOutcome": "FAIL",
                     "expectedOutcomeMatches": expected_match,
                     "emittedFieldCount": 0,
@@ -213,16 +311,16 @@ def evaluate_web_extraction_corpus(dataset: WebExtractionCorpus) -> dict[str, An
             continue
 
         parsed = {fact.attribute: fact.parsed_value for fact in extracted}
-        incorrect_fields, correct_fields = _field_comparison(parsed, case.expected_parsed)
+        incorrect_fields, correct_fields = _field_comparison(parsed, expected_parsed)
         emitted_fields = len(parsed)
         total_emitted_fields += emitted_fields
         total_correct_fields += correct_fields
         results.append(
             {
                 "id": case.id,
-                "expectedOutcome": case.expected_outcome,
+                "expectedOutcome": expected_outcome,
                 "actualOutcome": "SUCCESS",
-                "expectedOutcomeMatches": case.expected_outcome == "SUCCESS",
+                "expectedOutcomeMatches": expected_outcome == "SUCCESS",
                 "emittedFieldCount": emitted_fields,
                 "correctFieldCount": correct_fields,
                 "incorrectFields": incorrect_fields,
@@ -242,8 +340,8 @@ def evaluate_web_extraction_corpus(dataset: WebExtractionCorpus) -> dict[str, An
 
     return {
         "schema": "podium7.web-extraction-source-family-report.v1",
-        "datasetVersion": dataset.version,
-        "artifact": dataset.artifact,
+        "datasetVersion": report_dataset_version,
+        "artifact": artifact,
         "totalCases": total_cases,
         "metrics": {
             "pageSuccessCount": page_success_count,
@@ -263,9 +361,15 @@ def evaluate_web_extraction_corpus(dataset: WebExtractionCorpus) -> dict[str, An
     }
 
 
-def evaluate_web_extraction_partial_evidence_corpus(
+def _partial_report(
     dataset: WebExtractionCorpus,
+    *,
+    rules: tuple[WebFieldRule, ...],
+    artifact: str,
+    report_dataset_version: str,
+    expected_overrides: dict[str, dict[str, object]] | None = None,
 ) -> dict[str, Any]:
+    overrides = expected_overrides or {}
     results: list[dict[str, Any]] = []
     total_target_fields = 0
     total_emitted_fields = 0
@@ -274,10 +378,12 @@ def evaluate_web_extraction_partial_evidence_corpus(
 
     for case in dataset.cases:
         total_target_fields += case.source_target_field_count
+        expected_parsed = {**case.expected_parsed, **overrides.get(case.id, {})}
+        expected_outcome = "SUCCESS" if case.id in overrides else case.expected_outcome
         text = case.snapshot_path.read_text(encoding="utf-8")
-        report = extract_with_rules_report(text, AUTOEVOLUTION_ARTEGA_GT_RULES)
+        report = extract_with_rules_report(text, rules)
         parsed = {fact.attribute: fact.parsed_value for fact in report.facts}
-        incorrect_fields, correct_fields = _field_comparison(parsed, case.expected_parsed)
+        incorrect_fields, correct_fields = _field_comparison(parsed, expected_parsed)
         emitted_fields = len(parsed)
         issues = [
             {
@@ -296,7 +402,7 @@ def evaluate_web_extraction_partial_evidence_corpus(
         results.append(
             {
                 "id": case.id,
-                "strictExpectedOutcome": case.expected_outcome,
+                "strictExpectedOutcome": expected_outcome,
                 "emittedFieldCount": emitted_fields,
                 "correctFieldCount": correct_fields,
                 "incorrectFields": incorrect_fields,
@@ -310,8 +416,8 @@ def evaluate_web_extraction_partial_evidence_corpus(
 
     return {
         "schema": "podium7.web-extraction-partial-evidence-report.v1",
-        "datasetVersion": dataset.version,
-        "artifact": dataset.artifact,
+        "datasetVersion": report_dataset_version,
+        "artifact": artifact,
         "totalCases": total_cases,
         "metrics": {
             "casesWithIssues": cases_with_issues,
@@ -329,11 +435,64 @@ def evaluate_web_extraction_partial_evidence_corpus(
     }
 
 
+def evaluate_web_extraction_corpus(dataset: WebExtractionCorpus) -> dict[str, Any]:
+    """Replay the historical source-family V1 artifact and expectations."""
+    return _strict_report(
+        dataset,
+        rules=AUTOEVOLUTION_ARTEGA_GT_RULES_V1,
+        artifact=dataset.artifact,
+        report_dataset_version=dataset.version,
+    )
+
+
+def evaluate_web_extraction_partial_evidence_corpus(
+    dataset: WebExtractionCorpus,
+) -> dict[str, Any]:
+    """Replay the historical V1 partial-evidence characterization."""
+    return _partial_report(
+        dataset,
+        rules=AUTOEVOLUTION_ARTEGA_GT_RULES_V1,
+        artifact=dataset.artifact,
+        report_dataset_version=dataset.version,
+    )
+
+
+def evaluate_web_extraction_bounded_corpus(
+    dataset: WebExtractionCorpus,
+    bounded_gold: WebExtractionBoundedGold,
+) -> dict[str, Any]:
+    return _strict_report(
+        dataset,
+        rules=AUTOEVOLUTION_ARTEGA_GT_RULES_V2,
+        artifact=bounded_gold.artifact,
+        report_dataset_version=f"{dataset.version}+{bounded_gold.version}",
+        expected_overrides=bounded_gold.expected_by_case,
+    )
+
+
+def evaluate_web_extraction_bounded_partial_evidence_corpus(
+    dataset: WebExtractionCorpus,
+    bounded_gold: WebExtractionBoundedGold,
+) -> dict[str, Any]:
+    return _partial_report(
+        dataset,
+        rules=AUTOEVOLUTION_ARTEGA_GT_RULES_V2,
+        artifact=bounded_gold.artifact,
+        report_dataset_version=f"{dataset.version}+{bounded_gold.version}",
+        expected_overrides=bounded_gold.expected_by_case,
+    )
+
+
 __all__ = [
+    "WEB_EXTRACTION_BOUNDED_GOLD_SCHEMA",
     "WEB_EXTRACTION_CORPUS_SCHEMA",
+    "WebExtractionBoundedGold",
     "WebExtractionCorpus",
     "WebExtractionCorpusCase",
+    "evaluate_web_extraction_bounded_corpus",
+    "evaluate_web_extraction_bounded_partial_evidence_corpus",
     "evaluate_web_extraction_corpus",
     "evaluate_web_extraction_partial_evidence_corpus",
+    "load_web_extraction_bounded_gold",
     "load_web_extraction_corpus",
 ]

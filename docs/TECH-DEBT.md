@@ -30,13 +30,15 @@ The owner selected the Senatran-aligned rule on 2026-08-23. Manufacture year and
 
 Status: `OPEN / LOCALLY_VERIFIED`
 
-`REPEATABLE-WEB-EXTRACTION-V1.md` records a frozen 12-configuration Autoevolution source-family characterization. Strict extraction still succeeds on 8/12 configurations, emits 96/96 correct fields and recalls 96/142 source target fields; strict unsupported structures continue to fail explicitly.
+`REPEATABLE-WEB-EXTRACTION-V1.md` records the frozen 12-configuration Autoevolution source-family characterization and keeps the historical V1 artifact separately reproducible. Historical strict V1 remains 8/12 configurations with 96/96 emitted fields correct and 96/142 source target fields recalled. Historical partial-evidence V1 remains 140/142 retained source target fields with 140/140 emitted fields correct.
 
-The gap is partially remediated without redefining strict success. An additive facts+issues report path preserves independently valid evidence from structurally partial pages. On the same frozen corpus it retains 140/142 source target fields, all 140 emitted fields are correct, and all four problematic configurations retain usable facts alongside explicit issues. The observed `Combined (EPA)` variation is handled only through a declared validated alias, with the exact source label preserved for provenance.
+The previously unresolved non-scalar `curb_weight` source targets are now covered by the versioned V2 artifact without scalar collapse. The two observed source intervals are normalized as explicit `minValue`/`maxValue` bounds in canonical `kg`, preserving the raw source text and exact source label. On the same frozen corpus, V2 strict extraction succeeds on 10/12 configurations with 120/120 emitted fields correct and 120/142 source target fields recalled. V2 partial-evidence extraction retains 142/142 source target fields with 142/142 emitted fields correct, zero incorrect emitted fields, and zero unresolved source target fields.
 
-Two source target fields remain unresolved: the observed non-scalar `curb_weight` ranges. They are preserved as raw issue evidence and are not collapsed to arbitrary scalar weights. Fields truly absent from a source also remain explicit `MISSING_FIELD` issues rather than invented values.
+The two remaining strict failures are not parser gaps: one BMW snapshot truly omits `Unladen Weight`, and one Chevrolet Onix snapshot truly omits `Combined`. They remain explicit `MISSING_FIELD` issues; Podium does not invent absent values to manufacture complete-page success.
 
-The remaining debt is therefore narrower but still real: select evidence-backed semantics if non-scalar automotive ranges become decision-critical, and characterize reusable extraction beyond this one source family before making heterogeneous-web or production claims. Do not weaken strict validation or convert partial evidence into a false complete-page PASS merely to increase coverage.
+The remaining debt is therefore broader generalization only: the frozen evidence characterizes one Autoevolution source family and does not establish heterogeneous-web or production precision/recall. Any expansion should be driven by additional source-family evidence and measured failure modes, not by weakening strict validation, silently accepting missing data, or selecting a generic browser/agent layer prematurely.
+
+Bounded-range semantics for `curb_weight` are no longer an open debt. Reopen that specific decision only if new evidence requires different interval semantics or range support for additional attributes.
 
 ## Harness debt
 

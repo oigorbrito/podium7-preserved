@@ -1,0 +1,27 @@
+{
+  "schema": "podium7.web-extraction-bounded-gold.v1",
+  "datasetVersion": "autoevolution-bounded-curb-weight-1.0",
+  "baseDatasetVersion": "autoevolution-source-family-1.0",
+  "artifact": "AUTOEVOLUTION_ARTEGA_GT_RULES_V2",
+  "purpose": "Additive gold for source-observed bounded curb-weight values. Historical source-family V1 expectations remain unchanged.",
+  "cases": [
+    {
+      "id": "toyota-corolla-cross-2025-range-weight",
+      "expectedParsed": {
+        "curb_weight": {
+          "minValue": 1490,
+          "maxValue": 1508
+        }
+      }
+    },
+    {
+      "id": "nissan-pathfinder-2025-range-weight-epa-label",
+      "expectedParsed": {
+        "curb_weight": {
+          "minValue": 1966,
+          "maxValue": 2036
+        }
+      }
+    }
+  ]
+}

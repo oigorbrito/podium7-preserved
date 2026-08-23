@@ -143,3 +143,37 @@ def normalize_fact(attribute: str, value: Any, unit: str | None) -> Normalizatio
         return NormalizationResult(aliases.get(token, token.replace(" ", "_")), None, "drivetrain.token.v1")
 
     return NormalizationResult(value, unit, "identity.unspecified.v1")
+
+
+def normalize_bounded_fact(
+    attribute: str,
+    minimum: Any,
+    maximum: Any,
+    unit: str | None,
+) -> NormalizationResult:
+    """Normalize an observed lower/upper bounded quantitative value.
+
+    Bounded normalization is deliberately narrow in V1. A source range is
+    preserved as bounds rather than collapsed to a midpoint or endpoint.
+    """
+    if attribute != "curb_weight":
+        raise ValueError(f"bounded normalization is unsupported for {attribute!r}")
+
+    normalized_minimum = normalize_fact(attribute, minimum, unit)
+    normalized_maximum = normalize_fact(attribute, maximum, unit)
+    if normalized_minimum.unit != normalized_maximum.unit:
+        raise ValueError("bounded normalization produced inconsistent units")
+
+    minimum_number = _finite_number(normalized_minimum.value)
+    maximum_number = _finite_number(normalized_maximum.value)
+    if minimum_number > maximum_number:
+        raise ValueError("bounded value minimum cannot exceed maximum")
+
+    return NormalizationResult(
+        {
+            "minValue": normalized_minimum.value,
+            "maxValue": normalized_maximum.value,
+        },
+        normalized_minimum.unit,
+        "curb_weight.bounded_to_kg.v1",
+    )

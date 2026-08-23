@@ -17,6 +17,7 @@ class AIDiscoveryTests(unittest.TestCase):
         artifact = validate_extraction_artifact(VALID)
         self.assertEqual(artifact.source_id, "example-source")
         self.assertEqual(artifact.rules[0].attribute, "power")
+        self.assertEqual(artifact.artifact_version, "v1")
 
     def test_missing_required_fields_are_rejected(self):
         with self.assertRaises(ValueError):
@@ -137,6 +138,97 @@ class AIDiscoveryTests(unittest.TestCase):
             ],
         }
         with self.assertRaises(ValueError):
+            validate_extraction_artifact(payload)
+
+    def test_bounded_weight_parser_compiles_and_extracts_bounds(self):
+        payload = {
+            "source_id": "x",
+            "rules": [
+                {
+                    "label": "Unladen Weight",
+                    "attribute": "curb_weight",
+                    "parser": r"\((\d+) kg\)",
+                    "range_parser": r"\((\d+)\s*-\s*(\d+) kg\)",
+                    "source_unit": "kg",
+                }
+            ],
+        }
+        artifact = validate_extraction_artifact(payload)
+        self.assertEqual(artifact.artifact_version, "v2")
+        self.assertEqual(artifact.rules[0].range_parser, r"\((\d+)\s*-\s*(\d+) kg\)")
+        facts = extract_with_rules(
+            "Unladen Weight: | 3285 - 3325 lbs (1490 - 1508 kg)",
+            artifact.rules,
+        )
+        self.assertEqual(
+            facts[0].normalized_value,
+            {"minValue": 1490, "maxValue": 1508},
+        )
+
+    def test_bounded_parser_requires_exactly_two_capture_groups(self):
+        for range_parser in (r"(\d+)", r"(\d+)-(\d+)-(\d+)"):
+            with self.subTest(range_parser=range_parser):
+                payload = {
+                    "source_id": "x",
+                    "rules": [
+                        {
+                            "label": "Unladen Weight",
+                            "attribute": "curb_weight",
+                            "parser": r"(\d+) kg",
+                            "range_parser": range_parser,
+                            "source_unit": "kg",
+                        }
+                    ],
+                }
+                with self.assertRaisesRegex(ValueError, "exactly two capture groups"):
+                    validate_extraction_artifact(payload)
+
+    def test_bounded_parser_is_rejected_for_unsupported_attribute(self):
+        payload = {
+            "source_id": "x",
+            "rules": [
+                {
+                    "label": "Power",
+                    "attribute": "power",
+                    "parser": r"(\d+) kW",
+                    "range_parser": r"(\d+)\s*-\s*(\d+) kW",
+                    "source_unit": "kW",
+                }
+            ],
+        }
+        with self.assertRaisesRegex(ValueError, "bounded range parsing is unsupported"):
+            validate_extraction_artifact(payload)
+
+    def test_bounded_weight_parser_rejects_unsupported_source_unit(self):
+        payload = {
+            "source_id": "x",
+            "rules": [
+                {
+                    "label": "Unladen Weight",
+                    "attribute": "curb_weight",
+                    "parser": r"(\d+) stone",
+                    "range_parser": r"(\d+)\s*-\s*(\d+) stone",
+                    "source_unit": "stone",
+                }
+            ],
+        }
+        with self.assertRaisesRegex(ValueError, "requires kg, lb, or lbs"):
+            validate_extraction_artifact(payload)
+
+    def test_invalid_bounded_parser_regex_is_rejected(self):
+        payload = {
+            "source_id": "x",
+            "rules": [
+                {
+                    "label": "Unladen Weight",
+                    "attribute": "curb_weight",
+                    "parser": r"(\d+) kg",
+                    "range_parser": "([",
+                    "source_unit": "kg",
+                }
+            ],
+        }
+        with self.assertRaisesRegex(ValueError, "range_parser is invalid"):
             validate_extraction_artifact(payload)
 
 
