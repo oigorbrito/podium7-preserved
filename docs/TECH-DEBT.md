@@ -36,6 +36,7 @@ Completed bounded capabilities are recorded in their dedicated design records:
 - `DIRECT-HTTP-ACQUISITION-V1.md` — fail-closed direct HTTP transport semantics and snapshot contract;
 - `NETWORK-TARGET-BINDING-V1.md` — DNS-rebinding-resistant acquisition path for arbitrary untrusted locators; each hop resolves, validates, and connects to the same validated IP set while preserving hostname TLS verification;
 - `INMETRO-PBEV-DOCUMENT-PATH-V1.md` — deliberate source-specific current Inmetro PBEV PDF acquisition and ruled-table extraction path; `pdfplumber` is an optional `pbev` extra and the global HTTP media policy remains unchanged;
+- `PRODUCTION-SOURCE-DISTRIBUTION-V1.md` — bounded regression gate for independently inspected source-family and regional diversity across US/EU/BR without a production-completeness claim;
 - `PUBLIC-WEB-ACQUISITION-CHARACTERIZATION-V1.md` — bounded real-network compatibility observation;
 - `BROWSER-ACQUISITION-CHARACTERIZATION-V1.md` — normal Chromium did not overcome the measured Autoevolution HTTP 403 path, so generic browser fallback was not selected;
 - `COMPLIANT-ALTERNATIVE-SOURCES-V1.md` — official alternative-source selection: NHTSA vPIC `ADAPT`, EEA `ADAPT`, FuelEconomy.gov `REFERENCE`, and the historical Inmetro resource boundary that motivated the now-implemented document path;
@@ -43,12 +44,11 @@ Completed bounded capabilities are recorded in their dedicated design records:
 - `OFFICIAL-SOURCE-DISCOVERY-V1.md` — bounded NHTSA vPIC + FuelEconomy.gov candidate discovery with source-native identifiers/locators and an explicit `identity_proof=False` contract;
 - `RECURRING-SOURCE-POLICY-V1.md` — fail-closed recurring-operation robots interpretation and per-host pacing gate using stdlib robots semantics plus the existing Podium rate limiter.
 
-The generic debts “find any compliant alternative live source”, “implement EEA source-family V1”, “implement bounded official source discovery V1”, “define recurring-operation source policy”, “strengthen network target binding before arbitrary untrusted locators”, and “establish a bounded Inmetro PBEV acquisition/extraction path” are closed.
+The generic debts “find any compliant alternative live source”, “implement EEA source-family V1”, “implement bounded official source discovery V1”, “define recurring-operation source policy”, “strengthen network target binding before arbitrary untrusted locators”, “establish a bounded Inmetro PBEV acquisition/extraction path”, and “establish bounded production source distribution/corpus breadth” are closed.
 
 Remaining acquisition/generalization debt is concrete:
 
-1. **Production source distribution and corpus breadth.** Broaden coverage only through independently inspected source-family evidence and measured failure modes. Current bounded results do not establish heterogeneous-web or production precision/recall, discovery completeness, or production-wide European/U.S./Brazilian coverage.
-2. **EEA semantic expansion.** V1 does not establish diesel/diesel-electric mappings, production-wide European coverage, or canonical retail identity from EEA type/variant/version evidence. Expand only when those semantics become decision-critical and independently benchmarked.
+1. **EEA semantic expansion.** V1 does not establish diesel/diesel-electric mappings or canonical retail identity from EEA type/variant/version evidence. Expand only with official classification evidence and an independent benchmark. Production-wide European coverage remains an operational breadth measurement, not a prerequisite for the bounded source-family architecture.
 
 Browser automation can be reconsidered only if a different independently measured source family demonstrates both a genuine JavaScript requirement and successful normal-browser acquisition. Do not add a generic browser/agent layer merely because direct HTTP failed.
 

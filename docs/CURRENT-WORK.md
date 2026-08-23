@@ -1,11 +1,5 @@
 # Current work
 
-Status: active
+Status: none
 
-Outcome: establish a bounded production source-distribution and corpus-breadth regression gate.
-
-Boundaries: reuse independently inspected official source families; three regions; bounded single-source dominance; no production-completeness claim; offline CI.
-
-Acceptance: implementation, frozen benchmark, deterministic tests, docs, green CI, concurrency recheck, squash merge.
-
-Plan: `exec-plans/active/PRODUCTION-SOURCE-DISTRIBUTION-V1.md`.
+No implementation mission is active. Durable unresolved work remains tracked in `TECH-DEBT.md` and completed execution history is under `exec-plans/completed/`.
