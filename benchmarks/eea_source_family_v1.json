@@ -1,0 +1,146 @@
+{
+  "schema": "podium7.eea-source-family.v1",
+  "datasetVersion": "eea-passenger-cars-2025-provisional-bounded-1.0",
+  "artifact": "EEA_CO2_CARS_2025_V1",
+  "source": {
+    "owner": "European Environment Agency",
+    "table": "[CO2Emission].[latest].[co2cars_2025Pv31]",
+    "sourceUrl": "https://discodata.eea.europa.eu/sql?query=SELECT+%5BID%5D%2C%5BMS%5D%2C%5BMk%5D%2C%5BCn%5D%2C%5BMan%5D%2C%5BTAN%5D%2C%5BT%5D%2C%5BVa%5D%2C%5BVe%5D%2C%5BM+%28kg%29%5D%2C%5BEc+%28cm3%29%5D%2C%5BEp+%28KW%29%5D%2C%5BFt%5D%2C%5BFm%5D%2C%5BYear%5D%2C%5BEwltp+%28g%2Fkm%29%5D%2C%5BZ+%28Wh%2Fkm%29%5D%2C%5BStatus%5D%0AFROM+%5BCO2Emission%5D.%5Blatest%5D.%5Bco2cars_2025Pv31%5D%0AWHERE+%5BID%5D+IN+%28162744190%2C162744191%2C162744196%2C162744197%29%0AORDER+BY+%5BID%5D&p=1&nrOfHits=20",
+    "snapshot": "data/raw/web/eea-v1/eea-passenger-cars-2025-bounded-v1.json",
+    "snapshotSha256": "847fa97a46ae32d60673fe63b5ebeeb2d35575771c607b806e3bdedd1c7d2ec9",
+    "snapshotSizeBytes": 1165,
+    "acquiredAt": "2026-08-23T17:58:06Z",
+    "githubActionsRun": 32656518259,
+    "githubActionsJob": 97235995006
+  },
+  "cases": [
+    {
+      "id": "polestar-4-electric-162744190",
+      "sourceRecordId": 162744190,
+      "sourceTargetFieldCount": 2,
+      "expectedIdentity": {
+        "member_state": "SE",
+        "make": "POLESTAR",
+        "commercial_name": "POLESTAR 4",
+        "manufacturer": "POLESTAR PERFORMANCE AB",
+        "type_approval_number": "E9*2018/858*11568*00",
+        "vehicle_type": "4",
+        "variant": "ZPB",
+        "version": "AL00",
+        "registration_year": 2025,
+        "status": "P"
+      },
+      "expectedRegulatory": {
+        "mass_in_running_order_kg": 2305,
+        "engine_capacity_cm3": null,
+        "engine_power_kw": 200,
+        "fuel_type": "electric",
+        "fuel_mode": "E",
+        "wltp_co2_g_km": 0,
+        "electric_energy_consumption_wh_km": 178
+      },
+      "expectedFacts": {
+        "power": 200,
+        "fuel_type": "electric"
+      }
+    },
+    {
+      "id": "mercedes-c300-hybrid-162744191",
+      "sourceRecordId": 162744191,
+      "sourceTargetFieldCount": 3,
+      "expectedIdentity": {
+        "member_state": "SE",
+        "make": "MERCEDES-BENZ",
+        "commercial_name": "C 300 4MATIC",
+        "manufacturer": "MERCEDES-BENZ AG",
+        "type_approval_number": "E1*2018/858*00016*15",
+        "vehicle_type": "R2CW",
+        "variant": "H046T1",
+        "version": "CZAA455A",
+        "registration_year": 2025,
+        "status": "P"
+      },
+      "expectedRegulatory": {
+        "mass_in_running_order_kg": 1770,
+        "engine_capacity_cm3": 1999,
+        "engine_power_kw": 190,
+        "fuel_type": "petrol",
+        "fuel_mode": "H",
+        "wltp_co2_g_km": 160,
+        "electric_energy_consumption_wh_km": null
+      },
+      "expectedFacts": {
+        "power": 190,
+        "displacement": 1999,
+        "fuel_type": "hybrid"
+      }
+    },
+    {
+      "id": "volvo-xc60-phev-162744196",
+      "sourceRecordId": 162744196,
+      "sourceTargetFieldCount": 3,
+      "expectedIdentity": {
+        "member_state": "SE",
+        "make": "VOLVO",
+        "commercial_name": "XC60",
+        "manufacturer": "VOLVO CAR CORPORATION",
+        "type_approval_number": "E4*2007/46*1220*25",
+        "vehicle_type": "U",
+        "variant": "UZH4",
+        "version": "UZH4VD01",
+        "registration_year": 2025,
+        "status": "P"
+      },
+      "expectedRegulatory": {
+        "mass_in_running_order_kg": 2150,
+        "engine_capacity_cm3": 1969,
+        "engine_power_kw": 186,
+        "fuel_type": "petrol/electric",
+        "fuel_mode": "P",
+        "wltp_co2_g_km": 23,
+        "electric_energy_consumption_wh_km": 183
+      },
+      "expectedFacts": {
+        "power": 186,
+        "displacement": 1969,
+        "fuel_type": "plug_in_hybrid"
+      }
+    },
+    {
+      "id": "volkswagen-taigo-petrol-162744197",
+      "sourceRecordId": 162744197,
+      "sourceTargetFieldCount": 3,
+      "expectedIdentity": {
+        "member_state": "SE",
+        "make": "VOLKSWAGEN, VW",
+        "commercial_name": "TAIGO",
+        "manufacturer": "VOLKSWAGEN AG",
+        "type_approval_number": "E13*2018/858*00140*12",
+        "vehicle_type": "CS",
+        "variant": "ACDUSA",
+        "version": "FD7FD7CW0094VNAIO",
+        "registration_year": 2025,
+        "status": "P"
+      },
+      "expectedRegulatory": {
+        "mass_in_running_order_kg": 1260,
+        "engine_capacity_cm3": 999,
+        "engine_power_kw": 85,
+        "fuel_type": "petrol",
+        "fuel_mode": "M",
+        "wltp_co2_g_km": 130,
+        "electric_energy_consumption_wh_km": null
+      },
+      "expectedFacts": {
+        "power": 85,
+        "displacement": 999,
+        "fuel_type": "gasoline"
+      }
+    }
+  ],
+  "nonPromotedSourceFields": {
+    "M (kg)": "EEA mass in running order is retained as regulatory evidence and is not reinterpreted as Podium curb_weight.",
+    "Ewltp (g/km)": "Retained as EEA regulatory evidence; no Podium normalized attribute is selected in V1.",
+    "Z (Wh/km)": "Retained as EEA regulatory evidence; no electric-efficiency normalization is selected in V1."
+  }
+}
