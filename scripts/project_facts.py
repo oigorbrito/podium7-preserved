@@ -47,11 +47,17 @@ def _runtime_health(root: Path) -> dict[str, Any]:
 
 
 def _test_count(root: Path) -> int:
+    root_text = str(root)
+    tests_text = str(root / "tests")
+    for value in (root_text, tests_text):
+        if value not in sys.path:
+            sys.path.insert(0, value)
+
     loader = unittest.TestLoader()
     suite = loader.discover(
-        start_dir=str(root / "tests"),
+        start_dir=tests_text,
         pattern="test_*.py",
-        top_level_dir=str(root / "tests"),
+        top_level_dir=tests_text,
     )
     if loader.errors:
         raise ValueError("unittest discovery failed: " + " | ".join(loader.errors))
