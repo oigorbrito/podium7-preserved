@@ -28,7 +28,7 @@ The owner selected the Senatran-aligned rule on 2026-08-23. Manufacture year and
 
 ## Acquisition and source-family generalization
 
-Status: `OPEN / CORE BOUNDED CAPABILITIES LOCALLY_VERIFIED`
+Status: `CLOSED / CURRENT BOUNDED PROCESS COMPLETE`
 
 Completed bounded capabilities are recorded in their dedicated design records:
 
@@ -41,18 +41,15 @@ Completed bounded capabilities are recorded in their dedicated design records:
 - `BROWSER-ACQUISITION-CHARACTERIZATION-V1.md` — normal Chromium did not overcome the measured Autoevolution HTTP 403 path, so generic browser fallback was not selected;
 - `COMPLIANT-ALTERNATIVE-SOURCES-V1.md` — official alternative-source selection: NHTSA vPIC `ADAPT`, EEA `ADAPT`, FuelEconomy.gov `REFERENCE`, and the historical Inmetro resource boundary that motivated the now-implemented document path;
 - `EEA-SOURCE-FAMILY-V1.md` — third bounded structured source family with explicit regulatory semantics and nonclaims;
+- `EEA-SEMANTIC-EXPANSION-V2.md` — official-classification-backed diesel/diesel-electric semantics plus the explicit decision that EEA type/variant/version are regulatory evidence, not canonical retail identity proof;
 - `OFFICIAL-SOURCE-DISCOVERY-V1.md` — bounded NHTSA vPIC + FuelEconomy.gov candidate discovery with source-native identifiers/locators and an explicit `identity_proof=False` contract;
 - `RECURRING-SOURCE-POLICY-V1.md` — fail-closed recurring-operation robots interpretation and per-host pacing gate using stdlib robots semantics plus the existing Podium rate limiter.
 
-The generic debts “find any compliant alternative live source”, “implement EEA source-family V1”, “implement bounded official source discovery V1”, “define recurring-operation source policy”, “strengthen network target binding before arbitrary untrusted locators”, “establish a bounded Inmetro PBEV acquisition/extraction path”, and “establish bounded production source distribution/corpus breadth” are closed.
+The bounded acquisition/source-family process has no remaining active block. Future production-scale corpus growth, precision/recall measurement, new regions, new semantic fields or new source families are product-operation work and must be reopened only from measured need with new evidence and, where applicable, ADR-0001 evaluation.
 
-Remaining acquisition/generalization debt is concrete:
+Browser automation can be reconsidered only if a different independently measured source family demonstrates both a genuine JavaScript requirement and successful normal-browser acquisition. This is not an active blocker.
 
-1. **EEA semantic expansion.** V1 does not establish diesel/diesel-electric mappings or canonical retail identity from EEA type/variant/version evidence. Expand only with official classification evidence and an independent benchmark. Production-wide European coverage remains an operational breadth measurement, not a prerequisite for the bounded source-family architecture.
-
-Browser automation can be reconsidered only if a different independently measured source family demonstrates both a genuine JavaScript requirement and successful normal-browser acquisition. Do not add a generic browser/agent layer merely because direct HTTP failed.
-
-MPGe semantics are not an active blocker because the current FuelEconomy extraction artifact rejects MPGe explicitly rather than silently converting it. Reopen only when electric-efficiency normalization becomes decision-critical.
+MPGe semantics can be reopened when electric-efficiency normalization becomes decision-critical; the current FuelEconomy extraction artifact rejects MPGe explicitly rather than silently converting it. This is not an active blocker.
 
 ## Harness debt
 
