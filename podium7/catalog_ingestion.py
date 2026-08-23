@@ -8,12 +8,19 @@ from typing import Any
 
 from .catalog import (
     CatalogMatchOutcome,
+    CatalogPublicationAction,
     CatalogStore,
     CatalogVehicleIdentity,
     ExternalIdentifier,
     resolve_catalog_pair,
     validate_catalog_publication_change,
-    CatalogPublicationAction,
+)
+from .catalog_review import (
+    CatalogReviewComparison,
+    CatalogReviewQueue,
+    CatalogReviewResolutionAction,
+    CatalogReviewState,
+    CatalogReviewTask,
 )
 from .domain import CandidateFact, DecisionStatus, RawEvidence, Source
 
@@ -51,6 +58,7 @@ class CatalogIngestionResult:
     vehicle_id: str | None
     comparisons: tuple[CatalogIngestionComparison, ...]
     review_vehicle_ids: tuple[str, ...] = ()
+    review_id: str | None = None
 
     def to_payload(self) -> dict[str, Any]:
         identity = asdict(self.identity)
@@ -64,6 +72,7 @@ class CatalogIngestionResult:
             "action": self.action.value,
             "vehicleId": self.vehicle_id,
             "evidenceId": self.evidence_id,
+            "reviewId": self.review_id,
             "identity": identity,
             "reviewVehicleIds": list(self.review_vehicle_ids),
             "comparisons": [comparison.to_payload() for comparison in self.comparisons],
@@ -142,8 +151,14 @@ def catalog_identity_from_record(record: Mapping[str, Any]) -> CatalogVehicleIde
                 )
             identifiers.append(
                 ExternalIdentifier(
-                    namespace=_clean_text(raw_identifier.get("namespace"), "external identifier namespace"),
-                    value=_clean_text(raw_identifier.get("value"), "external identifier value"),
+                    namespace=_clean_text(
+                        raw_identifier.get("namespace"),
+                        "external identifier namespace",
+                    ),
+                    value=_clean_text(
+                        raw_identifier.get("value"),
+                        "external identifier value",
+                    ),
                 )
             )
         payload["external_identifiers"] = tuple(identifiers)
@@ -155,13 +170,18 @@ def _catalog_entries(store: CatalogStore) -> list[tuple[str, CatalogVehicleIdent
     entries: list[tuple[str, CatalogVehicleIdentity]] = []
     cursor: str | None = None
     while True:
-        ids = store.catalog_vehicle_ids_page(after_id=cursor, limit=CATALOG_INGESTION_PAGE_SIZE)
+        ids = store.catalog_vehicle_ids_page(
+            after_id=cursor,
+            limit=CATALOG_INGESTION_PAGE_SIZE,
+        )
         if not ids:
             break
         for vehicle_id in ids:
             identity = store.get_catalog_vehicle(vehicle_id)
             if identity is None:
-                raise RuntimeError(f"catalog vehicle disappeared during ingestion: {vehicle_id}")
+                raise RuntimeError(
+                    f"catalog vehicle disappeared during ingestion: {vehicle_id}"
+                )
             entries.append((vehicle_id, identity))
         if len(ids) < CATALOG_INGESTION_PAGE_SIZE:
             break
@@ -169,7 +189,11 @@ def _catalog_entries(store: CatalogStore) -> list[tuple[str, CatalogVehicleIdent
     return entries
 
 
-def _ensure_source_and_evidence(store: CatalogStore, source: Source, evidence: RawEvidence) -> None:
+def _ensure_source_and_evidence(
+    store: CatalogStore,
+    source: Source,
+    evidence: RawEvidence,
+) -> None:
     if evidence.source_id != source.id:
         raise ValueError("evidence source_id must match source id")
 
@@ -177,16 +201,22 @@ def _ensure_source_and_evidence(store: CatalogStore, source: Source, evidence: R
     if existing_source is None:
         store.save_source(source)
     elif existing_source != source:
-        raise ValueError(f"source id {source.id!r} already exists with different metadata")
+        raise ValueError(
+            f"source id {source.id!r} already exists with different metadata"
+        )
 
     existing_evidence = store.get_raw_evidence(evidence.id)
     if existing_evidence is None:
         store.save_raw_evidence(evidence)
     elif existing_evidence != evidence:
-        raise ValueError(f"evidence id {evidence.id!r} already exists with different metadata")
+        raise ValueError(
+            f"evidence id {evidence.id!r} already exists with different metadata"
+        )
 
 
-def _observation_values(identity: CatalogVehicleIdentity) -> tuple[tuple[str, Any], ...]:
+def _observation_values(
+    identity: CatalogVehicleIdentity,
+) -> tuple[tuple[str, Any], ...]:
     observations: list[tuple[str, Any]] = []
     for field in _TEXT_FIELDS + _YEAR_FIELDS:
         value = getattr(identity, field)
@@ -221,7 +251,9 @@ def _save_observation_candidates(
     identity: CatalogVehicleIdentity,
     evidence_id: str,
 ) -> None:
-    existing = {fact.id: fact for fact in store.catalog_candidates_for_entity(vehicle_id)}
+    existing = {
+        fact.id: fact for fact in store.catalog_candidates_for_entity(vehicle_id)
+    }
     for attribute, value in _observation_values(identity):
         fact_id = _candidate_id(evidence_id, vehicle_id, attribute)
         fact = CandidateFact(
@@ -241,8 +273,22 @@ def _save_observation_candidates(
             store.save_catalog_candidate_fact(fact)
         elif previous != fact:
             raise ValueError(
-                f"evidence {evidence_id!r} already produced a different {attribute!r} observation"
+                f"evidence {evidence_id!r} already produced "
+                f"a different {attribute!r} observation"
             )
+
+
+def _review_comparisons(
+    comparisons: Sequence[CatalogIngestionComparison],
+) -> tuple[CatalogReviewComparison, ...]:
+    return tuple(
+        CatalogReviewComparison(
+            vehicle_id=item.vehicle_id,
+            outcome=item.outcome.value,
+            reason=item.reason,
+        )
+        for item in comparisons
+    )
 
 
 def ingest_catalog_record(
@@ -296,12 +342,34 @@ def ingest_catalog_record(
         vehicle_id = None
         review_vehicle_ids = ()
 
+    review_id: str | None = None
+    review_queue = (
+        CatalogReviewQueue(store)
+        if action is CatalogIngestionAction.REVIEW
+        else None
+    )
+
     with store.transaction():
         _ensure_source_and_evidence(store, source, evidence)
         if action is CatalogIngestionAction.CREATED:
             vehicle_id = store.create_catalog_vehicle(identity)
+        elif action is CatalogIngestionAction.REVIEW:
+            assert review_queue is not None
+            task = review_queue.enqueue(
+                evidence_id=evidence.id,
+                identity=identity,
+                candidate_vehicle_ids=review_vehicle_ids,
+                comparisons=_review_comparisons(comparisons),
+            )
+            review_id = task.id
+
         if vehicle_id is not None:
-            _save_observation_candidates(store, vehicle_id, identity, evidence.id)
+            _save_observation_candidates(
+                store,
+                vehicle_id,
+                identity,
+                evidence.id,
+            )
 
     return CatalogIngestionResult(
         action=action,
@@ -310,7 +378,109 @@ def ingest_catalog_record(
         vehicle_id=vehicle_id,
         comparisons=comparisons,
         review_vehicle_ids=review_vehicle_ids,
+        review_id=review_id,
     )
+
+
+def _require_review_task(
+    queue: CatalogReviewQueue,
+    review_id: str,
+) -> CatalogReviewTask:
+    task = queue.get(review_id)
+    if task is None:
+        raise ValueError("catalog review task does not exist")
+    return task
+
+
+def resolve_catalog_review_match(
+    store: CatalogStore,
+    review_id: str,
+    vehicle_id: str,
+    *,
+    actor_id: str,
+    reason: str,
+) -> CatalogReviewTask:
+    queue = CatalogReviewQueue(store)
+    task = _require_review_task(queue, review_id)
+    canonical_target = store.resolve_catalog_id(vehicle_id)
+
+    if task.state is CatalogReviewState.RESOLVED:
+        if (
+            task.resolution_action is CatalogReviewResolutionAction.MATCHED
+            and task.resolution_vehicle_id == canonical_target
+            and task.resolved_by == actor_id.strip()
+            and task.resolution_reason == reason.strip()
+        ):
+            return task
+        raise ValueError("catalog review task is already resolved")
+
+    candidates = {
+        store.resolve_catalog_id(candidate)
+        for candidate in task.candidate_vehicle_ids
+    }
+    if canonical_target not in candidates:
+        raise ValueError("selected vehicle is not a candidate for this review")
+    if store.get_catalog_vehicle(canonical_target) is None:
+        raise ValueError("selected catalog vehicle does not exist")
+
+    with store.transaction():
+        _save_observation_candidates(
+            store,
+            canonical_target,
+            task.identity,
+            task.evidence_id,
+        )
+        return queue.resolve(
+            review_id,
+            action=CatalogReviewResolutionAction.MATCHED,
+            vehicle_id=canonical_target,
+            actor_id=actor_id,
+            reason=reason,
+        )
+
+
+def resolve_catalog_review_create(
+    store: CatalogStore,
+    review_id: str,
+    *,
+    actor_id: str,
+    reason: str,
+) -> CatalogReviewTask:
+    queue = CatalogReviewQueue(store)
+    task = _require_review_task(queue, review_id)
+
+    if task.state is CatalogReviewState.RESOLVED:
+        if (
+            task.resolution_action is CatalogReviewResolutionAction.CREATED
+            and task.resolved_by == actor_id.strip()
+            and task.resolution_reason == reason.strip()
+        ):
+            return task
+        raise ValueError("catalog review task is already resolved")
+
+    validate_catalog_publication_change(
+        None,
+        task.identity,
+        action=CatalogPublicationAction.CREATE,
+        decision_status=DecisionStatus.EVIDENCE_BACKED,
+        evidence_ids=(task.evidence_id,),
+    )
+
+    with store.transaction():
+        vehicle_id = store.create_catalog_vehicle(task.identity)
+        _save_observation_candidates(
+            store,
+            vehicle_id,
+            task.identity,
+            task.evidence_id,
+        )
+        return queue.resolve(
+            review_id,
+            action=CatalogReviewResolutionAction.CREATED,
+            vehicle_id=vehicle_id,
+            actor_id=actor_id,
+            reason=reason,
+        )
 
 
 __all__ = [
@@ -320,4 +490,6 @@ __all__ = [
     "CatalogIngestionResult",
     "catalog_identity_from_record",
     "ingest_catalog_record",
+    "resolve_catalog_review_create",
+    "resolve_catalog_review_match",
 ]
