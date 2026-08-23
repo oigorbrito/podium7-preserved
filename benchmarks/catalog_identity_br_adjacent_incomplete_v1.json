@@ -1,0 +1,261 @@
+{
+  "schema": "podium7.catalog-identity-golden.v1",
+  "datasetVersion": "br-adjacent-incomplete-1.0",
+  "createdAt": "2026-08-23",
+  "purpose": "Focused Brazilian hard-case regression slice for adjacent model-year contradictions and cross-source identity observations with materially incomplete model-year or transmission/powertrain evidence. Expected outcomes are curated product decisions grounded in official sources, not resolver-generated labels.",
+  "sources": [
+    {
+      "id": "toyota-connected-services-corolla-my25",
+      "publisher": "Toyota do Brasil",
+      "title": "Serviços Conectados Toyota",
+      "url": "https://www.toyota.com.br/meu-toyota/conectado",
+      "supports": "Lists Corolla model year 2025 configurations including Altis Hybrid Premium."
+    },
+    {
+      "id": "toyota-corolla-altis-hybrid-offer-2026",
+      "publisher": "Toyota do Brasil",
+      "title": "Corolla Hybrid Altis Premium 2026",
+      "url": "https://www.toyota.com.br/ofertas/corolla-hybrid-altis-premium-2026-branco-polar-040-nacional",
+      "supports": "Official offer for Corolla Altis Premium Hybrid 1.8 Flex automatic 26/26, with Hybrid Transaxle CVT powertrain details."
+    },
+    {
+      "id": "chevrolet-onix-second-generation",
+      "publisher": "Chevrolet Brasil",
+      "title": "100 carros que marcam o centenário da Chevrolet no Brasil",
+      "url": "https://news.chevrolet.com.br/newsroom.detail.html/Pages/news/br/pt/2025/feb/0207-100carros.html",
+      "supports": "The current Onix launched in 2019 is the second generation of the product."
+    },
+    {
+      "id": "chevrolet-onix-my26-price-list",
+      "publisher": "Chevrolet Brasil",
+      "title": "Lista de preços públicos sugeridos — janeiro de 2026",
+      "url": "https://www.chevrolet.com.br/content/dam/chevrolet/south-america/brazil/portuguese/index/portable-navigation/global-footer/lista-de-precos/04-pdf/lista-de-precos-publicos-sugeridos-01-01-2026.pdf",
+      "supports": "Onix Premier 1.0 Turbo hatch, model year 2026, with six-speed automatic transmission."
+    },
+    {
+      "id": "chevrolet-onix-line-2026-engineering",
+      "publisher": "Chevrolet Brasil",
+      "title": "Novo Onix usa inteligência artificial para aprimorar design, conforto e dirigibilidade",
+      "url": "https://news.chevrolet.com.br/newsroom.detail.html/Pages/news/br/pt/2025/aug/0811-Novo-Onix-usa-inteligencia-artificial-aprimorar-design-conforto-dirigibilidade.html",
+      "supports": "Identifies the Onix line 2026, hatch and sedan bodies, and a Premier configuration, but does not establish a version-specific Premier powertrain/transmission mapping in the article."
+    },
+    {
+      "id": "chevrolet-onix-line-2027",
+      "publisher": "Chevrolet Brasil",
+      "title": "Chevrolet apresenta a linha Onix 2027, a mais completa na história do modelo",
+      "url": "https://news.chevrolet.com.br/newsroom.detail.html/Pages/news/br/pt/2026/jun/0603-onix-2027.html",
+      "supports": "Identifies the Brazil Onix line 2027 and explicitly lists the Premier Turbo AT hatch configuration."
+    },
+    {
+      "id": "vw-tcross-brazil-generation",
+      "publisher": "Volkswagen do Brasil",
+      "title": "O líder aprimorado: muito prazer, Novo T-Cross!",
+      "url": "https://newsroom-br.itd.vw.com.br/news/2141",
+      "supports": "Brazil T-Cross history beginning in 2019 and the 2024 update of the same model line."
+    },
+    {
+      "id": "vw-tcross-launch-versions",
+      "publisher": "Volkswagen do Brasil",
+      "title": "Conheça as quatro versões do Volkswagen T-Cross",
+      "url": "https://newsroom-br.itd.vw.com.br/news/118",
+      "supports": "Lists T-Cross Highline 250 TSI Automatic, the 250 TSI Total Flex engine, and six-speed automatic transmission at the Brazil launch."
+    },
+    {
+      "id": "vw-tcross-highline-250-tsi-tech-sheet",
+      "publisher": "Volkswagen do Brasil",
+      "title": "Ficha Técnica — T-Cross Highline 250 TSI Automático",
+      "url": "https://vw-digital-cdn-br.itd.vw.com.br/assets/newsroom-cdn-br-ps/Ficha%20T%C3%A9cnica%20T-Cross%20Highline%20250%20TSI.pdf",
+      "supports": "Highline 250 TSI automatic configuration with 1.4/250 Nm Total Flex engine and six-speed automatic transmission; the sheet itself does not state a model year."
+    },
+    {
+      "id": "vw-tcross-current-product-page",
+      "publisher": "Volkswagen do Brasil",
+      "title": "T-Cross",
+      "url": "https://www.vw.com.br/pt/carros/t-cross.html",
+      "supports": "Current Brazil T-Cross page lists Highline 250 TSI, 250 TSI engine family and automatic six/eight-speed transmissions at range level, without mapping a transmission to Highline in the inspected page evidence."
+    },
+    {
+      "id": "vw-tcross-my26-owner-manual",
+      "publisher": "Volkswagen do Brasil",
+      "title": "Manual de instruções T-Cross MY26",
+      "url": "https://www.vw.com.br/idhub/content/dam/onehub_pkw/importers/br/literatura-de-bordo/manual-t-cross/my26/26B_5B1_TCR_66_Manual_de_instrucoes.pdf",
+      "supports": "MY26 T-Cross manual documents the 1.4 Total Flex 110 kW / 250 Nm TSI engine and AQ250 six-speed automatic transmission."
+    }
+  ],
+  "cases": [
+    {
+      "id": "br-hard-control-match-tcross-highline-complete-official-sources",
+      "expected": "MATCH",
+      "left": {
+        "make": "Volkswagen",
+        "model": "T-Cross",
+        "generation": "2019 Brazil generation",
+        "variant": "Highline 250 TSI",
+        "powertrain": "250 TSI flex",
+        "transmission": "6-speed automatic",
+        "body_style": "SUV",
+        "market": "BR"
+      },
+      "right": {
+        "make": "Volkswagen",
+        "model": "T-Cross",
+        "generation": "2019 Brazil generation",
+        "variant": "Highline 250 TSI",
+        "powertrain": "250 TSI flex",
+        "transmission": "6-speed automatic",
+        "body_style": "SUV",
+        "market": "BR"
+      },
+      "sourceIds": [
+        "vw-tcross-brazil-generation",
+        "vw-tcross-launch-versions",
+        "vw-tcross-highline-250-tsi-tech-sheet"
+      ],
+      "rationale": "Independent official Volkswagen launch and technical material establish the same Highline 250 TSI automatic configuration; the absence of model-year evidence on both observations is not itself a contradiction."
+    },
+    {
+      "id": "br-hard-no-match-corolla-altis-hybrid-my25-vs-my26",
+      "expected": "NO_MATCH",
+      "left": {
+        "make": "Toyota",
+        "model": "Corolla",
+        "variant": "Altis Hybrid Premium",
+        "market": "BR",
+        "model_year_from": 2025,
+        "model_year_to": 2025
+      },
+      "right": {
+        "make": "Toyota",
+        "model": "Corolla",
+        "variant": "Altis Hybrid Premium",
+        "market": "BR",
+        "model_year_from": 2026,
+        "model_year_to": 2026
+      },
+      "sourceIds": [
+        "toyota-connected-services-corolla-my25",
+        "toyota-corolla-altis-hybrid-offer-2026"
+      ],
+      "rationale": "Toyota documents the same named Brazilian Corolla trim in model years 2025 and 2026; under the selected Senatran-aligned catalog policy, explicit adjacent model-year non-overlap is a deterministic identity contradiction."
+    },
+    {
+      "id": "br-hard-no-match-onix-premier-my26-vs-my27",
+      "expected": "NO_MATCH",
+      "left": {
+        "make": "Chevrolet",
+        "model": "Onix",
+        "variant": "Premier",
+        "market": "BR",
+        "model_year_from": 2026,
+        "model_year_to": 2026
+      },
+      "right": {
+        "make": "Chevrolet",
+        "model": "Onix",
+        "variant": "Premier",
+        "market": "BR",
+        "model_year_from": 2027,
+        "model_year_to": 2027
+      },
+      "sourceIds": [
+        "chevrolet-onix-my26-price-list",
+        "chevrolet-onix-line-2027"
+      ],
+      "rationale": "Chevrolet documents Premier in adjacent Onix model years 2026 and 2027; the shared trim name does not override explicit model-year non-overlap."
+    },
+    {
+      "id": "br-hard-review-onix-my26-premier-incomplete-mechanical-mapping",
+      "expected": "REVIEW",
+      "left": {
+        "make": "Chevrolet",
+        "model": "Onix",
+        "generation": "2nd generation",
+        "variant": "Premier",
+        "powertrain": "1.0 turbo",
+        "transmission": "6-speed automatic",
+        "body_style": "hatch",
+        "market": "BR",
+        "model_year_from": 2026,
+        "model_year_to": 2026
+      },
+      "right": {
+        "make": "Chevrolet",
+        "model": "Onix",
+        "generation": "2nd generation",
+        "variant": "Premier",
+        "body_style": "hatch",
+        "market": "BR",
+        "model_year_from": 2026,
+        "model_year_to": 2026
+      },
+      "sourceIds": [
+        "chevrolet-onix-second-generation",
+        "chevrolet-onix-my26-price-list",
+        "chevrolet-onix-line-2026-engineering"
+      ],
+      "rationale": "The detailed price list identifies the Premier mechanical configuration, while the engineering article establishes a 2026 Premier hatch but does not map that trim to a specific powertrain/transmission. The incomplete observation must not be auto-collapsed into the detailed one."
+    },
+    {
+      "id": "br-hard-review-tcross-highline-current-page-missing-transmission-mapping",
+      "expected": "REVIEW",
+      "left": {
+        "make": "Volkswagen",
+        "model": "T-Cross",
+        "generation": "2019 Brazil generation",
+        "variant": "Highline 250 TSI",
+        "powertrain": "250 TSI flex",
+        "transmission": "6-speed automatic",
+        "body_style": "SUV",
+        "market": "BR"
+      },
+      "right": {
+        "make": "Volkswagen",
+        "model": "T-Cross",
+        "generation": "2019 Brazil generation",
+        "variant": "Highline 250 TSI",
+        "powertrain": "250 TSI flex",
+        "body_style": "SUV",
+        "market": "BR"
+      },
+      "sourceIds": [
+        "vw-tcross-brazil-generation",
+        "vw-tcross-launch-versions",
+        "vw-tcross-current-product-page"
+      ],
+      "rationale": "The current product page lists Highline 250 TSI and transmission choices only at range level. Because transmission is identity-defining and version-specific mapping is absent from that observation, the pair remains REVIEW rather than inheriting the older six-speed mapping silently."
+    },
+    {
+      "id": "br-hard-review-tcross-highline-model-year-present-one-side",
+      "expected": "REVIEW",
+      "left": {
+        "make": "Volkswagen",
+        "model": "T-Cross",
+        "generation": "2019 Brazil generation",
+        "variant": "Highline 250 TSI",
+        "powertrain": "250 TSI flex",
+        "transmission": "6-speed automatic",
+        "body_style": "SUV",
+        "market": "BR"
+      },
+      "right": {
+        "make": "Volkswagen",
+        "model": "T-Cross",
+        "generation": "2019 Brazil generation",
+        "variant": "Highline 250 TSI",
+        "powertrain": "250 TSI flex",
+        "transmission": "6-speed automatic",
+        "body_style": "SUV",
+        "market": "BR",
+        "model_year_from": 2026,
+        "model_year_to": 2026
+      },
+      "sourceIds": [
+        "vw-tcross-brazil-generation",
+        "vw-tcross-highline-250-tsi-tech-sheet",
+        "vw-tcross-current-product-page",
+        "vw-tcross-my26-owner-manual"
+      ],
+      "rationale": "One official observation has complete Highline 250 TSI mechanical identity but no model year, while the MY26 evidence set establishes the same 250 TSI/six-speed T-Cross mechanical family in model-year context. The selected policy requires REVIEW when model-year evidence is present on only one side absent stronger identity proof."
+    }
+  ]
+}
