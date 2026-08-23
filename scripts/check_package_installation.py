@@ -5,6 +5,7 @@ import os
 from pathlib import Path
 import shutil
 import subprocess
+import sys
 import tarfile
 import tempfile
 import tomllib
@@ -59,22 +60,31 @@ def _build_requirements(root: Path) -> tuple[str, ...]:
     return tuple(requirements)
 
 
-def _prepare_build_environment(root: Path, environment: Path) -> Path:
-    venv.EnvBuilder(with_pip=True, clear=True).create(environment)
-    python = _venv_python(environment)
-    subprocess.run(
-        [
-            str(python),
-            "-m",
-            "pip",
-            "--disable-pip-version-check",
-            "install",
-            "--no-input",
-            *_build_requirements(root),
-        ],
-        check=True,
+def _has_setuptools_backend(python: Path) -> bool:
+    probe = subprocess.run(
+        [str(python), "-c", "from setuptools import build_meta; print(build_meta.__name__)"],
+        capture_output=True,
+        text=True,
     )
-    return python
+    return probe.returncode == 0
+
+
+def _prepare_build_environment(root: Path, environment: Path) -> Path:
+    del environment
+    requirements = _build_requirements(root)
+    if not all(requirement.startswith("setuptools") for requirement in requirements):
+        raise RuntimeError(f"offline package check cannot satisfy build requirements: {requirements!r}")
+
+    candidates = [Path(sys.executable)]
+    if os.name != "nt":
+        system_python = Path("/usr/bin/python3")
+        if system_python.is_file() and system_python not in candidates:
+            candidates.append(system_python)
+
+    for python in candidates:
+        if _has_setuptools_backend(python):
+            return python
+    raise RuntimeError("no preinstalled setuptools build backend is available for offline package check")
 
 
 def _run_build_hook(python: Path, source: Path, dist: Path, hook: str) -> None:

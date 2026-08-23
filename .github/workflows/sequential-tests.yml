@@ -34,6 +34,9 @@ jobs:
       - name: Run runtime health check
         run: python -m podium7 health
 
+      - name: Build and install package end to end
+        run: python scripts/check_package_installation.py
+
       - name: Run every test in isolation
         if: always()
         run: PYTHONPATH="$GITHUB_WORKSPACE" python scripts/run_tests_one_by_one.py
