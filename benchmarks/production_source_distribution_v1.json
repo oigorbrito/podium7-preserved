@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "evidenceClass": "LOCALLY_VERIFIED_DISTRIBUTION_CONTRACT",
+  "slices": [
+    {"sourceFamily":"nhtsa_vpic","region":"US","records":22,"independentlyInspected":true},
+    {"sourceFamily":"fueleconomy_gov","region":"US","records":63,"independentlyInspected":true},
+    {"sourceFamily":"eea_co2_cars","region":"EU","records":4,"independentlyInspected":true},
+    {"sourceFamily":"inmetro_pbev","region":"BR","records":2,"independentlyInspected":true}
+  ],
+  "expected": {"passed":true,"sourceFamilyCount":4,"regionCount":3,"recordCount":91,"maxSourceFamilyRecordShare":0.692308}
+}
