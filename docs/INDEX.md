@@ -41,6 +41,7 @@
 - [`BROWSER-ACQUISITION-CHARACTERIZATION-V1.md`](BROWSER-ACQUISITION-CHARACTERIZATION-V1.md) — controlled Chromium measurement on the retained Autoevolution URLs refused by direct HTTP; browser fallback was not selected.
 - [`COMPLIANT-ALTERNATIVE-SOURCES-V1.md`](COMPLIANT-ALTERNATIVE-SOURCES-V1.md) — current primary-source evaluation and live selection of NHTSA vPIC/EEA paths, with Inmetro PBEV retained under an explicit resource/transport boundary.
 - [`EEA-SOURCE-FAMILY-V1.md`](EEA-SOURCE-FAMILY-V1.md) — frozen official EEA passenger-car monitoring source family with explicit structured mappings, regulatory-evidence preservation, benchmark metrics, and semantic nonclaims.
+- [`OFFICIAL-SOURCE-DISCOVERY-V1.md`](OFFICIAL-SOURCE-DISCOVERY-V1.md) — bounded NHTSA vPIC and FuelEconomy.gov candidate discovery with source-native IDs/locators and an explicit non-identity-proof contract.
 - [`REPEATABLE-WEB-EXTRACTION-V1.md`](REPEATABLE-WEB-EXTRACTION-V1.md)
 - [`DOCUMENT-EXTRACTION-V1.md`](DOCUMENT-EXTRACTION-V1.md)
 - [`SELECTIVE-REVIEW-V1.md`](SELECTIVE-REVIEW-V1.md)

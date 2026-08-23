@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "evidenceClass": "LOCALLY_VERIFIED_PARSER_CONTRACT",
+  "sourceSelectionEvidence": {
+    "record": "docs/COMPLIANT-ALTERNATIVE-SOURCES-V1.md",
+    "githubActionsRun": 32655508584,
+    "githubActionsJob": 97233453958,
+    "artifactId": 9497328553,
+    "artifactZipSha256": "cac6e7bb31c9dfd1b98bfd0d9bc74932081114517b2845e6eae4756e9ec96a23"
+  },
+  "cases": [
+    {
+      "id": "nhtsa-model-list-shape",
+      "source": "nhtsa_vpic",
+      "request": {"make": "Toyota", "modelYear": 2025},
+      "fixtureKind": "synthetic-parser-vector",
+      "payload": {
+        "Count": 2,
+        "Message": "Response returned successfully",
+        "SearchCriteria": "Make:Toyota | ModelYear:2025",
+        "Results": [
+          {"Make_ID": 448, "Make_Name": "Toyota", "Model_ID": 2208, "Model_Name": "Corolla"},
+          {"Make_ID": 448, "Make_Name": "Toyota", "Model_ID": 2211, "Model_Name": "Prius"}
+        ]
+      },
+      "expectedCandidateCount": 2,
+      "expectedIdentityProof": false
+    },
+    {
+      "id": "fueleconomy-model-menu-list-shape",
+      "source": "fueleconomy_gov",
+      "request": {"make": "Toyota", "modelYear": 2025},
+      "fixtureKind": "synthetic-parser-vector",
+      "payload": {
+        "menuItem": [
+          {"text": "4Runner 2WD", "value": "4Runner 2WD"},
+          {"text": "bZ4X", "value": "bZ4X"}
+        ]
+      },
+      "expectedCandidateCount": 2,
+      "expectedIdentityProof": false
+    },
+    {
+      "id": "fueleconomy-options-singleton-shape",
+      "source": "fueleconomy_gov",
+      "request": {"make": "Toyota", "model": "Corolla", "modelYear": 2025},
+      "fixtureKind": "synthetic-parser-vector",
+      "payload": {
+        "menuItem": {"text": "Corolla option", "value": "47755"}
+      },
+      "expectedCandidateCount": 1,
+      "expectedVehicleId": 47755,
+      "expectedIdentityProof": false
+    }
+  ]
+}
