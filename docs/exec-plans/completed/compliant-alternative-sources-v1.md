@@ -1,16 +1,16 @@
 # Compliant alternative sources V1
 
-Status: active — research and live characterization complete; final repository validation/integration pending
+Status: completed — integrated by PR #63 on 2026-08-23
 
 ## Outcome
 
-Identify current, compliant live automotive data paths that fit Podium 7 after the retained Autoevolution URLs refused both direct HTTP and normal Chromium. Selection must be grounded in primary documentation and reproducible acquisition evidence, not in convenience or a desire to close the task.
+Identified current, compliant live automotive data paths that fit Podium 7 after the retained Autoevolution URLs refused both direct HTTP and normal Chromium. Selection was grounded in primary documentation and reproducible acquisition evidence, not convenience or nominal coverage.
 
 ## Evaluated candidates
 
 1. **NHTSA vPIC** — official U.S. vehicle/manufacturer API for make/model/year discovery, VIN decoding and vehicle attributes. Current docs state JSON/CSV/XML support and automated rate control; U.S.-sale/import scope is explicit.
 2. **European Environment Agency passenger-car CO2 monitoring data** — official EEA dataset under Regulation (EU) 2019/631, exposed through Discodata SQL-over-HTTP JSON. Current 2025 provisional table provides make/commercial name/type/variant/version, mass, fuel, engine capacity/power and electric/emissions fields.
-3. **Inmetro PBE Veicular** — official Brazilian PBEV source for model/version, fuel, consumption, emissions and efficiency. Current page is public; Inmetro also advertises CSV through Dados Abertos, but the exact unauthenticated dataset-detail API locator tested here returned 401 and the public table resource is PDF.
+3. **Inmetro PBE Veicular** — official Brazilian PBEV source for model/version, fuel, consumption, emissions and efficiency. The current page is public; Inmetro also advertises CSV through Dados Abertos, but the exact unauthenticated dataset-detail API locator tested here returned 401 and the public table resource is PDF.
 4. **FuelEconomy.gov menu flow** — already characterized source family, used only as an existing official discovery/reference baseline.
 
 ## Evidence criteria
@@ -40,18 +40,33 @@ The temporary live workflow was removed after evidence capture so external servi
 
 Durable details and nonclaims are in `docs/COMPLIANT-ALTERNATIVE-SOURCES-V1.md`; candidate dispositions are recorded in `docs/CANDIDATE-EVALUATION-LEDGER.md`; concrete remaining work is in `docs/TECH-DEBT.md`.
 
+## Final validation and integration evidence
+
+- PR: #63 `Evaluate compliant alternative automotive source paths`;
+- validated branch head: `e3d0d4c38b4399734b381f09ca6b00524b563b5b`;
+- final merge-candidate ref: `c5005a702172b411a59fbabc5c5aadace4c952b0`;
+- final validation run: `32655721681`, job `97234011495`;
+- Python `3.13.15`;
+- `HARNESS PASS`;
+- runtime health `PASS`;
+- repository isolated suite **389/389 PASS**;
+- validation artifact ID `9497390997`;
+- validation ZIP SHA-256 `1b179f5b6cb81fd8c47d8861af4bdc169cc946d91204d956cc6757347d6d2e0e`;
+- clean pre-merge concurrency check: branch behind `0` commits;
+- PR #63 squash merge commit: `d70c1f0616b907f9a784e89a2f9f740413e323aa`.
+
 ## Acceptance criteria
 
-- [x] current primary-source research is durably recorded;
+- [x] current primary-source research durably recorded;
 - [x] at least three alternative source families evaluated without unsupported legal/coverage claims;
 - [x] live outcomes recorded with exact runner, status/media type and hashes for successful acquisitions;
-- [x] selected next source paths have both useful semantics and measured normal-access evidence;
+- [x] selected next source paths have useful semantics and measured normal-access evidence;
 - [x] no permanent browser/crawler dependency added;
 - [x] temporary public-network workflow removed after evidence capture;
 - [x] candidate ledger and technical debt updated;
-- [ ] final merge candidate passes repository harness, runtime health and every isolated test;
-- [ ] branch is zero commits behind `main` before squash merge;
-- [ ] completed plan archived and `CURRENT-WORK` cleared in housekeeping PR.
+- [x] final merge candidate passed repository harness, runtime health and every isolated test;
+- [x] branch was zero commits behind `main` before squash merge;
+- [x] completed plan archived and `CURRENT-WORK` cleared through the housekeeping PR.
 
 ## Decision classification
 
