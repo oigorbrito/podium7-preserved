@@ -15,6 +15,7 @@
 ## Architecture and scientific foundation
 
 - [`ARCHITECTURE-PRINCIPLES.md`](ARCHITECTURE-PRINCIPLES.md) — architecture principles and decision classification.
+- [`ADR-0001-MARKET-FIRST-INFRASTRUCTURE.md`](ADR-0001-MARKET-FIRST-INFRASTRUCTURE.md) — requires mature-market evaluation before non-trivial infrastructure experimentation or construction and documents adopt/adapt/build decisions.
 - [`SCIENTIFIC-FOUNDATION.md`](SCIENTIFIC-FOUNDATION.md) — scientific baseline and canonical research references.
 - [`PERSISTENCE-AND-EVIDENCE-STORE.md`](PERSISTENCE-AND-EVIDENCE-STORE.md) — persistence/provenance design.
 - [`ENTITY-RESOLUTION-V1.md`](ENTITY-RESOLUTION-V1.md) — V1 entity-resolution design record.
