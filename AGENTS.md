@@ -1,45 +1,13 @@
-# Podium 7 — Agent Execution Map
+# Podium 7 agent map
 
-This file defines the execution style for coding agents working in this repository.
+Start here, then follow the repository sources of truth. Do not turn this file into a manual.
 
-## Default mode: bounded autonomy
+1. Read [`docs/INDEX.md`](docs/INDEX.md) for the documentation map.
+2. Read [`docs/CURRENT-STATE.md`](docs/CURRENT-STATE.md) and [`docs/CURRENT-WORK.md`](docs/CURRENT-WORK.md) before changing code.
+3. Follow [`docs/DEVELOPMENT-WORKFLOW.md`](docs/DEVELOPMENT-WORKFLOW.md) for autonomy, approvals, Git/PR/CI, validation, self-review, done, and stopping rules.
+4. Preserve [`docs/INVARIANTS.md`](docs/INVARIANTS.md); read the specialized design/product docs linked from the index for the area you touch.
+5. For non-trivial work, use the execution-plan structure under [`docs/exec-plans/`](docs/exec-plans/README.md). Record durable debt in [`docs/TECH-DEBT.md`](docs/TECH-DEBT.md), not in prompts.
+6. Derive volatile repository facts with `python scripts/project_facts.py`; do not copy test counts, runtime readiness, benchmark counters, or scientific-reference counts into hand-maintained state docs.
+7. Before integration run `python scripts/check_harness.py` and the validation commands required by the development workflow.
 
-- Execute routine, reversible, low-risk repository work without stopping for repeated approval.
-- Batch coherent implementation, tests, CI, and integration work into meaningful units.
-- Do not split work into tiny commits, tiny PRs, or artificial checkpoints unless isolation is needed to diagnose a real failure.
-- Iterate on implementation and tests until the requested product slice works or a real blocking decision is reached.
-- Prefer the smallest architecture that makes the product work; do not add speculative infrastructure, documentation, or hardening.
-
-## When to stop for human review
-
-Stop only when the next action is materially high-risk or cannot be inferred safely, for example:
-
-- destructive or irreversible data/repository operations;
-- credential, secret, permission, or external-system changes;
-- legal/licensing decisions;
-- product decisions where two materially different behaviors are both plausible and existing evidence does not resolve the choice.
-
-Normal coding, test fixes, branch/PR creation, CI reruns, and merging a validated feature branch are expected to proceed without repeated prompts when already authorized by the task.
-
-## Testing
-
-- Add tests for real product behavior and regression risk, not for line-count targets.
-- Run the repository's complete sequential CI runner after a coherent implementation batch.
-- If CI fails for a code defect, fix it and rerun without asking for confirmation.
-- Report `PASS`, `FAIL`, or `REPEAT REQUIRED` from execution evidence; do not claim PASS from reasoning alone.
-
-## Podium 7 product constraints
-
-- False merges are more harmful than missed duplicates.
-- Provenance is data.
-- Preserve stable canonical vehicle IDs and redirects.
-- Keep Catalog V2 evolution additive unless a proven product need requires otherwise.
-- Use existing `DecisionStatus` semantics; do not present hypotheses or unknowns as evidence-backed facts.
-
-## OpenAI operating references
-
-This execution model follows OpenAI's published guidance that coding agents should move quickly on low-risk work inside clear boundaries, while higher-risk actions become explicit review points, and that agents perform best with structure, context, and room to iterate.
-
-- https://openai.com/index/running-codex-safely/
-- https://openai.com/business/guides-and-resources/how-openai-uses-codex/
-- https://openai.com/index/harness-engineering/
+The repository documentation is the system of record. If a recurring instruction is missing, fix the canonical document instead of repeating it in a prompt.
