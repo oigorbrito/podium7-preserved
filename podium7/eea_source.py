@@ -61,14 +61,24 @@ class EeaRecordReport:
     issues: tuple[EeaExtractionIssue, ...]
 
 
-# V1 deliberately supports only source combinations covered by the frozen
-# benchmark and primary EEA fuel-mode semantics. Adding another combination is
-# a source-family change, not a generic token-normalization fallback.
+# EEA type/variant/version are regulatory identity evidence. They are not, by
+# themselves, canonical retail identity proof in Podium.
+EEA_RETAIL_IDENTITY_PROOF = False
+
+
+# Supported combinations are deliberately enumerated from official EEA fuel
+# type/mode classifications. Unknown combinations remain explicit issues rather
+# than falling back to token guessing.
 _FUEL_SEMANTICS: dict[tuple[str, str], str] = {
     ("electric", "e"): "electric",
     ("petrol", "m"): "gasoline",
     ("petrol", "h"): "hybrid",
+    ("petrol/electric", "h"): "hybrid",
     ("petrol/electric", "p"): "plug-in hybrid",
+    ("diesel", "m"): "diesel",
+    ("diesel", "h"): "hybrid",
+    ("diesel/electric", "h"): "hybrid",
+    ("diesel/electric", "p"): "plug-in hybrid",
 }
 
 
@@ -293,7 +303,7 @@ def _append_fuel_fact(
         semantic_value,
         "Ft/Fm",
         None,
-        "eea.fuel_type_mode.structured.v1",
+        "eea.fuel_type_mode.structured.v2",
     )
     if issue is not None:
         issues.append(issue)

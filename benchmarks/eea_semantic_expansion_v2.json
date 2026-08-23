@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "evidenceClass": "EVIDENCE_BACKED_CLASSIFICATION_CONTRACT",
+  "officialEvidence": [
+    "https://sdi.eea.europa.eu/catalogue/srv/api/records/bae40349-0618-411a-996a-1eb3bfa14b3c/attachments/CO2%20from%20cars%20and%20vans_Statistical%20metadata_2024.pdf",
+    "https://www.eea.europa.eu/en/datahub/datahubitem-view/fa8b1229-3db6-495d-b18e-9c9b3267c02b"
+  ],
+  "cases": [
+    {"fuelType":"diesel","fuelMode":"M","expected":"diesel"},
+    {"fuelType":"diesel","fuelMode":"H","expected":"hybrid"},
+    {"fuelType":"diesel/electric","fuelMode":"H","expected":"hybrid"},
+    {"fuelType":"diesel/electric","fuelMode":"P","expected":"plug_in_hybrid"}
+  ],
+  "retailIdentityProof": false
+}
