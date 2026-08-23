@@ -1,44 +1,20 @@
 # Podium 7
 
-Podium 7 is an evidence-driven automotive knowledge acquisition, integration, reconciliation, and export system.
+Podium 7 is an evidence-driven automotive knowledge acquisition, integration, reconciliation, review, and export system.
 
-The V1 roadmap now covers scientific foundation, persistence/evidence storage, real structured ingestion, normalization, entity resolution, fusion/conflicts, JSON export, repeatable web extraction, document extraction, validated extraction artifacts, selective review, autonomous enrichment primitives, and multi-source end-to-end acceptance.
-
-Architecture principles and the scientific baseline are recorded under `docs/`.
-
-## Reproducible checkout
+## Checkout
 
 ```bash
 git clone https://github.com/tihotm/podium7.git
 cd podium7
 ```
 
-The current implementation uses the Python standard library only.
+The implementation currently uses Python and is designed around inspectable evidence, conservative identity reconciliation, canonical persistence, and repeatable validation.
 
-## Tests — one at a time
+## Repository navigation
 
-Run every discovered test case in its own Python process:
+For development or agent work, start with [`AGENTS.md`](AGENTS.md). The repository knowledge base and product/design documentation are indexed at [`docs/INDEX.md`](docs/INDEX.md).
 
-```bash
-python scripts/run_tests_one_by_one.py
-```
+The canonical development workflow, validation commands, Git/PR/CI policy, autonomy boundaries, definition of done, and stopping rules live only in [`docs/DEVELOPMENT-WORKFLOW.md`](docs/DEVELOPMENT-WORKFLOW.md).
 
-The runner writes machine-readable execution evidence to `artifacts/test-report.json`, including the Git commit, Python version, platform, discovered/passed counts, status, and failed test when applicable. The generated `artifacts/` directory is ignored by Git.
-
-The GitHub Actions workflow `.github/workflows/sequential-tests.yml` uses the same command so local and CI execution follow the same isolation rule.
-
-For normal unittest discovery without process isolation:
-
-```bash
-python -m unittest discover -s tests -v
-```
-
-## Windows workspace
-
-The expected local workspace is `C:\Projetos\p7`. To clone/update the repository and run every test one by one with a single command:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File "C:\Projetos\p7\scripts\update_and_test.ps1"
-```
-
-If the repository is not present yet, the runner clones it. Otherwise it performs a fast-forward-only pull before executing the sequential test runner.
+Volatile repository facts such as current test count, Python runtime, release readiness, benchmark counters, and scientific-reference count are generated with `python scripts/project_facts.py`; they are not maintained manually in this README or current-state documentation.

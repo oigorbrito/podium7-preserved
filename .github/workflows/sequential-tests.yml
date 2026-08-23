@@ -22,6 +22,12 @@ jobs:
           python-version: "3.13"
           check-latest: false
 
+      - name: Validate repository harness
+        run: python scripts/check_harness.py
+
+      - name: Generate repository facts
+        run: python scripts/project_facts.py --output artifacts/project-facts.json
+
       - name: Run runtime health check
         run: python -m podium7 health
 
@@ -29,10 +35,12 @@ jobs:
         if: always()
         run: PYTHONPATH="$GITHUB_WORKSPACE" python scripts/run_tests_one_by_one.py
 
-      - name: Upload sequential test report
+      - name: Upload validation evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: podium7-sequential-test-report
-          path: artifacts/test-report.json
+          name: podium7-validation-evidence
+          path: |
+            artifacts/test-report.json
+            artifacts/project-facts.json
           if-no-files-found: error
