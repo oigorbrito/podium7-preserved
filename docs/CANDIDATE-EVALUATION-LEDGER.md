@@ -7,6 +7,7 @@ This document is the durable record for external software and data-source evalua
 - Reconstruct before retesting. Search repository history, PRs, CI artifacts, prior handoffs/logs, and recorded commands/results before running a candidate again.
 - Do not repeat a test merely because its conversational summary is missing.
 - Retest only the smallest missing slice when one of these conditions applies: no recoverable result; result cannot be tied to an identifiable version/SHA; the original test was incomplete for the decision being made; or a later architecture/environment change specifically invalidates that result.
+- Before any historical retest, tell the user what would be rerun, why the previous evidence is insufficient, and the expected scope. A single narrowly scoped retest may proceed after that notice as routine work. A broader batch, repeated suite, or any retest involving many cases must receive explicit user approval before execution.
 - Preserve the distinction between `candidate considered` and `candidate validated`. A name in this ledger is not approval.
 - Prefer primary/official documentation and reproducible evidence. For research claims, prefer peer-reviewed publications or established laboratory/benchmark work. Community/social discussion is not primary decision evidence.
 - New evaluations must record enough context to avoid another reconstruction: candidate/repository, version or SHA, license status, capability under test, command/parameters, environment, result, interpretation, reuse decision, and evidence location.
