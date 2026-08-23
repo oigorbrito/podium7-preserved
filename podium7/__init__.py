@@ -11,6 +11,7 @@ from .normalization import NormalizationResult, normalize_fact
 from .official_discovery import DiscoveryCandidate, build_fueleconomy_model_menu_locator, build_fueleconomy_options_menu_locator, build_nhtsa_models_locator, discover_fueleconomy_models, discover_fueleconomy_vehicle_options, discover_nhtsa_models
 from .persistence import EvidenceStore
 from .review import ReviewAction, ReviewDecision, review_conflict, review_evidence, review_identity
+from .source_policy import RecurringSourceGate, RobotsMode, SourceOperationDecision, SourceOperationPolicy
 from .web_extraction import ExtractedWebFact, WebFieldRule, extract_autoevolution_artega_gt, extract_with_rules
 
 __all__ = [
@@ -18,8 +19,8 @@ __all__ = [
     "Conflict", "ConflictState", "DecisionStatus", "DiscoveryCandidate", "DocumentExtractionReport", "EnrichmentJob",
     "EntityKind", "EvidenceStore", "ExtractedWebFact", "FusionResult", "IngestionReport",
     "JobResult", "JobState", "MatchOutcome", "NormalizationResult", "ProvenanceRecord",
-    "RateLimiter", "RawEvidence", "ResolutionDecision", "RetryPolicy", "ReviewAction",
-    "ReviewDecision", "Source", "ValidatedExtractionArtifact", "WebFieldRule", "blocking_key",
+    "RateLimiter", "RawEvidence", "RecurringSourceGate", "ResolutionDecision", "RetryPolicy", "ReviewAction",
+    "ReviewDecision", "RobotsMode", "Source", "SourceOperationDecision", "SourceOperationPolicy", "ValidatedExtractionArtifact", "WebFieldRule", "blocking_key",
     "build_fueleconomy_model_menu_locator", "build_fueleconomy_options_menu_locator", "build_nhtsa_models_locator",
     "discover_fueleconomy_models", "discover_fueleconomy_vehicle_options", "discover_nhtsa_models",
     "export_entity_json", "export_entity_payload", "extract_autoevolution_artega_gt",
