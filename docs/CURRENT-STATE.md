@@ -11,6 +11,7 @@ Podium 7 is an evidence-driven automotive knowledge integration system with a wo
 - Primary implementation language: Python.
 - Catalog identity evolution is additive over the established evidence/persistence model.
 - Ambiguous identity decisions route to durable `REVIEW`; false merges are treated as more harmful than missed duplicates.
+- The historical scientific corpus and decision-relevant benchmark evidence have been reconstructed sufficiently for current engineering decisions; unrecoverable old software-candidate execution details are archived and are not a current development blocker.
 - Release/public distribution remains blocked while software licensing status is `UNKNOWN`; development and validation are not blocked.
 
 ## Volatile facts

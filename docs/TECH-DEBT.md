@@ -10,13 +10,13 @@ Status: `BLOCKED_EXTERNAL`
 
 Do not guess or auto-select a license.
 
-## Research debt: historical candidate evaluation ledger incomplete
+## Historical candidate/research reconstruction
 
-Status: `OPEN`
+Status: `CLOSED / ARCHIVED`
 
-Historical handoffs recovered the external candidate inventory and evaluation methodology, but not the complete per-candidate execution ledger containing exact repository/version, commands/parameters, environment, outputs, and final reuse decision. The durable reconstruction state is in `CANDIDATE-EVALUATION-LEDGER.md`.
+The scientific corpus, decision-relevant benchmark measurements, primary publication identifiers, and the first selected structured source have been recovered sufficiently for current engineering decisions. `CANDIDATE-EVALUATION-LEDGER.md` records the outcome.
 
-Do not rerun the historical candidate battery wholesale. Recover durable evidence first and retest only the smallest decision-critical gap allowed by `DEVELOPMENT-WORKFLOW.md`.
+The exact old per-candidate execution ledger for Crawl4AI, Stagehand, Browser Use, Firecrawl, ScrapeGraphAI, Docling and Splink was not recoverable from the available durable evidence. This is archived rather than left as active debt because the current repository does not depend on those packages and repository-native implementations now cover the relevant active capabilities. Do not rerun the historical battery merely to reconstruct history. If a future work unit makes one of those candidates decision-critical again, evaluate the then-current version narrowly and record the result durably.
 
 ## Product debt: year-semantics challenge coverage
 
