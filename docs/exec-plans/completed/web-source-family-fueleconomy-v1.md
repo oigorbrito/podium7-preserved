@@ -1,6 +1,6 @@
 # FuelEconomy.gov web source family V1
 
-Status: active — implementation and measured characterization complete; final merge-candidate validation/integration pending
+Status: completed — integrated by PR #53 on 2026-08-23
 
 ## Outcome
 
@@ -49,6 +49,19 @@ Frozen dataset `fueleconomy-find-a-car-source-family-1.0`:
 - official hyphenated drivetrain labels normalize to existing Podium drivetrain tokens while preserving raw source text;
 - historical Autoevolution tests remain green.
 
-Implementation validation run `32648780263`, job `97217035510`: Python 3.13.15, `HARNESS PASS`, runtime health PASS, repository isolated suite `343/343` PASS, validation artifact ID `9495597465`, ZIP SHA-256 `fb0c35d3e83ede4273fecbc6133309ca8cb3782639cc99de7c426f300a6522ca`.
+## Final validation evidence
 
-Documentation/debt recording after that run does not change the measured corpus behavior. Final integration still requires green CI on the resulting PR merge candidate plus normal concurrency/self-review gates.
+- PR: #53 `Characterize FuelEconomy.gov as a second web source family`;
+- final merge-candidate run: `32648934964`, job `97217413777`;
+- PR merge ref SHA: `030ab134b457cd1243703e17ac4bc02ad59a7db9`;
+- validated branch head: `658c317a6a1740edb66db3e7d1b11921040b43d6`;
+- Python `3.13.15`;
+- `HARNESS PASS`;
+- runtime health `PASS`;
+- repository isolated suite `343/343` PASS;
+- validation artifact ID `9495637426`, ZIP SHA-256 `1e7f9d0419747093d943c02d6a76a208d94771b0c117b21f794b9e11b22ebe12`;
+- PR #53 squash merge commit: `773c2a2437c7c26370fe7b672c6749620cd74480`.
+
+## Remaining blockers
+
+None for this completed work unit. Heterogeneous-web/source-family acquisition and broader production characterization remain separately tracked in `TECH-DEBT.md`. MPGe normalization remains deliberately unselected until electric-efficiency semantics become decision-critical. Public distribution remains intentionally blocked by the private/proprietary release policy until a later explicit owner decision.
