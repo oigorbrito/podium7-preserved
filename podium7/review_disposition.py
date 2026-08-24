@@ -97,9 +97,6 @@ def evaluate_review_dispositions(
     candidates = diagnostics["reviewCandidatesByEvidence"]
     dispositions = load_review_dispositions(dataset_paths, disposition_path)
 
-    current_case_ids = {item["caseId"] for item in work["items"]}
-    unused_disposition_case_ids = sorted(set(dispositions) - current_case_ids)
-
     durable: list[dict[str, Any]] = []
     unassessed: list[dict[str, Any]] = []
     for item in work["items"]:
@@ -131,12 +128,10 @@ def evaluate_review_dispositions(
             "openReviews": work["summary"]["openReviews"],
             "durableHumanReview": len(durable),
             "unassessed": len(unassessed),
-            "unusedDispositions": len(unused_disposition_case_ids),
             "blocked": len(blocked),
             "resolverPolicyChanges": 0,
         },
         "unassessedCaseIds": sorted({item["caseId"] for item in unassessed}),
-        "unusedDispositionCaseIds": unused_disposition_case_ids,
         "durableHumanReviewItems": durable,
         "unassessedItems": unassessed,
         "blockedItems": blocked,
