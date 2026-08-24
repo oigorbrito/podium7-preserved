@@ -90,6 +90,7 @@ def _load_observations(
     if not isinstance(observations, list) or not observations:
         raise ValueError("source-backed enrichment observations are required")
 
+    valid_outcomes = {item.value for item in CatalogMatchOutcome}
     seen: set[str] = set()
     validated: list[dict[str, Any]] = []
     for observation in observations:
@@ -127,10 +128,15 @@ def _load_observations(
             raise ValueError(f"observation {observation_id!r} explicit-field effect requires fieldValues")
         if effect == "AMBIGUITY_CONFIRMED" and field_values:
             raise ValueError(f"observation {observation_id!r} ambiguity confirmation cannot mutate identity")
-        if expected_before != CatalogMatchOutcome.REVIEW.value:
-            raise ValueError(f"observation {observation_id!r} must start from REVIEW")
-        if expected_after not in {CatalogMatchOutcome.MATCH.value, CatalogMatchOutcome.REVIEW.value}:
-            raise ValueError(f"observation {observation_id!r} expectedAfter must be MATCH or REVIEW")
+        if expected_before not in valid_outcomes or expected_after not in valid_outcomes:
+            raise ValueError(f"observation {observation_id!r} expected outcomes are invalid")
+        if effect == "AMBIGUITY_CONFIRMED" and (
+            expected_before != CatalogMatchOutcome.REVIEW.value
+            or expected_after != CatalogMatchOutcome.REVIEW.value
+        ):
+            raise ValueError(
+                f"observation {observation_id!r} ambiguity confirmation must preserve REVIEW"
+            )
         if not isinstance(rationale, str) or not rationale.strip():
             raise ValueError(f"observation {observation_id!r} requires a rationale")
 
@@ -160,9 +166,14 @@ def load_source_backed_enrichment_overrides(
             f"operational:{observation['benchmarkDatasetVersion']}:"
             f"{observation['caseId']}:{observation['side']}"
         )
-        if evidence_id in overrides:
-            raise ValueError(f"multiple explicit enrichment observations target {evidence_id!r}")
-        overrides[evidence_id] = dict(observation["fieldValues"])
+        merged = overrides.setdefault(evidence_id, {})
+        overlap = sorted(set(merged).intersection(observation["fieldValues"]))
+        if overlap:
+            raise ValueError(
+                f"multiple explicit enrichment observations overlap for {evidence_id!r}: "
+                + ", ".join(overlap)
+            )
+        merged.update(observation["fieldValues"])
     return overrides
 
 

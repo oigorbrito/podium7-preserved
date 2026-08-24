@@ -53,13 +53,15 @@ MPGe semantics can be reopened when electric-efficiency normalization becomes de
 
 ## Product operation replay cycle
 
-Status: `CLOSED / EVIDENCE ENRICHMENT V1 COMPLETE`
+Status: `CLOSED / EVIDENCE ENRICHMENT V2 COMPLETE`
 
 `PRODUCTION-QUALITY-GATE-V2.md` established the pre-enrichment baseline: 60 source-backed records with 19 `CREATED`, 19 `MATCHED`, 22 `REVIEW`, and zero ingestion failures. Review causes were 13 `MISSING_IDENTITY_EVIDENCE` and 9 `LABEL_AMBIGUITY`.
 
-`PRODUCTION-EVIDENCE-ENRICHMENT-V1.md` and `PRODUCTION-QUALITY-GATE-V3.md` close the next bounded cycle. One explicit Toyota Corolla sedan body-style re-extraction safely changes one `REVIEW` to `MATCH`; the enriched replay is 19 `CREATED`, 20 `MATCHED`, 21 `REVIEW`, and zero ingestion failures. Remaining causes are 12 `MISSING_IDENTITY_EVIDENCE` and 9 `LABEL_AMBIGUITY`.
+`PRODUCTION-EVIDENCE-ENRICHMENT-V1.md` and `PRODUCTION-QUALITY-GATE-V3.md` reduced that replay to 19 `CREATED`, 20 `MATCHED`, 21 `REVIEW`, and zero failures using explicit Toyota Corolla body-style evidence. Remaining causes were 12 `MISSING_IDENTITY_EVIDENCE` and 9 `LABEL_AMBIGUITY`.
 
-The companion 30-case source-backed identity quality corpus remains at auto-match precision 1.0 and recall 1.0 with zero false merges and zero ambiguous overcommit. Ford missing-variant and Porsche partial-label examples remain `REVIEW` because their retained sources do not establish the missing identity. Resolver-policy changes remain zero.
+`PRODUCTION-EVIDENCE-ENRICHMENT-V2.md` closes the next measured evidence cycle. Replay diagnostics showed that a deliberately sparse Chevrolet Onix Premier MY26 observation created an earlier canonical candidate that correctly kept later MY26 observations in review. Strengthening that sparse observation with official, case-bound generation and MY26 mechanical evidence, plus enriching the later incomplete observation from the official MY26 price list, reduces the bounded replay to 19 `CREATED`, 22 `MATCHED`, 19 `REVIEW`, and zero failures. Remaining causes are 10 `MISSING_IDENTITY_EVIDENCE` and 9 `LABEL_AMBIGUITY`.
+
+The companion source-backed identity quality corpus remains at auto-match precision 1.0 and recall 1.0 with zero false merges and zero ambiguous overcommit. Resolver-policy changes remain zero. Enrichment sources remain bound to each curated case and overlapping field mutations fail closed.
 
 Future review-load reduction must be reopened only when new source-backed evidence can close a measured ambiguity. Do not weaken resolver policy to reduce the nominal review rate, and do not treat this bounded replay as a production-completeness or market-coverage claim.
 

@@ -159,9 +159,10 @@
       },
       "sourceIds": [
         "chevrolet-onix-my26-price-list",
-        "chevrolet-onix-line-2027"
+        "chevrolet-onix-line-2027",
+        "chevrolet-onix-second-generation"
       ],
-      "rationale": "Chevrolet documents Premier in adjacent Onix model years 2026 and 2027; the shared trim name does not override explicit model-year non-overlap."
+      "rationale": "Chevrolet documents Premier in adjacent Onix model years 2026 and 2027; generation evidence strengthens the product context but does not override explicit model-year non-overlap."
     },
     {
       "id": "br-hard-review-onix-my26-premier-incomplete-mechanical-mapping",

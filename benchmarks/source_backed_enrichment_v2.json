@@ -1,0 +1,91 @@
+{
+  "schema": "podium7.source-backed-enrichment.v1",
+  "datasetVersion": "2.0",
+  "revalidatedAt": "2026-08-24T02:08:00Z",
+  "purpose": "Second bounded evidence-enrichment set. V2 retains V1 observations and adds explicit official evidence that strengthens both the sparse MY26 Onix observation created earlier in the shared replay and the later incomplete mechanical observation, without changing resolver policy.",
+  "observations": [
+    {
+      "id": "toyota-corolla-sedan-body-style-reextraction",
+      "benchmarkDatasetVersion": "1.0",
+      "caseId": "review-toyota-corolla-body-style-missing",
+      "side": "right",
+      "sourceId": "toyota-corolla-2018-global",
+      "evidenceEffect": "ADD_EXPLICIT_FIELD",
+      "fieldValues": {
+        "body_style": "sedan"
+      },
+      "expectedBefore": "REVIEW",
+      "expectedAfter": "MATCH",
+      "rationale": "The retained Toyota official release explicitly describes the unveiled Corolla models as sedans and separately states hybrid availability. Re-extracting body style closes an extraction omission without changing resolver policy."
+    },
+    {
+      "id": "ford-mustang-missing-variant-remains-ambiguous",
+      "benchmarkDatasetVersion": "1.0",
+      "caseId": "review-ford-mustang-variant-missing",
+      "side": "right",
+      "sourceId": "ford-mustang-2024-eu-spec",
+      "evidenceEffect": "AMBIGUITY_CONFIRMED",
+      "fieldValues": {},
+      "expectedBefore": "REVIEW",
+      "expectedAfter": "REVIEW",
+      "rationale": "The Ford technical specification lists both Mustang GT and Mustang Dark Horse as distinct 5.0-litre V8 configurations. The missing variant cannot be guessed from the shared engine and coupe evidence."
+    },
+    {
+      "id": "porsche-carrera-partial-label-remains-ambiguous",
+      "benchmarkDatasetVersion": "1.0",
+      "caseId": "review-porsche-911-partial-variant-label",
+      "side": "right",
+      "sourceId": "porsche-911-generations-2019",
+      "evidenceEffect": "AMBIGUITY_CONFIRMED",
+      "fieldValues": {},
+      "expectedBefore": "REVIEW",
+      "expectedAfter": "REVIEW",
+      "rationale": "The retained Porsche evidence distinguishes 911 generation and Carrera variants; a generic Carrera label is not evidence that the record is Carrera 4S."
+    },
+    {
+      "id": "chevrolet-onix-my26-sparse-record-mechanical-enrichment",
+      "benchmarkDatasetVersion": "br-adjacent-incomplete-1.0",
+      "caseId": "br-hard-no-match-onix-premier-my26-vs-my27",
+      "side": "left",
+      "sourceId": "chevrolet-onix-my26-price-list",
+      "evidenceEffect": "ADD_EXPLICIT_FIELD",
+      "fieldValues": {
+        "powertrain": "1.0 turbo",
+        "transmission": "6-speed automatic",
+        "body_style": "hatch"
+      },
+      "expectedBefore": "NO_MATCH",
+      "expectedAfter": "NO_MATCH",
+      "rationale": "The same official MY26 price list used by this adjacent-year control explicitly identifies the Onix Premier 1.0 Turbo hatch with six-speed automatic transmission. Adding those fields strengthens the MY26 observation while preserving the explicit MY26-vs-MY27 NO_MATCH."
+    },
+    {
+      "id": "chevrolet-onix-my26-sparse-record-generation-enrichment",
+      "benchmarkDatasetVersion": "br-adjacent-incomplete-1.0",
+      "caseId": "br-hard-no-match-onix-premier-my26-vs-my27",
+      "side": "left",
+      "sourceId": "chevrolet-onix-second-generation",
+      "evidenceEffect": "ADD_EXPLICIT_FIELD",
+      "fieldValues": {
+        "generation": "2nd generation"
+      },
+      "expectedBefore": "NO_MATCH",
+      "expectedAfter": "NO_MATCH",
+      "rationale": "The curated adjacent-year case now explicitly includes Chevrolet's official history identifying the current Onix launched in 2019 as the second generation. The model-year contradiction remains decisive after adding generation evidence."
+    },
+    {
+      "id": "chevrolet-onix-my26-premier-mechanical-cross-source-enrichment",
+      "benchmarkDatasetVersion": "br-adjacent-incomplete-1.0",
+      "caseId": "br-hard-review-onix-my26-premier-incomplete-mechanical-mapping",
+      "side": "right",
+      "sourceId": "chevrolet-onix-my26-price-list",
+      "evidenceEffect": "ADD_EXPLICIT_FIELD",
+      "fieldValues": {
+        "powertrain": "1.0 turbo",
+        "transmission": "6-speed automatic"
+      },
+      "expectedBefore": "REVIEW",
+      "expectedAfter": "MATCH",
+      "rationale": "The target observation already establishes Chevrolet Onix, second generation, Premier hatch, Brazil, model year 2026. The official MY26 price list independently identifies Onix Premier 1.0 Turbo with six-speed automatic transmission for the same model year, so the missing mechanical fields can be added explicitly rather than inherited silently."
+    }
+  ]
+}

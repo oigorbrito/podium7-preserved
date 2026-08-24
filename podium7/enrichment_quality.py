@@ -34,6 +34,8 @@ def measure_enriched_operational_corpus(
 
     tasks = CatalogReviewQueue(store).open_tasks(limit=100)
     causes: Counter[str] = Counter()
+    reasons_by_evidence: dict[str, list[str]] = {}
+    candidates_by_evidence: dict[str, list[dict[str, Any]]] = {}
     for task in tasks:
         candidates = set(task.candidate_vehicle_ids)
         reasons = {
@@ -42,6 +44,41 @@ def measure_enriched_operational_corpus(
             if comparison.vehicle_id in candidates
             and comparison.outcome in {"MATCH", "REVIEW"}
         }
+        reasons_by_evidence[task.evidence_id] = sorted(reasons)
+        candidate_details: list[dict[str, Any]] = []
+        for vehicle_id in task.candidate_vehicle_ids:
+            identity = store.get_catalog_vehicle(vehicle_id)
+            comparison = next(
+                (
+                    item
+                    for item in task.comparisons
+                    if item.vehicle_id == vehicle_id
+                ),
+                None,
+            )
+            candidate_details.append(
+                {
+                    "vehicleId": vehicle_id,
+                    "identity": None
+                    if identity is None
+                    else {
+                        "make": identity.make,
+                        "model": identity.model,
+                        "generation": identity.generation,
+                        "variant": identity.variant,
+                        "powertrain": identity.powertrain,
+                        "transmission": identity.transmission,
+                        "bodyStyle": identity.body_style,
+                        "market": identity.market,
+                        "modelYearFrom": identity.model_year_from,
+                        "modelYearTo": identity.model_year_to,
+                    },
+                    "outcome": None if comparison is None else comparison.outcome,
+                    "reason": None if comparison is None else comparison.reason,
+                }
+            )
+        candidates_by_evidence[task.evidence_id] = candidate_details
+
         if not reasons:
             causes["UNKNOWN_REVIEW_CAUSE"] += 1
             continue
@@ -66,6 +103,8 @@ def measure_enriched_operational_corpus(
         },
         "actionCounts": dict(sorted(action_counts.items())),
         "reviewCauses": dict(sorted(causes.items())),
+        "reviewReasonsByEvidence": dict(sorted(reasons_by_evidence.items())),
+        "reviewCandidatesByEvidence": dict(sorted(candidates_by_evidence.items())),
     }
 
 
