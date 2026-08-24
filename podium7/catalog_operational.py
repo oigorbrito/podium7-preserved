@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+from collections import Counter
 import json
 from pathlib import Path
 from typing import Any, Iterable
 
 from .catalog import CatalogStore
 from .catalog_batch import CatalogBatchReport, ingest_catalog_batch, parse_catalog_batch_payload
+from .catalog_quality import classify_review_reason
+from .catalog_review import CatalogReviewQueue
 
 
 def build_source_backed_operational_records(paths: Iterable[str | Path]) -> list[dict[str, Any]]:
@@ -63,4 +66,75 @@ def run_source_backed_operational_corpus(
     return ingest_catalog_batch(store, parse_catalog_batch_payload({"records": records}))
 
 
-__all__ = ["build_source_backed_operational_records", "run_source_backed_operational_corpus"]
+def measure_source_backed_operational_corpus(paths: Iterable[str | Path]) -> dict[str, Any]:
+    store = CatalogStore()
+    report = run_source_backed_operational_corpus(store, paths)
+    action_by_side: dict[str, Counter[str]] = {
+        "left": Counter(),
+        "right": Counter(),
+    }
+    for result in report.results:
+        if result.record_id is None or result.action is None:
+            continue
+        side = result.record_id.rsplit(":", 1)[-1]
+        if side in action_by_side:
+            action_by_side[side][result.action.value] += 1
+
+    review_queue = CatalogReviewQueue(store)
+    tasks = review_queue.open_tasks(limit=100)
+    cause_counts: Counter[str] = Counter()
+    reason_counts: Counter[str] = Counter()
+    multiple_cause_tasks = 0
+    for task in tasks:
+        candidates = set(task.candidate_vehicle_ids)
+        reasons = sorted(
+            {
+                comparison.reason
+                for comparison in task.comparisons
+                if comparison.vehicle_id in candidates
+                and comparison.outcome in {"MATCH", "REVIEW"}
+            }
+        )
+        if not reasons:
+            cause_counts["UNKNOWN_REVIEW_CAUSE"] += 1
+            continue
+        categories = sorted({classify_review_reason(reason) for reason in reasons})
+        for reason in reasons:
+            reason_counts[reason] += 1
+        if "UNKNOWN_REVIEW_CAUSE" in categories:
+            cause_counts["UNKNOWN_REVIEW_CAUSE"] += 1
+        elif len(categories) == 1:
+            cause_counts[categories[0]] += 1
+        else:
+            multiple_cause_tasks += 1
+            cause_counts["MULTIPLE_REVIEW_CAUSES"] += 1
+
+    catalog_items = len(store.catalog_vehicle_ids_page(limit=100))
+    return {
+        "schema": "podium7.production-operational-measurement.v1",
+        "summary": {
+            "total": report.total,
+            "created": report.created,
+            "matched": report.matched,
+            "review": report.review,
+            "failed": report.failed,
+            "automaticRate": (report.created + report.matched) / report.total,
+            "reviewRate": report.review / report.total,
+            "catalogItems": catalog_items,
+            "openReviewTasks": len(tasks),
+        },
+        "actionsBySide": {
+            side: dict(sorted(counter.items()))
+            for side, counter in action_by_side.items()
+        },
+        "reviewCauses": dict(sorted(cause_counts.items())),
+        "reviewReasons": dict(sorted(reason_counts.items())),
+        "multipleCauseTasks": multiple_cause_tasks,
+    }
+
+
+__all__ = [
+    "build_source_backed_operational_records",
+    "measure_source_backed_operational_corpus",
+    "run_source_backed_operational_corpus",
+]
