@@ -4,12 +4,12 @@ import argparse
 import json
 from pathlib import Path
 
-from .catalog import CatalogStore
+from .catalog import CatalogStore, export_catalog_vehicle_payload
 from .catalog_ingestion import (
     resolve_catalog_review_create,
     resolve_catalog_review_match,
 )
-from .catalog_review import CatalogReviewQueue
+from .catalog_review import CatalogReviewQueue, CatalogReviewTask
 from .persistence import EvidenceStore, SCHEMA_VERSION
 
 
@@ -29,12 +29,30 @@ def _require_review_database(database: str) -> Path:
     return path
 
 
+def _review_task_payload(
+    store: CatalogStore,
+    task: CatalogReviewTask,
+    *,
+    include_candidate_entities: bool = False,
+) -> dict[str, object]:
+    payload = task.to_payload()
+    if include_candidate_entities:
+        payload["candidateEntities"] = [
+            export_catalog_vehicle_payload(store, vehicle_id)["entity"]
+            for vehicle_id in task.candidate_vehicle_ids
+        ]
+    return payload
+
+
 def _review_payload(args: argparse.Namespace) -> dict[str, object]:
     database = _require_review_database(args.database)
     with CatalogStore(database) as store:
         queue = CatalogReviewQueue(store)
         if args.review_command == "list":
-            items = [task.to_payload() for task in queue.open_tasks(limit=args.limit)]
+            items = [
+                _review_task_payload(store, task)
+                for task in queue.open_tasks(limit=args.limit)
+            ]
             return {
                 "status": "PASS",
                 "count": len(items),
@@ -45,7 +63,14 @@ def _review_payload(args: argparse.Namespace) -> dict[str, object]:
             task = queue.get(args.review_id)
             if task is None:
                 raise ValueError("catalog review task does not exist")
-            return {"status": "PASS", "item": task.to_payload()}
+            return {
+                "status": "PASS",
+                "item": _review_task_payload(
+                    store,
+                    task,
+                    include_candidate_entities=True,
+                ),
+            }
 
         if args.review_command == "match":
             task = resolve_catalog_review_match(
@@ -55,7 +80,7 @@ def _review_payload(args: argparse.Namespace) -> dict[str, object]:
                 actor_id=args.actor,
                 reason=args.reason,
             )
-            return {"status": "PASS", "item": task.to_payload()}
+            return {"status": "PASS", "item": _review_task_payload(store, task)}
 
         if args.review_command == "create":
             task = resolve_catalog_review_create(
@@ -64,7 +89,7 @@ def _review_payload(args: argparse.Namespace) -> dict[str, object]:
                 actor_id=args.actor,
                 reason=args.reason,
             )
-            return {"status": "PASS", "item": task.to_payload()}
+            return {"status": "PASS", "item": _review_task_payload(store, task)}
 
     raise ValueError("unsupported catalog review command")
 
