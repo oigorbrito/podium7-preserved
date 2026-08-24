@@ -221,9 +221,10 @@
       "sourceIds": [
         "vw-tcross-brazil-generation",
         "vw-tcross-launch-versions",
-        "vw-tcross-current-product-page"
+        "vw-tcross-current-product-page",
+        "vw-tcross-my26-owner-manual"
       ],
-      "rationale": "The current product page lists Highline 250 TSI and transmission choices only at range level. Because transmission is identity-defining and version-specific mapping is absent from that observation, the pair remains REVIEW rather than inheriting the older six-speed mapping silently."
+      "rationale": "The current product page identifies Highline 250 TSI while the MY26 owner manual maps the 1.4 Total Flex 110 kW / 250 Nm TSI engine family to the AQ250 six-speed automatic transmission. The incomplete page observation remains REVIEW until that explicit MY26 mechanical evidence is applied as enrichment."
     },
     {
       "id": "br-hard-review-tcross-highline-model-year-present-one-side",

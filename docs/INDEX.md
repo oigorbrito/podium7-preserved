@@ -46,6 +46,7 @@
 - [`MEASURED-OPERATIONAL-DISPOSITION-V1.md`](MEASURED-OPERATIONAL-DISPOSITION-V1.md) — assigns measured review gaps to evidence enrichment or durable human review without resolver-policy changes.
 - [`PRODUCTION-EVIDENCE-ENRICHMENT-V1.md`](PRODUCTION-EVIDENCE-ENRICHMENT-V1.md) — source-backed review work queue and bounded evidence-enrichment cycle without resolver-policy weakening.
 - [`PRODUCTION-EVIDENCE-ENRICHMENT-V2.md`](PRODUCTION-EVIDENCE-ENRICHMENT-V2.md) — strengthens sparse Onix MY26 evidence before ingestion and reduces the bounded replay to 19 reviews while keeping enrichment provenance case-bound.
+- [`PRODUCTION-EVIDENCE-ENRICHMENT-V3.md`](PRODUCTION-EVIDENCE-ENRICHMENT-V3.md) — uses case-bound Volkswagen MY26 mechanical evidence to close the T-Cross Highline transmission omission while retaining the one-sided-model-year abstention.
 - [`PRODUCTION-QUALITY-GATE-V1.md`](PRODUCTION-QUALITY-GATE-V1.md) — integrated bounded product-operation gate over end-to-end ingestion, consumer reads, identity precision/recall, and review dispositions.
 - [`PRODUCTION-QUALITY-GATE-V2.md`](PRODUCTION-QUALITY-GATE-V2.md) — closes the pre-enrichment bounded operation cycle with the 60-record replay and measured review priorities.
 - [`PRODUCTION-QUALITY-GATE-V3.md`](PRODUCTION-QUALITY-GATE-V3.md) — closes the evidence-enrichment cycle with one source-backed review reduction and preserved identity safety metrics.

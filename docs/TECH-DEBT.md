@@ -53,13 +53,15 @@ MPGe semantics can be reopened when electric-efficiency normalization becomes de
 
 ## Product operation replay cycle
 
-Status: `CLOSED / EVIDENCE ENRICHMENT V2 COMPLETE`
+Status: `CLOSED / EVIDENCE ENRICHMENT V3 COMPLETE`
 
 `PRODUCTION-QUALITY-GATE-V2.md` established the pre-enrichment baseline: 60 source-backed records with 19 `CREATED`, 19 `MATCHED`, 22 `REVIEW`, and zero ingestion failures. Review causes were 13 `MISSING_IDENTITY_EVIDENCE` and 9 `LABEL_AMBIGUITY`.
 
 `PRODUCTION-EVIDENCE-ENRICHMENT-V1.md` and `PRODUCTION-QUALITY-GATE-V3.md` reduced that replay to 19 `CREATED`, 20 `MATCHED`, 21 `REVIEW`, and zero failures using explicit Toyota Corolla body-style evidence. Remaining causes were 12 `MISSING_IDENTITY_EVIDENCE` and 9 `LABEL_AMBIGUITY`.
 
-`PRODUCTION-EVIDENCE-ENRICHMENT-V2.md` closes the next measured evidence cycle. Replay diagnostics showed that a deliberately sparse Chevrolet Onix Premier MY26 observation created an earlier canonical candidate that correctly kept later MY26 observations in review. Strengthening that sparse observation with official, case-bound generation and MY26 mechanical evidence, plus enriching the later incomplete observation from the official MY26 price list, reduces the bounded replay to 19 `CREATED`, 22 `MATCHED`, 19 `REVIEW`, and zero failures. Remaining causes are 10 `MISSING_IDENTITY_EVIDENCE` and 9 `LABEL_AMBIGUITY`.
+`PRODUCTION-EVIDENCE-ENRICHMENT-V2.md` closed the next measured evidence cycle. Replay diagnostics showed that a deliberately sparse Chevrolet Onix Premier MY26 observation created an earlier canonical candidate that correctly kept later MY26 observations in review. Strengthening that sparse observation with official, case-bound generation and MY26 mechanical evidence, plus enriching the later incomplete observation from the official MY26 price list, reduced the bounded replay to 19 `CREATED`, 22 `MATCHED`, 19 `REVIEW`, and zero failures. Remaining causes were 10 `MISSING_IDENTITY_EVIDENCE` and 9 `LABEL_AMBIGUITY`.
+
+`PRODUCTION-EVIDENCE-ENRICHMENT-V3.md` closes the next measured evidence cycle. The current Volkswagen T-Cross evidence identifies Highline 250 TSI and the case-bound MY26 owner manual explicitly maps the 1.4 Total Flex 110 kW / 250 Nm TSI engine family to the AQ250 six-speed automatic transmission. Adding only that missing transmission field reduces the replay to 19 `CREATED`, 23 `MATCHED`, 18 `REVIEW`, and zero failures. Remaining causes are 9 `MISSING_IDENTITY_EVIDENCE` and 9 `LABEL_AMBIGUITY`. The separate T-Cross one-sided-model-year case remains `REVIEW`; no model year is inferred onto the yearless observation.
 
 The companion source-backed identity quality corpus remains at auto-match precision 1.0 and recall 1.0 with zero false merges and zero ambiguous overcommit. Resolver-policy changes remain zero. Enrichment sources remain bound to each curated case and overlapping field mutations fail closed.
 
