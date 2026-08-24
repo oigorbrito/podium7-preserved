@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections import Counter
 from pathlib import Path
 from typing import Any, Iterable
 
@@ -39,4 +40,35 @@ def evaluate_identity_quality(paths: Iterable[str | Path]) -> dict[str, Any]:
     }
 
 
-__all__ = ["evaluate_identity_quality"]
+def classify_review_reason(reason: str) -> str:
+    if reason in {"model_year evidence is incomplete", "trim-defining evidence is incomplete", "insufficient deterministic identity evidence"}:
+        return "MISSING_IDENTITY_EVIDENCE"
+    if reason in {
+        "STRONG external identifiers do not establish a shared identity",
+        "SUPPORTING external identifiers do not establish a shared identity",
+    }:
+        return "IDENTIFIER_CONFLICT"
+    if reason == "model labels partially overlap":
+        return "LABEL_AMBIGUITY"
+    return "UNKNOWN_REVIEW_CAUSE"
+
+
+def analyze_review_cases(quality_report: dict[str, Any]) -> dict[str, Any]:
+    review_cases = [case for case in quality_report.get("cases", ()) if case.get("predicted") == "REVIEW"]
+    classified = [
+        {**case, "cause": classify_review_reason(str(case.get("reason", "")))}
+        for case in review_cases
+    ]
+    counts = Counter(case["cause"] for case in classified)
+    unsafe = [case for case in classified if case.get("expected") != "REVIEW"]
+    return {
+        "schema": "podium7.review-analysis.v1",
+        "totalReviews": len(classified),
+        "causeCounts": dict(sorted(counts.items())),
+        "unknownCauseCount": counts["UNKNOWN_REVIEW_CAUSE"],
+        "unexpectedReviewCount": len(unsafe),
+        "cases": classified,
+    }
+
+
+__all__ = ["analyze_review_cases", "classify_review_reason", "evaluate_identity_quality"]
