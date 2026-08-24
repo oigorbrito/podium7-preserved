@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 1,
+  "evidenceClass": "LOCALLY_VERIFIED_OPERATIONAL_CORPUS",
+  "description": "Bounded offline operational corpus derived from the four independently inspected official source families. It exercises batch ingestion, identity resolution, durable review, evidence persistence and consumer export without claiming production completeness.",
+  "records": [
+    {
+      "recordId": "nhtsa-rav4-2025",
+      "source": {"id": "nhtsa-vpic", "name": "NHTSA vPIC", "locator": "https://vpic.nhtsa.dot.gov/"},
+      "evidence": {"id": "prod-e2e-e1", "locator": "https://vpic.nhtsa.dot.gov/api/vehicles/getmodelsformakeyear/make/toyota/modelyear/2025?format=json", "retrievedAt": "2026-08-23T18:00:00Z", "acquisitionMethod": "bounded-official-source-fixture", "rawContentRef": "benchmark:nhtsa-vpic-toyota-2025"},
+      "vehicle": {"make": "Toyota", "model": "RAV4", "generation": "XA50", "powertrain": "2.5 hybrid", "transmission": "eCVT", "body_style": "SUV", "market": "US", "model_year_from": 2025, "model_year_to": 2025}
+    },
+    {
+      "recordId": "fueleconomy-rav4-2025",
+      "source": {"id": "fueleconomy-gov", "name": "FuelEconomy.gov", "locator": "https://www.fueleconomy.gov/"},
+      "evidence": {"id": "prod-e2e-e2", "locator": "https://www.fueleconomy.gov/ws/rest/vehicle/menu/model?year=2025&make=Toyota", "retrievedAt": "2026-08-23T18:01:00Z", "acquisitionMethod": "bounded-official-source-fixture", "rawContentRef": "benchmark:fueleconomy-toyota-2025"},
+      "vehicle": {"make": "Toyota", "model": "RAV4", "generation": "XA50", "powertrain": "2.5 hybrid", "transmission": "eCVT", "body_style": "SUV", "market": "US", "model_year_from": 2025, "model_year_to": 2025}
+    },
+    {
+      "recordId": "eea-x1-2025",
+      "source": {"id": "eea-co2-cars", "name": "EEA CO2 passenger cars", "locator": "https://www.eea.europa.eu/en/datahub/datahubitem-view/fa8b1229-3db6-495d-b18e-9c9b3267c02b"},
+      "evidence": {"id": "prod-e2e-e3", "locator": "https://www.eea.europa.eu/en/datahub/datahubitem-view/fa8b1229-3db6-495d-b18e-9c9b3267c02b", "retrievedAt": "2026-08-23T18:02:00Z", "acquisitionMethod": "bounded-official-source-fixture", "rawContentRef": "benchmark:eea-2025-x1"},
+      "vehicle": {"make": "BMW", "model": "X1", "generation": "U11", "variant": "xDrive25e", "powertrain": "petrol/electric plug-in hybrid", "transmission": "automatic", "body_style": "SUV", "market": "EU", "model_year_from": 2025, "model_year_to": 2025}
+    },
+    {
+      "recordId": "inmetro-x1-2025",
+      "source": {"id": "inmetro-pbev", "name": "Inmetro PBEV", "locator": "https://www.gov.br/inmetro/pt-br/assuntos/avaliacao-da-conformidade/programa-brasileiro-de-etiquetagem/tabelas-de-eficiencia-energetica/veiculos-automotivos-pbe-veicular"},
+      "evidence": {"id": "prod-e2e-e4", "locator": "https://www.gov.br/inmetro/pt-br/assuntos/avaliacao-da-conformidade/programa-brasileiro-de-etiquetagem/tabelas-de-eficiencia-energetica/veiculos-automotivos-pbe-veicular", "retrievedAt": "2026-08-23T18:03:00Z", "acquisitionMethod": "bounded-official-source-fixture", "rawContentRef": "benchmark:inmetro-pbev-2026-x1"},
+      "vehicle": {"make": "BMW", "model": "X1", "generation": "U11", "variant": "xDrive25e", "powertrain": "petrol/electric plug-in hybrid", "transmission": "automatic", "body_style": "SUV", "market": "EU", "model_year_from": 2025, "model_year_to": 2025}
+    },
+    {
+      "recordId": "eea-xc40-2025",
+      "source": {"id": "eea-co2-cars", "name": "EEA CO2 passenger cars", "locator": "https://www.eea.europa.eu/en/datahub/datahubitem-view/fa8b1229-3db6-495d-b18e-9c9b3267c02b"},
+      "evidence": {"id": "prod-e2e-e5", "locator": "https://www.eea.europa.eu/en/datahub/datahubitem-view/fa8b1229-3db6-495d-b18e-9c9b3267c02b", "retrievedAt": "2026-08-23T18:04:00Z", "acquisitionMethod": "bounded-official-source-fixture", "rawContentRef": "benchmark:eea-2025-xc40"},
+      "vehicle": {"make": "Volvo", "model": "XC40", "generation": "CMA", "powertrain": "electric", "transmission": "single-speed", "body_style": "SUV", "market": "EU", "model_year_from": 2025, "model_year_to": 2025}
+    },
+    {
+      "recordId": "inmetro-xc40-plus-2025",
+      "source": {"id": "inmetro-pbev", "name": "Inmetro PBEV", "locator": "https://www.gov.br/inmetro/pt-br/assuntos/avaliacao-da-conformidade/programa-brasileiro-de-etiquetagem/tabelas-de-eficiencia-energetica/veiculos-automotivos-pbe-veicular"},
+      "evidence": {"id": "prod-e2e-e6", "locator": "https://www.gov.br/inmetro/pt-br/assuntos/avaliacao-da-conformidade/programa-brasileiro-de-etiquetagem/tabelas-de-eficiencia-energetica/veiculos-automotivos-pbe-veicular", "retrievedAt": "2026-08-23T18:05:00Z", "acquisitionMethod": "bounded-official-source-fixture", "rawContentRef": "benchmark:inmetro-pbev-2026-xc40-plus"},
+      "vehicle": {"make": "Volvo", "model": "XC40", "generation": "CMA", "variant": "Plus", "powertrain": "electric", "transmission": "single-speed", "body_style": "SUV", "market": "EU", "model_year_from": 2025, "model_year_to": 2025}
+    }
+  ],
+  "expected": {"total": 6, "created": 3, "matched": 2, "review": 1, "failed": 0, "catalogVehicles": 3, "consumerItems": 3}
+}
