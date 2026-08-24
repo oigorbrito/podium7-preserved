@@ -177,6 +177,21 @@ class CatalogReviewOperatorCliV1Tests(unittest.TestCase):
             self.assertEqual(after, before + 1)
             self.assertIsNotNone(store.get_catalog_vehicle(created_vehicle))
 
+    def test_review_commands_reject_empty_existing_file_without_initializing_it(self) -> None:
+        before_size = os.path.getsize(self.database)
+
+        code, payload = self._run([
+            "review",
+            "list",
+            "--database",
+            self.database,
+        ])
+
+        self.assertEqual(code, 1)
+        self.assertEqual(payload["status"], "FAIL")
+        self.assertIn("Podium catalog review schema", payload["error"])
+        self.assertEqual(os.path.getsize(self.database), before_size)
+
     def test_review_commands_fail_closed_for_missing_database_or_invalid_candidate(self) -> None:
         missing = self.database + ".missing"
         code, payload = self._run([
