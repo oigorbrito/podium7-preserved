@@ -1,7 +1,7 @@
 {
   "schema": "podium7.review-disposition.v1",
   "datasetVersion": "2.0",
-  "assessedAt": "2026-08-24T09:00:00Z",
+  "assessedAt": "2026-08-24T09:04:00Z",
   "purpose": "Fail-closed disposition of current V3 operational reviews after partial-label contradiction precedence was corrected. Decisions are case-bound and do not alter resolver policy.",
   "decisions": [
     {
@@ -59,6 +59,13 @@
       "evidenceStatus": "LIVE_REVALIDATED",
       "sourceIds": ["vw-tcross-brazil-generation", "vw-tcross-highline-250-tsi-tech-sheet", "vw-tcross-current-product-page", "vw-tcross-my26-owner-manual"],
       "rationale": "The evidence establishes the Highline 250 TSI mechanical family and MY26 context but does not establish that the yearless observation itself is MY26. Senatran-aligned policy therefore preserves REVIEW."
+    },
+    {
+      "caseId": "br-hard-no-match-corolla-altis-hybrid-my25-vs-my26",
+      "disposition": "HUMAN_REVIEW_EVIDENCE_EXHAUSTED",
+      "evidenceStatus": "LIVE_REVALIDATED",
+      "sourceIds": ["toyota-connected-services-corolla-my25", "toyota-corolla-altis-hybrid-offer-2026"],
+      "rationale": "Toyota explicitly establishes Altis Hybrid Premium in model year 2025 and Altis Premium Hybrid 26/26, but the operational candidates are older generic Corolla sedan canonicals with no model-year or variant evidence. The case evidence does not establish that either year-specific observation is the same catalog identity as those yearless generic canonicals. Auto-matching would infer the missing model-year and variant dimensions, so the Senatran-aligned one-sided-year policy preserves human review."
     }
   ]
 }
