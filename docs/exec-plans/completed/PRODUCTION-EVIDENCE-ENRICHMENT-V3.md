@@ -1,6 +1,6 @@
 # Production Evidence Enrichment V3
 
-Status: active
+Status: completed
 
 ## Outcome
 
@@ -19,12 +19,12 @@ The current T-Cross product/configurator evidence identifies `Highline 250 TSI`.
 - Preserve all V2 provenance, overwrite and overlap protections.
 - Preserve the Senatran-aligned year policy and Catalog Identity V2 safety checks.
 
-## Acceptance
+## Result
 
-- V3 observations have zero incorrect effects and zero resolver-policy changes.
+- V3 observations: zero incorrect effects and zero resolver-policy changes.
 - 60-record replay: 19 CREATED, 23 MATCHED, 18 REVIEW, 0 failed.
 - Remaining review causes: 9 `MISSING_IDENTITY_EVIDENCE`, 9 `LABEL_AMBIGUITY`, no unknown causes.
-- The T-Cross transmission review disappears; the one-sided-model-year review remains.
+- The T-Cross transmission review disappeared; the one-sided-model-year review remains.
 - Auto-match precision and recall remain 1.0.
 - False merges and ambiguous overcommit remain zero.
-- Official repository CI passes before squash merge.
+- Official repository CI passed before squash merge.
