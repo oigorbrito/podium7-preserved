@@ -1,9 +1,10 @@
 # Podium 7 documentation index
 
-`docs/` is the repository system of record. This index is the progressive-disclosure entry point after `AGENTS.md`.
+`docs/` is the repository system of record. This index is the progressive-disclosure entry point after `AGENTS.md` and the compact resume handoff.
 
 ## Always-read operating context
 
+- [`HANDOFF.md`](HANDOFF.md) — compact resume point for a new chat/session; refreshes the active remote context without duplicating canonical policy.
 - [`CURRENT-STATE.md`](CURRENT-STATE.md) — current factual repository/product state; short, no history dump.
 - [`CURRENT-WORK.md`](CURRENT-WORK.md) — the active outcome, boundaries, acceptance criteria, and blockers only.
 - [`DEVELOPMENT-WORKFLOW.md`](DEVELOPMENT-WORKFLOW.md) — the single canonical source for autonomy, approvals, Git/PR/CI, validation, self-review, done, and stopping rules.
