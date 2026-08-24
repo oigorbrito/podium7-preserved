@@ -5,6 +5,7 @@ from datetime import datetime, timezone
 from io import StringIO
 import json
 import os
+import sqlite3
 import tempfile
 import unittest
 
@@ -86,6 +87,15 @@ class CatalogReviewOperatorCliV1Tests(unittest.TestCase):
         with redirect_stdout(output):
             code = main(argv)
         return code, json.loads(output.getvalue())
+
+    def _schema_objects(self) -> set[tuple[str, str]]:
+        with sqlite3.connect(self.database) as connection:
+            return {
+                (object_type, name)
+                for object_type, name in connection.execute(
+                    "SELECT type, name FROM sqlite_master WHERE type IN ('table', 'index')"
+                )
+            }
 
     def test_list_and_show_expose_review_candidate_and_evidence_context(self) -> None:
         review_id, candidate = self._seed_review()
@@ -191,6 +201,24 @@ class CatalogReviewOperatorCliV1Tests(unittest.TestCase):
         self.assertEqual(payload["status"], "FAIL")
         self.assertIn("Podium catalog review schema", payload["error"])
         self.assertEqual(os.path.getsize(self.database), before_size)
+
+    def test_review_commands_reject_catalog_without_review_schema_without_mutation(self) -> None:
+        with CatalogStore(self.database):
+            pass
+        before = self._schema_objects()
+        self.assertNotIn(("table", "catalog_v2_review_tasks"), before)
+
+        code, payload = self._run([
+            "review",
+            "list",
+            "--database",
+            self.database,
+        ])
+
+        self.assertEqual(code, 1)
+        self.assertEqual(payload["status"], "FAIL")
+        self.assertIn("Podium catalog review schema", payload["error"])
+        self.assertEqual(self._schema_objects(), before)
 
     def test_review_commands_fail_closed_for_missing_database_or_invalid_candidate(self) -> None:
         missing = self.database + ".missing"
