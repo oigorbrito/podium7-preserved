@@ -18,17 +18,21 @@ class ProductionOperationalMeasurementV1Tests(unittest.TestCase):
         summary = measurement["summary"]
 
         self.assertEqual(summary["total"], 60)
-        self.assertEqual(summary["created"], 19)
-        self.assertEqual(summary["matched"], 19)
-        self.assertEqual(summary["review"], 22)
+        self.assertEqual(summary["created"], 21)
+        self.assertEqual(summary["matched"], 22)
+        self.assertEqual(summary["review"], 17)
         self.assertEqual(summary["failed"], 0)
-        self.assertEqual(summary["catalogItems"], 19)
-        self.assertEqual(summary["openReviewTasks"], 22)
-        self.assertAlmostEqual(summary["automaticRate"], 38 / 60)
-        self.assertAlmostEqual(summary["reviewRate"], 22 / 60)
+        self.assertEqual(summary["catalogItems"], 21)
+        self.assertEqual(summary["openReviewTasks"], 17)
+        self.assertAlmostEqual(summary["automaticRate"], 43 / 60)
+        self.assertAlmostEqual(summary["reviewRate"], 17 / 60)
         self.assertEqual(sum(measurement["actionsBySide"]["left"].values()), 30)
         self.assertEqual(sum(measurement["actionsBySide"]["right"].values()), 30)
-        self.assertEqual(sum(measurement["reviewCauses"].values()), 22)
+        self.assertEqual(sum(measurement["reviewCauses"].values()), 17)
+        self.assertEqual(measurement["reviewCauses"], {
+            "LABEL_AMBIGUITY": 3,
+            "MISSING_IDENTITY_EVIDENCE": 14,
+        })
         self.assertNotIn("UNKNOWN_REVIEW_CAUSE", measurement["reviewCauses"])
 
         print("PRODUCTION_OPERATIONAL_MEASUREMENT_V1", measurement)

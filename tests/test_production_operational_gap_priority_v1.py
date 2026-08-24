@@ -23,10 +23,10 @@ class ProductionOperationalGapPriorityV1Tests(unittest.TestCase):
             "MISSING_IDENTITY_EVIDENCE",
             "LABEL_AMBIGUITY",
         ])
-        self.assertEqual(priorities[0]["count"], 13)
+        self.assertEqual(priorities[0]["count"], 14)
         self.assertEqual(priorities[0]["disposition"], "ENRICH_IDENTITY_EVIDENCE")
-        self.assertAlmostEqual(priorities[0]["reviewShare"], 13 / 22)
-        self.assertEqual(priorities[1]["count"], 9)
+        self.assertAlmostEqual(priorities[0]["reviewShare"], 14 / 17)
+        self.assertEqual(priorities[1]["count"], 3)
         self.assertEqual(priorities[1]["disposition"], "ENRICH_LABEL_EVIDENCE")
         self.assertTrue(all("RESOLVER" not in item["disposition"] for item in priorities))
 

@@ -48,21 +48,21 @@ class ProductionEvidenceEnrichmentV3Tests(unittest.TestCase):
         })
         self.assertNotIn(TCROSS_MODEL_YEAR_EVIDENCE, overrides)
 
-    def test_v3_operational_replay_reduces_review_to_eighteen(self) -> None:
+    def test_v3_operational_replay_reduces_review_to_thirteen(self) -> None:
         measurement = measure_enriched_operational_corpus(DATASETS, ENRICHMENT_V3)
 
         self.assertEqual(measurement["summary"], {
             "total": 60,
-            "created": 19,
-            "matched": 23,
-            "review": 18,
+            "created": 21,
+            "matched": 26,
+            "review": 13,
             "failed": 0,
-            "openReviewTasks": 18,
+            "openReviewTasks": 13,
             "appliedEvidenceOverrides": 4,
         })
         self.assertEqual(measurement["reviewCauses"], {
-            "LABEL_AMBIGUITY": 9,
-            "MISSING_IDENTITY_EVIDENCE": 9,
+            "LABEL_AMBIGUITY": 3,
+            "MISSING_IDENTITY_EVIDENCE": 10,
         })
         self.assertNotIn(TCROSS_TRANSMISSION_EVIDENCE, measurement["reviewReasonsByEvidence"])
         self.assertIn(TCROSS_MODEL_YEAR_EVIDENCE, measurement["reviewReasonsByEvidence"])

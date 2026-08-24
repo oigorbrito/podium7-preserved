@@ -12,9 +12,9 @@ from .catalog import (
     CatalogStore,
     CatalogVehicleIdentity,
     ExternalIdentifier,
-    resolve_catalog_pair,
     validate_catalog_publication_change,
 )
+from .catalog_resolution_precedence import resolve_catalog_pair_with_structural_precedence
 from .catalog_review import (
     CatalogReviewComparison,
     CatalogReviewQueue,
@@ -305,7 +305,9 @@ def ingest_catalog_record(
     comparisons = tuple(
         CatalogIngestionComparison(vehicle_id, decision.outcome, decision.reason)
         for vehicle_id, existing_identity in _catalog_entries(store)
-        for decision in (resolve_catalog_pair(identity, existing_identity),)
+        for decision in (
+            resolve_catalog_pair_with_structural_precedence(identity, existing_identity),
+        )
     )
     matches = tuple(
         comparison.vehicle_id

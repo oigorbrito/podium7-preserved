@@ -64,21 +64,21 @@ class ProductionEvidenceEnrichmentV2Tests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "source is not declared by the benchmark case"):
                 load_source_backed_enrichment_overrides(DATASETS, path)
 
-    def test_v2_operational_replay_reduces_review_to_nineteen(self) -> None:
+    def test_v2_operational_replay_reduces_review_to_fourteen(self) -> None:
         measurement = measure_enriched_operational_corpus(DATASETS, ENRICHMENT_V2)
 
         self.assertEqual(measurement["summary"], {
             "total": 60,
-            "created": 19,
-            "matched": 22,
-            "review": 19,
+            "created": 21,
+            "matched": 25,
+            "review": 14,
             "failed": 0,
-            "openReviewTasks": 19,
+            "openReviewTasks": 14,
             "appliedEvidenceOverrides": 3,
         })
         self.assertEqual(measurement["reviewCauses"], {
-            "LABEL_AMBIGUITY": 9,
-            "MISSING_IDENTITY_EVIDENCE": 10,
+            "LABEL_AMBIGUITY": 3,
+            "MISSING_IDENTITY_EVIDENCE": 11,
         })
         self.assertNotIn(SPARSE_ONIX_EVIDENCE, measurement["reviewReasonsByEvidence"])
         self.assertNotIn(LATER_ONIX_EVIDENCE, measurement["reviewReasonsByEvidence"])

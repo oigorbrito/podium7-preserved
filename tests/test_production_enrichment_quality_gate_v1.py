@@ -22,16 +22,16 @@ class ProductionEnrichmentQualityGateV1Tests(unittest.TestCase):
 
         self.assertEqual(measurement["summary"], {
             "total": 60,
-            "created": 19,
-            "matched": 20,
-            "review": 21,
+            "created": 21,
+            "matched": 23,
+            "review": 16,
             "failed": 0,
-            "openReviewTasks": 21,
+            "openReviewTasks": 16,
             "appliedEvidenceOverrides": 1,
         })
         self.assertEqual(measurement["reviewCauses"], {
-            "LABEL_AMBIGUITY": 9,
-            "MISSING_IDENTITY_EVIDENCE": 12,
+            "LABEL_AMBIGUITY": 3,
+            "MISSING_IDENTITY_EVIDENCE": 13,
         })
 
     def test_integrated_quality_gate_preserves_identity_safety(self) -> None:

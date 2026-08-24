@@ -18,19 +18,19 @@ class ProductionEvidenceEnrichmentWorkV1Tests(unittest.TestCase):
     def test_all_measured_reviews_become_source_backed_work_without_policy_change(self) -> None:
         store = CatalogStore()
         report = run_source_backed_operational_corpus(store, DATASETS)
-        self.assertEqual(report.review, 22)
+        self.assertEqual(report.review, 17)
 
         work = build_source_backed_enrichment_work(store, DATASETS)
 
         self.assertEqual(work["summary"], {
-            "openReviews": 22,
-            "actionable": 22,
+            "openReviews": 17,
+            "actionable": 17,
             "blocked": 0,
             "resolverPolicyChanges": 0,
         })
         self.assertEqual(work["causeCounts"], {
-            "LABEL_AMBIGUITY": 9,
-            "MISSING_IDENTITY_EVIDENCE": 13,
+            "LABEL_AMBIGUITY": 3,
+            "MISSING_IDENTITY_EVIDENCE": 14,
         })
         self.assertEqual(work["blockedItems"], [])
         self.assertTrue(all(item["sourceLocators"] for item in work["items"]))

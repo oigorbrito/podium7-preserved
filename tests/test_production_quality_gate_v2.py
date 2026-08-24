@@ -25,13 +25,13 @@ class ProductionQualityGateV2Tests(unittest.TestCase):
         summary = measurement["summary"]
         self.assertEqual(summary["total"], 60)
         self.assertEqual(summary["failed"], 0)
-        self.assertEqual(summary["created"], 19)
-        self.assertEqual(summary["matched"], 19)
-        self.assertEqual(summary["review"], 22)
-        self.assertEqual(summary["openReviewTasks"], 22)
+        self.assertEqual(summary["created"], 21)
+        self.assertEqual(summary["matched"], 22)
+        self.assertEqual(summary["review"], 17)
+        self.assertEqual(summary["openReviewTasks"], 17)
         self.assertEqual(measurement["reviewCauses"], {
-            "LABEL_AMBIGUITY": 9,
-            "MISSING_IDENTITY_EVIDENCE": 13,
+            "LABEL_AMBIGUITY": 3,
+            "MISSING_IDENTITY_EVIDENCE": 14,
         })
 
         metrics = quality["metrics"]
@@ -43,8 +43,8 @@ class ProductionQualityGateV2Tests(unittest.TestCase):
         self.assertEqual(metrics["ambiguousOvercommitCount"], 0)
 
         self.assertEqual(priorities[0]["gap"], "MISSING_IDENTITY_EVIDENCE")
-        self.assertEqual(priorities[0]["count"], 13)
-        self.assertEqual(dispositions["assignedReviewTasks"], 22)
+        self.assertEqual(priorities[0]["count"], 14)
+        self.assertEqual(dispositions["assignedReviewTasks"], 17)
         self.assertEqual(dispositions["unresolvedPriorities"], [])
         self.assertEqual(dispositions["resolverPolicyChanges"], 0)
 
