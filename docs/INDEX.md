@@ -43,6 +43,7 @@
 - [`PRODUCTION-CORPUS-RUN-V2.md`](PRODUCTION-CORPUS-RUN-V2.md) — expanded 60-record source-backed replay through batch ingestion, identity resolution, evidence persistence and consumer reads.
 - [`PRODUCTION-OPERATIONAL-MEASUREMENT-V1.md`](PRODUCTION-OPERATIONAL-MEASUREMENT-V1.md) — measured action distribution, review load and durable review causes for the expanded source-backed replay.
 - [`PRODUCTION-OPERATIONAL-GAP-PRIORITY-V1.md`](PRODUCTION-OPERATIONAL-GAP-PRIORITY-V1.md) — fail-closed prioritization of measured ingestion and review gaps, selecting evidence enrichment before resolver changes.
+- [`MEASURED-OPERATIONAL-DISPOSITION-V1.md`](MEASURED-OPERATIONAL-DISPOSITION-V1.md) — assigns measured review gaps to evidence enrichment or durable human review without resolver-policy changes.
 - [`PRODUCTION-QUALITY-GATE-V1.md`](PRODUCTION-QUALITY-GATE-V1.md) — integrated bounded product-operation gate over end-to-end ingestion, consumer reads, identity precision/recall, and review dispositions.
 - [`PUBLIC-WEB-ACQUISITION-CHARACTERIZATION-V1.md`](PUBLIC-WEB-ACQUISITION-CHARACTERIZATION-V1.md) — one live operational compatibility measurement across the retained exact public source URLs.
 - [`BROWSER-ACQUISITION-CHARACTERIZATION-V1.md`](BROWSER-ACQUISITION-CHARACTERIZATION-V1.md) — controlled Chromium measurement on the retained Autoevolution URLs refused by direct HTTP; browser fallback was not selected.
