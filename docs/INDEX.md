@@ -44,6 +44,7 @@
 - [`PRODUCTION-OPERATIONAL-MEASUREMENT-V1.md`](PRODUCTION-OPERATIONAL-MEASUREMENT-V1.md) — measured action distribution, review load and durable review causes for the expanded source-backed replay.
 - [`PRODUCTION-OPERATIONAL-GAP-PRIORITY-V1.md`](PRODUCTION-OPERATIONAL-GAP-PRIORITY-V1.md) — fail-closed prioritization of measured ingestion and review gaps, selecting evidence enrichment before resolver changes.
 - [`MEASURED-OPERATIONAL-DISPOSITION-V1.md`](MEASURED-OPERATIONAL-DISPOSITION-V1.md) — assigns measured review gaps to evidence enrichment or durable human review without resolver-policy changes.
+- [`PRODUCTION-EVIDENCE-ENRICHMENT-V1.md`](PRODUCTION-EVIDENCE-ENRICHMENT-V1.md) — source-backed review work queue and bounded evidence-enrichment cycle without resolver-policy weakening.
 - [`PRODUCTION-QUALITY-GATE-V1.md`](PRODUCTION-QUALITY-GATE-V1.md) — integrated bounded product-operation gate over end-to-end ingestion, consumer reads, identity precision/recall, and review dispositions.
 - [`PRODUCTION-QUALITY-GATE-V2.md`](PRODUCTION-QUALITY-GATE-V2.md) — closes the current bounded operation cycle with the 60-record replay, 30-case identity-quality gate, measured review priorities and evidence dispositions.
 - [`PUBLIC-WEB-ACQUISITION-CHARACTERIZATION-V1.md`](PUBLIC-WEB-ACQUISITION-CHARACTERIZATION-V1.md) — one live operational compatibility measurement across the retained exact public source URLs.

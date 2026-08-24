@@ -1,5 +1,11 @@
 # Current work
 
-Status: none
+Status: active
 
-No implementation mission is active. Durable unresolved work remains tracked in `TECH-DEBT.md` and completed execution history is under `exec-plans/completed/`.
+Outcome: reduce measured catalog `REVIEW` load only when additional source-backed evidence justifies a stronger identity decision.
+
+Boundaries: preserve conservative resolver and Senatran-aligned year semantics; no threshold weakening; no public-internet CI dependency; licensing/release is out of scope.
+
+Acceptance: explicit enrichment work for every measured review, source-backed resolution where justified, no false-merge regression, green CI.
+
+Plan: [`exec-plans/active/PRODUCTION-EVIDENCE-ENRICHMENT-V1.md`](exec-plans/active/PRODUCTION-EVIDENCE-ENRICHMENT-V1.md)
