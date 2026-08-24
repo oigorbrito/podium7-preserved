@@ -3,14 +3,29 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
+import sqlite3
 
-from .catalog import CatalogStore, export_catalog_vehicle_payload
+from .catalog import CATALOG_SCHEMA_VERSION, CatalogStore, export_catalog_vehicle_payload
 from .catalog_ingestion import (
     resolve_catalog_review_create,
     resolve_catalog_review_match,
 )
-from .catalog_review import CatalogReviewQueue, CatalogReviewTask
+from .catalog_review import (
+    CATALOG_REVIEW_SCHEMA_COMPONENT,
+    CATALOG_REVIEW_SCHEMA_VERSION,
+    CatalogReviewQueue,
+    CatalogReviewTask,
+)
 from .persistence import EvidenceStore, SCHEMA_VERSION
+
+
+REVIEW_REQUIRED_TABLES = {
+    "catalog_v2_schema_metadata",
+    "catalog_v2_vehicles",
+    "catalog_v2_review_tasks",
+    "raw_evidence",
+    "sources",
+}
 
 
 def _health_payload() -> dict[str, object]:
@@ -24,8 +39,36 @@ def _health_payload() -> dict[str, object]:
 
 def _require_review_database(database: str) -> Path:
     path = Path(database)
+    error = "review operator database must be an existing file with a Podium catalog review schema"
     if database == ":memory:" or not path.is_file():
-        raise ValueError("review operator database must be an existing file")
+        raise ValueError(error)
+
+    try:
+        uri = path.resolve().as_uri() + "?mode=ro"
+        with sqlite3.connect(uri, uri=True) as connection:
+            tables = {
+                row[0]
+                for row in connection.execute(
+                    "SELECT name FROM sqlite_master WHERE type = 'table'"
+                )
+            }
+            if not REVIEW_REQUIRED_TABLES.issubset(tables):
+                raise ValueError(error)
+            versions = dict(
+                connection.execute(
+                    "SELECT component, version FROM catalog_v2_schema_metadata "
+                    "WHERE component IN (?, ?)",
+                    ("catalog", CATALOG_REVIEW_SCHEMA_COMPONENT),
+                )
+            )
+    except sqlite3.Error as exc:
+        raise ValueError(error) from exc
+
+    if versions != {
+        "catalog": CATALOG_SCHEMA_VERSION,
+        CATALOG_REVIEW_SCHEMA_COMPONENT: CATALOG_REVIEW_SCHEMA_VERSION,
+    }:
+        raise ValueError(error)
     return path
 
 
