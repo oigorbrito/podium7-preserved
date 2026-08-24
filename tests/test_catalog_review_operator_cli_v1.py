@@ -87,7 +87,7 @@ class CatalogReviewOperatorCliV1Tests(unittest.TestCase):
             code = main(argv)
         return code, json.loads(output.getvalue())
 
-    def test_list_and_show_expose_durable_review_and_candidate_identity(self) -> None:
+    def test_list_and_show_expose_review_candidate_and_evidence_context(self) -> None:
         review_id, candidate = self._seed_review()
 
         code, listed = self._run([
@@ -102,6 +102,7 @@ class CatalogReviewOperatorCliV1Tests(unittest.TestCase):
         self.assertEqual(listed["items"][0]["id"], review_id)
         self.assertEqual(listed["items"][0]["candidateVehicleIds"], [candidate])
         self.assertNotIn("candidateEntities", listed["items"][0])
+        self.assertNotIn("evidence", listed["items"][0])
 
         code, shown = self._run([
             "review",
@@ -116,6 +117,13 @@ class CatalogReviewOperatorCliV1Tests(unittest.TestCase):
         self.assertEqual(len(shown["item"]["candidateEntities"]), 1)
         self.assertEqual(shown["item"]["candidateEntities"][0]["id"], candidate)
         self.assertEqual(shown["item"]["candidateEntities"][0]["variant"], "Dark Horse")
+        self.assertEqual(shown["item"]["evidence"]["id"], "operator-review")
+        self.assertEqual(shown["item"]["evidence"]["sourceId"], SOURCE.id)
+        self.assertEqual(shown["item"]["evidence"]["source"]["locator"], SOURCE.locator)
+        self.assertEqual(
+            shown["item"]["evidence"]["rawContentRef"],
+            "sha256:operator-review",
+        )
 
     def test_match_reuses_safe_domain_resolution_and_audit_fields(self) -> None:
         review_id, candidate = self._seed_review()
