@@ -19,6 +19,19 @@ Official-source revalidation on 2026-08-23 confirmed that the retained Toyota Co
 
 The enrichment mechanism must preserve these two different outcomes: evidence can close an extraction omission, but evidence showing multiple plausible identities must preserve abstention.
 
+## Block 2 — fail-closed enrichment application
+
+`benchmarks/source_backed_enrichment_v1.json` records bounded source-backed observations separately from the original gold labels. `podium7.source_backed_enrichment` permits an identity field to be added only when the target field is currently missing, the observation references a source already declared by that benchmark case, and the field type is supported. Existing identity fields cannot be overwritten.
+
+The first bounded observations produce:
+
+- Toyota Corolla body-style re-extraction: `REVIEW -> MATCH` after explicit `body_style=sedan` evidence;
+- Ford Mustang missing variant: remains `REVIEW` because the official specification contains both GT and Dark Horse 5.0-litre V8 configurations;
+- Porsche 911 partial Carrera label: remains `REVIEW` because generic Carrera evidence does not establish Carrera 4S identity;
+- resolver-policy changes: zero.
+
+Label enrichment is therefore evidence-gated as well: the current source-backed label example correctly abstains rather than adding an unsupported alias.
+
 ## Nonclaims
 
 The source-backed benchmarks are bounded evidence, not a production-completeness or market-coverage claim. Official discovery candidates such as NHTSA vPIC and FuelEconomy.gov remain discovery evidence unless a stronger source-specific contract explicitly proves an identity field.
