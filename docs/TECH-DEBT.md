@@ -51,6 +51,16 @@ Browser automation can be reconsidered only if a different independently measure
 
 MPGe semantics can be reopened when electric-efficiency normalization becomes decision-critical; the current FuelEconomy extraction artifact rejects MPGe explicitly rather than silently converting it. This is not an active blocker.
 
+## Product operation replay cycle
+
+Status: `CLOSED / CURRENT BOUNDED CYCLE COMPLETE`
+
+The current bounded product-operation cycle is closed by `PRODUCTION-QUALITY-GATE-V2.md`. The retained source-backed replay exercises 60 records with zero ingestion failures. Its measured operational load is 19 CREATED, 19 MATCHED and 22 REVIEW, with all review causes known: 13 `MISSING_IDENTITY_EVIDENCE` and 9 `LABEL_AMBIGUITY`.
+
+The companion 30-case source-backed identity quality corpus remains at auto-match precision 1.0 and recall 1.0 with zero false merges, missed matches, or ambiguous overcommit. The measured review load therefore does not justify weakening resolver policy. All 22 bounded review tasks are assigned to evidence enrichment/review, with zero resolver-policy changes.
+
+Future corpus growth, review-load reduction, new regions or additional semantic coverage must reopen product-operation work from new source-backed evidence or measured production need. Do not treat the bounded replay as a production-completeness or market-coverage claim.
+
 ## Harness debt
 
 No known harness blocker after Agent Harness V1 beyond normal documentation gardening. Add future durable items here with status and a plan link when work starts.
