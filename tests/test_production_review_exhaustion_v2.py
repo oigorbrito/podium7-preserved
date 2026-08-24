@@ -26,12 +26,10 @@ class ProductionReviewExhaustionV2Tests(unittest.TestCase):
             "openReviews": 13,
             "durableHumanReview": 13,
             "unassessed": 0,
-            "unusedDispositions": 0,
             "blocked": 0,
             "resolverPolicyChanges": 0,
         })
         self.assertEqual(report["unassessedCaseIds"], [])
-        self.assertEqual(report["unusedDispositionCaseIds"], [])
         self.assertEqual(report["blockedItems"], [])
 
 
