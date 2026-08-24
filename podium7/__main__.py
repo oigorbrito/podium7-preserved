@@ -20,11 +20,30 @@ from .persistence import EvidenceStore, SCHEMA_VERSION
 
 
 REVIEW_REQUIRED_TABLES = {
+    "sources",
+    "automotive_entities",
+    "raw_evidence",
+    "candidate_facts",
+    "provenance",
+    "canonical_facts",
+    "conflicts",
     "catalog_v2_schema_metadata",
     "catalog_v2_vehicles",
+    "catalog_v2_identity_revisions",
+    "catalog_v2_redirects",
+    "catalog_v2_physical_listings",
+    "catalog_v2_candidate_facts",
+    "catalog_v2_provenance",
+    "catalog_v2_canonical_facts",
+    "catalog_v2_conflicts",
     "catalog_v2_review_tasks",
-    "raw_evidence",
-    "sources",
+}
+REVIEW_REQUIRED_INDEXES = {
+    "idx_evidence_source",
+    "idx_candidate_entity",
+    "idx_candidate_evidence",
+    "idx_canonical_entity",
+    "idx_catalog_v2_review_tasks_state_created",
 }
 
 
@@ -46,13 +65,17 @@ def _require_review_database(database: str) -> Path:
     try:
         uri = path.resolve().as_uri() + "?mode=ro"
         with sqlite3.connect(uri, uri=True) as connection:
-            tables = {
-                row[0]
-                for row in connection.execute(
-                    "SELECT name FROM sqlite_master WHERE type = 'table'"
-                )
-            }
-            if not REVIEW_REQUIRED_TABLES.issubset(tables):
+            user_version = int(connection.execute("PRAGMA user_version").fetchone()[0])
+            schema_objects = connection.execute(
+                "SELECT type, name FROM sqlite_master WHERE type IN ('table', 'index')"
+            ).fetchall()
+            tables = {name for object_type, name in schema_objects if object_type == "table"}
+            indexes = {name for object_type, name in schema_objects if object_type == "index"}
+            if (
+                user_version != SCHEMA_VERSION
+                or not REVIEW_REQUIRED_TABLES.issubset(tables)
+                or not REVIEW_REQUIRED_INDEXES.issubset(indexes)
+            ):
                 raise ValueError(error)
             versions = dict(
                 connection.execute(
