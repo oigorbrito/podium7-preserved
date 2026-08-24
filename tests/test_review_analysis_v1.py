@@ -19,8 +19,15 @@ class ReviewAnalysisV1Tests(unittest.TestCase):
         self.assertEqual(analysis["totalReviews"], 11)
         self.assertEqual(analysis["unknownCauseCount"], 0)
         self.assertEqual(analysis["unexpectedReviewCount"], 0)
+        self.assertFalse(analysis["resolverChangeRequired"])
         self.assertGreater(analysis["causeCounts"].get("MISSING_IDENTITY_EVIDENCE", 0), 0)
         self.assertTrue(all(case["expected"] == "REVIEW" for case in analysis["cases"]))
+        self.assertTrue(
+            all(
+                case["disposition"] in {"ENRICH_THEN_REVIEW", "HUMAN_REVIEW_REQUIRED"}
+                for case in analysis["cases"]
+            )
+        )
 
 
 if __name__ == "__main__":

@@ -53,11 +53,30 @@ def classify_review_reason(reason: str) -> str:
     return "UNKNOWN_REVIEW_CAUSE"
 
 
+def review_disposition(cause: str) -> str:
+    if cause == "MISSING_IDENTITY_EVIDENCE":
+        return "ENRICH_THEN_REVIEW"
+    if cause == "LABEL_AMBIGUITY":
+        return "ENRICH_THEN_REVIEW"
+    if cause == "IDENTIFIER_CONFLICT":
+        return "HUMAN_REVIEW_REQUIRED"
+    if cause == "UNKNOWN_REVIEW_CAUSE":
+        return "BLOCK_AND_INVESTIGATE"
+    raise ValueError(f"unknown review cause {cause!r}")
+
+
 def analyze_review_cases(quality_report: dict[str, Any]) -> dict[str, Any]:
     review_cases = [case for case in quality_report.get("cases", ()) if case.get("predicted") == "REVIEW"]
     classified = [
-        {**case, "cause": classify_review_reason(str(case.get("reason", "")))}
+        {
+            **case,
+            "cause": classify_review_reason(str(case.get("reason", ""))),
+        }
         for case in review_cases
+    ]
+    classified = [
+        {**case, "disposition": review_disposition(case["cause"])}
+        for case in classified
     ]
     counts = Counter(case["cause"] for case in classified)
     unsafe = [case for case in classified if case.get("expected") != "REVIEW"]
@@ -67,8 +86,14 @@ def analyze_review_cases(quality_report: dict[str, Any]) -> dict[str, Any]:
         "causeCounts": dict(sorted(counts.items())),
         "unknownCauseCount": counts["UNKNOWN_REVIEW_CAUSE"],
         "unexpectedReviewCount": len(unsafe),
+        "resolverChangeRequired": bool(unsafe or counts["UNKNOWN_REVIEW_CAUSE"]),
         "cases": classified,
     }
 
 
-__all__ = ["analyze_review_cases", "classify_review_reason", "evaluate_identity_quality"]
+__all__ = [
+    "analyze_review_cases",
+    "classify_review_reason",
+    "evaluate_identity_quality",
+    "review_disposition",
+]
