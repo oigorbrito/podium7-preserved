@@ -29,18 +29,41 @@ def _require_review_database(database: str) -> Path:
     return path
 
 
+def _review_evidence_payload(store: CatalogStore, task: CatalogReviewTask) -> dict[str, object]:
+    evidence = store.get_raw_evidence(task.evidence_id)
+    if evidence is None:
+        raise RuntimeError("catalog review evidence does not exist")
+    source = store.get_source(evidence.source_id)
+    if source is None:
+        raise RuntimeError("catalog review source does not exist")
+    return {
+        "id": evidence.id,
+        "sourceId": evidence.source_id,
+        "locator": evidence.locator,
+        "retrievedAt": evidence.retrieved_at.isoformat(),
+        "acquisitionMethod": evidence.acquisition_method,
+        "rawContentRef": evidence.raw_content_ref,
+        "source": {
+            "id": source.id,
+            "name": source.name,
+            "locator": source.locator,
+        },
+    }
+
+
 def _review_task_payload(
     store: CatalogStore,
     task: CatalogReviewTask,
     *,
-    include_candidate_entities: bool = False,
+    include_context: bool = False,
 ) -> dict[str, object]:
     payload = task.to_payload()
-    if include_candidate_entities:
+    if include_context:
         payload["candidateEntities"] = [
             export_catalog_vehicle_payload(store, vehicle_id)["entity"]
             for vehicle_id in task.candidate_vehicle_ids
         ]
+        payload["evidence"] = _review_evidence_payload(store, task)
     return payload
 
 
@@ -65,11 +88,7 @@ def _review_payload(args: argparse.Namespace) -> dict[str, object]:
                 raise ValueError("catalog review task does not exist")
             return {
                 "status": "PASS",
-                "item": _review_task_payload(
-                    store,
-                    task,
-                    include_candidate_entities=True,
-                ),
+                "item": _review_task_payload(store, task, include_context=True),
             }
 
         if args.review_command == "match":
