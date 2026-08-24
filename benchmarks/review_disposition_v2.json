@@ -1,0 +1,64 @@
+{
+  "schema": "podium7.review-disposition.v1",
+  "datasetVersion": "2.0",
+  "assessedAt": "2026-08-24T09:00:00Z",
+  "purpose": "Fail-closed disposition of current V3 operational reviews after partial-label contradiction precedence was corrected. Decisions are case-bound and do not alter resolver policy.",
+  "decisions": [
+    {
+      "caseId": "review-ford-mustang-variant-missing",
+      "disposition": "HUMAN_REVIEW_EVIDENCE_EXHAUSTED",
+      "evidenceStatus": "REPOSITORY_CURATED",
+      "sourceIds": ["ford-mustang-2024-eu-spec"],
+      "rationale": "The official specification contains both GT and Dark Horse 5.0 V8 coupe configurations. Engine, generation and body style do not determine the missing variant."
+    },
+    {
+      "caseId": "review-porsche-911-partial-variant-label",
+      "disposition": "HUMAN_REVIEW_EVIDENCE_EXHAUSTED",
+      "evidenceStatus": "REPOSITORY_CURATED",
+      "sourceIds": ["porsche-911-generations-2019", "porsche-911-992-powertrain-2019"],
+      "rationale": "The official Porsche evidence distinguishes Carrera variants. A generic Carrera label does not establish Carrera 4S identity."
+    },
+    {
+      "caseId": "review-bmw-g20-generic-vs-330i-label",
+      "disposition": "HUMAN_REVIEW_EVIDENCE_EXHAUSTED",
+      "evidenceStatus": "REPOSITORY_CURATED",
+      "sourceIds": ["bmw-g20-phev-reference"],
+      "rationale": "The retained BMW reference distinguishes specific G20 configurations. A generic G20 3 Series 2.0 petrol observation does not itself establish the 330i variant label."
+    },
+    {
+      "caseId": "br-review-corolla-cross-xrx-hybrid-missing-variant",
+      "disposition": "HUMAN_REVIEW_EVIDENCE_EXHAUSTED",
+      "evidenceStatus": "REPOSITORY_CURATED",
+      "sourceIds": ["toyota-corolla-cross-global-launch", "toyota-corolla-cross-my25-br"],
+      "rationale": "Toyota MY25 evidence contains multiple hybrid trims. Missing variant evidence cannot be deterministically assigned to XRX Hybrid."
+    },
+    {
+      "caseId": "br-review-onix-premier-missing-variant",
+      "disposition": "HUMAN_REVIEW_EVIDENCE_EXHAUSTED",
+      "evidenceStatus": "LIVE_REVALIDATED",
+      "sourceIds": ["chevrolet-onix-second-generation", "chevrolet-onix-my25-price-list"],
+      "rationale": "Official Chevrolet MY25 material contains multiple Turbo 116cv automatic hatch configurations. Mechanical identity and model year do not uniquely prove Premier when variant is absent."
+    },
+    {
+      "caseId": "br-review-tcross-250-tsi-missing-variant",
+      "disposition": "HUMAN_REVIEW_EVIDENCE_EXHAUSTED",
+      "evidenceStatus": "LIVE_REVALIDATED",
+      "sourceIds": ["vw-tcross-2019-br-generation", "vw-tcross-current-config"],
+      "rationale": "Official Volkswagen evidence contains more than one 250 TSI T-Cross trim. A generic 250 TSI observation cannot determine the missing variant."
+    },
+    {
+      "caseId": "br-review-shared-fipe-code-alone",
+      "disposition": "HUMAN_REVIEW_EVIDENCE_EXHAUSTED",
+      "evidenceStatus": "LIVE_REVALIDATED",
+      "sourceIds": ["fipe-official-vehicle-index", "corsa-wind-fipe-code-secondary"],
+      "rationale": "FIPE lookup requires code plus model year under the curated semantics. A shared code without model-year evidence is insufficient for deterministic catalog identity."
+    },
+    {
+      "caseId": "br-hard-review-tcross-highline-model-year-present-one-side",
+      "disposition": "HUMAN_REVIEW_EVIDENCE_EXHAUSTED",
+      "evidenceStatus": "LIVE_REVALIDATED",
+      "sourceIds": ["vw-tcross-brazil-generation", "vw-tcross-highline-250-tsi-tech-sheet", "vw-tcross-current-product-page", "vw-tcross-my26-owner-manual"],
+      "rationale": "The evidence establishes the Highline 250 TSI mechanical family and MY26 context but does not establish that the yearless observation itself is MY26. Senatran-aligned policy therefore preserves REVIEW."
+    }
+  ]
+}
