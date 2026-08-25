@@ -35,29 +35,31 @@
 - [`CATALOG-REVIEW-OPERATOR-V1.md`](CATALOG-REVIEW-OPERATOR-V1.md) — canonical private operator CLI, existing-database safety boundary, review context, and audited mutation contract.
 - [`BOM-PRATICHE-CONTRACT-V2.md`](BOM-PRATICHE-CONTRACT-V2.md)
 
-## Acquisition, extraction, review, and export design records
+## Acquisition, extraction, review, export, and operational readiness
 
 - [`FIRST-REAL-STRUCTURED-INGESTION.md`](FIRST-REAL-STRUCTURED-INGESTION.md)
 - [`DIRECT-HTTP-ACQUISITION-V1.md`](DIRECT-HTTP-ACQUISITION-V1.md) — bounded fail-closed direct HTTP transport and snapshot contract.
 - [`NETWORK-TARGET-BINDING-V1.md`](NETWORK-TARGET-BINDING-V1.md) — DNS-rebinding-resistant acquisition path that binds validated resolution to the actual socket connection while preserving hostname TLS verification.
 - [`INMETRO-PBEV-DOCUMENT-PATH-V1.md`](INMETRO-PBEV-DOCUMENT-PATH-V1.md) — source-specific current PBEV PDF acquisition and ruled-table extraction path without widening global HTTP media policy.
 - [`PRODUCTION-SOURCE-DISTRIBUTION-V1.md`](PRODUCTION-SOURCE-DISTRIBUTION-V1.md) — bounded regression gate for independently inspected source-family and regional diversity without a production-completeness claim.
-- [`PRODUCTION-CORPUS-RUN-V2.md`](PRODUCTION-CORPUS-RUN-V2.md) — expanded 60-record source-backed replay through batch ingestion, identity resolution, evidence persistence and consumer reads.
+- [`PRODUCTION-CORPUS-RUN-V2.md`](PRODUCTION-CORPUS-RUN-V2.md) — expanded source-backed replay through batch ingestion, identity resolution, evidence persistence and consumer reads.
 - [`PRODUCTION-OPERATIONAL-MEASUREMENT-V1.md`](PRODUCTION-OPERATIONAL-MEASUREMENT-V1.md) — measured action distribution, review load and durable review causes for the expanded source-backed replay.
 - [`PRODUCTION-OPERATIONAL-GAP-PRIORITY-V1.md`](PRODUCTION-OPERATIONAL-GAP-PRIORITY-V1.md) — fail-closed prioritization of measured ingestion and review gaps, selecting evidence enrichment before resolver changes.
 - [`MEASURED-OPERATIONAL-DISPOSITION-V1.md`](MEASURED-OPERATIONAL-DISPOSITION-V1.md) — assigns measured review gaps to evidence enrichment or durable human review without resolver-policy changes.
 - [`PRODUCTION-EVIDENCE-ENRICHMENT-V1.md`](PRODUCTION-EVIDENCE-ENRICHMENT-V1.md) — source-backed review work queue and bounded evidence-enrichment cycle without resolver-policy weakening.
-- [`PRODUCTION-EVIDENCE-ENRICHMENT-V2.md`](PRODUCTION-EVIDENCE-ENRICHMENT-V2.md) — strengthens sparse Onix MY26 evidence before ingestion and reduces the bounded replay to 19 reviews while keeping enrichment provenance case-bound.
-- [`PRODUCTION-EVIDENCE-ENRICHMENT-V3.md`](PRODUCTION-EVIDENCE-ENRICHMENT-V3.md) — uses case-bound Volkswagen MY26 mechanical evidence to close the T-Cross Highline transmission omission while retaining the one-sided-model-year abstention.
+- [`PRODUCTION-EVIDENCE-ENRICHMENT-V2.md`](PRODUCTION-EVIDENCE-ENRICHMENT-V2.md) — strengthens sparse Onix MY26 evidence before ingestion and reduces the bounded replay while keeping enrichment provenance case-bound.
+- [`PRODUCTION-EVIDENCE-ENRICHMENT-V3.md`](PRODUCTION-EVIDENCE-ENRICHMENT-V3.md) — uses case-bound Volkswagen MY26 mechanical evidence while retaining the one-sided-model-year abstention.
 - [`PRODUCTION-QUALITY-GATE-V1.md`](PRODUCTION-QUALITY-GATE-V1.md) — integrated bounded product-operation gate over end-to-end ingestion, consumer reads, identity precision/recall, and review dispositions.
-- [`PRODUCTION-QUALITY-GATE-V2.md`](PRODUCTION-QUALITY-GATE-V2.md) — closes the pre-enrichment bounded operation cycle with the 60-record replay and measured review priorities.
-- [`PRODUCTION-QUALITY-GATE-V3.md`](PRODUCTION-QUALITY-GATE-V3.md) — closes the evidence-enrichment cycle with one source-backed review reduction and preserved identity safety metrics.
-- [`PUBLIC-WEB-ACQUISITION-CHARACTERIZATION-V1.md`](PUBLIC-WEB-ACQUISITION-CHARACTERIZATION-V1.md) — one live operational compatibility measurement across the retained exact public source URLs.
-- [`BROWSER-ACQUISITION-CHARACTERIZATION-V1.md`](BROWSER-ACQUISITION-CHARACTERIZATION-V1.md) — controlled Chromium measurement on the retained Autoevolution URLs refused by direct HTTP; browser fallback was not selected.
-- [`COMPLIANT-ALTERNATIVE-SOURCES-V1.md`](COMPLIANT-ALTERNATIVE-SOURCES-V1.md) — current primary-source evaluation and live selection of NHTSA vPIC/EEA paths, with Inmetro PBEV retained under an explicit resource/transport boundary.
-- [`EEA-SOURCE-FAMILY-V1.md`](EEA-SOURCE-FAMILY-V1.md) — frozen official EEA passenger-car monitoring source family with explicit structured mappings, regulatory-evidence preservation, benchmark metrics, and semantic nonclaims.
-- [`EEA-SEMANTIC-EXPANSION-V2.md`](EEA-SEMANTIC-EXPANSION-V2.md) — source-backed diesel/diesel-electric fuel semantics plus explicit non-proof treatment for EEA regulatory type/variant/version.
-- [`OFFICIAL-SOURCE-DISCOVERY-V1.md`](OFFICIAL-SOURCE-DISCOVERY-V1.md) — bounded NHTSA vPIC and FuelEconomy.gov candidate discovery with source-native identifiers/locators and an explicit non-identity-proof contract.
+- [`PRODUCTION-QUALITY-GATE-V2.md`](PRODUCTION-QUALITY-GATE-V2.md) — closes the pre-enrichment bounded operation cycle with measured review priorities.
+- [`PRODUCTION-QUALITY-GATE-V3.md`](PRODUCTION-QUALITY-GATE-V3.md) — closes the evidence-enrichment cycle with preserved identity safety metrics.
+- [`OPERATIONAL-READINESS-V1.md`](OPERATIONAL-READINESS-V1.md) — deterministic private-operation preflight spanning runtime, harness, packaging, identity benchmark, repository facts, and sequential tests.
+- [`MVP-EXIT-GATE-V1.md`](MVP-EXIT-GATE-V1.md) — formal private-MVP exit criteria requiring repository readiness plus independently verified executable green CI.
+- [`PUBLIC-WEB-ACQUISITION-CHARACTERIZATION-V1.md`](PUBLIC-WEB-ACQUISITION-CHARACTERIZATION-V1.md) — one live operational compatibility measurement across retained public source URLs.
+- [`BROWSER-ACQUISITION-CHARACTERIZATION-V1.md`](BROWSER-ACQUISITION-CHARACTERIZATION-V1.md) — controlled Chromium measurement; generic browser fallback was not selected.
+- [`COMPLIANT-ALTERNATIVE-SOURCES-V1.md`](COMPLIANT-ALTERNATIVE-SOURCES-V1.md) — current primary-source evaluation and selected official-source paths.
+- [`EEA-SOURCE-FAMILY-V1.md`](EEA-SOURCE-FAMILY-V1.md) — frozen official EEA passenger-car monitoring source family.
+- [`EEA-SEMANTIC-EXPANSION-V2.md`](EEA-SEMANTIC-EXPANSION-V2.md) — source-backed fuel semantics plus regulatory identity nonclaims.
+- [`OFFICIAL-SOURCE-DISCOVERY-V1.md`](OFFICIAL-SOURCE-DISCOVERY-V1.md) — bounded official-source candidate discovery with explicit non-identity-proof contract.
 - [`RECURRING-SOURCE-POLICY-V1.md`](RECURRING-SOURCE-POLICY-V1.md) — fail-closed robots interpretation and per-host pacing gate required before repeated live acquisition.
 - [`REPEATABLE-WEB-EXTRACTION-V1.md`](REPEATABLE-WEB-EXTRACTION-V1.md)
 - [`DOCUMENT-EXTRACTION-V1.md`](DOCUMENT-EXTRACTION-V1.md)
