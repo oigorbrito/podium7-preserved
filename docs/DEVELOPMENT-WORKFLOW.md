@@ -37,6 +37,7 @@ Update documentation when behavior or a durable decision changes. Do not rewrite
 ## Implementation discipline
 
 - Prefer the smallest architecture that satisfies the current product need.
+- Before non-trivial infrastructure experimentation, adoption, adaptation, or construction, follow [`ADR-0001-MARKET-FIRST-INFRASTRUCTURE.md`](ADR-0001-MARKET-FIRST-INFRASTRUCTURE.md); the ADR owns the mature-alternative evaluation and adopt/adapt/build decision record.
 - Preserve `docs/INVARIANTS.md` and the specialized contracts for touched components.
 - Make logical commits: a coherent behavior or harness change per commit, not line-count-sized commits.
 - Do not amend or rewrite unrelated existing history unless explicitly required.

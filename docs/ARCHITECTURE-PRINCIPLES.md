@@ -55,6 +55,8 @@ Before adding infrastructure such as distributed services, queues, caches, vecto
 
 Without those answers: do not add it.
 
+Non-trivial infrastructure experimentation, adoption, adaptation, or construction is additionally governed by [`ADR-0001-MARKET-FIRST-INFRASTRUCTURE.md`](ADR-0001-MARKET-FIRST-INFRASTRUCTURE.md). That ADR is the canonical record for the requirement to evaluate mature alternatives first and document the resulting adopt/adapt/build decision.
+
 ## Work Unit 1 engineering choices
 
 - Python 3 standard library for the first domain model: `ENGINEERING_CHOICE`.
