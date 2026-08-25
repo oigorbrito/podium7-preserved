@@ -18,7 +18,7 @@ class OperationalReadinessTests(unittest.TestCase):
                 stderr = ""
                 stdout = "PASS"
 
-            if "run_catalog_identity_benchmark.py" in argv:
+            if any(arg.endswith("run_catalog_identity_benchmark.py") for arg in argv):
                 Result.stdout = json.dumps(
                     {
                         "totalCases": 3,
@@ -29,7 +29,7 @@ class OperationalReadinessTests(unittest.TestCase):
                         },
                     }
                 )
-            elif "project_facts.py" in argv:
+            elif any(arg.endswith("project_facts.py") for arg in argv):
                 Result.stdout = json.dumps(
                     {
                         "runtime": {"ready": True},
@@ -54,7 +54,7 @@ class OperationalReadinessTests(unittest.TestCase):
 
         def completed(argv, **kwargs):
             result = Result()
-            if "run_catalog_identity_benchmark.py" in argv:
+            if any(arg.endswith("run_catalog_identity_benchmark.py") for arg in argv):
                 result.stdout = json.dumps(
                     {
                         "totalCases": 3,
@@ -65,7 +65,7 @@ class OperationalReadinessTests(unittest.TestCase):
                         },
                     }
                 )
-            elif "project_facts.py" in argv:
+            elif any(arg.endswith("project_facts.py") for arg in argv):
                 result.stdout = json.dumps(
                     {
                         "runtime": {"ready": True},
@@ -80,6 +80,7 @@ class OperationalReadinessTests(unittest.TestCase):
         self.assertEqual("FAIL", report["status"])
         benchmark = next(item for item in report["checks"] if item["name"] == "catalog-identity-golden")
         self.assertFalse(benchmark["passed"])
+        self.assertEqual("catalog benchmark safety metrics are not fully green", benchmark.get("error"))
 
 
 class MvpExitGateTests(unittest.TestCase):
