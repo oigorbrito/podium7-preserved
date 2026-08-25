@@ -12,6 +12,7 @@
 - [`TECH-DEBT.md`](TECH-DEBT.md) — durable known debt and external blockers.
 - [`CANDIDATE-EVALUATION-LEDGER.md`](CANDIDATE-EVALUATION-LEDGER.md) — recovered external candidate/source evaluation evidence, gaps, and retest policy.
 - [`exec-plans/README.md`](exec-plans/README.md) — when and how to version execution plans.
+- [`exec-plans/active/POST-MVP-SOURCE-ACQUISITION-V1.md`](exec-plans/active/POST-MVP-SOURCE-ACQUISITION-V1.md) — active post-MVP multi-source acquisition/enrichment mission plan.
 
 ## Architecture and scientific foundation
 
@@ -38,6 +39,7 @@
 ## Acquisition, extraction, review, export, and operational readiness
 
 - [`FIRST-REAL-STRUCTURED-INGESTION.md`](FIRST-REAL-STRUCTURED-INGESTION.md)
+- [`SOURCE-EVIDENCE-GAP-MATRIX-V1.md`](SOURCE-EVIDENCE-GAP-MATRIX-V1.md) — reconstructed qualified-source coverage and decision-critical evidence gaps for the post-MVP acquisition mission.
 - [`DIRECT-HTTP-ACQUISITION-V1.md`](DIRECT-HTTP-ACQUISITION-V1.md) — bounded fail-closed direct HTTP transport and snapshot contract.
 - [`NETWORK-TARGET-BINDING-V1.md`](NETWORK-TARGET-BINDING-V1.md) — DNS-rebinding-resistant acquisition path that binds validated resolution to the actual socket connection while preserving hostname TLS verification.
 - [`INMETRO-PBEV-DOCUMENT-PATH-V1.md`](INMETRO-PBEV-DOCUMENT-PATH-V1.md) — source-specific current PBEV PDF acquisition and ruled-table extraction path without widening global HTTP media policy.
