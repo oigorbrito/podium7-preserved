@@ -2,7 +2,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
+import hashlib
 from typing import Mapping
+from urllib.parse import urlparse
 
 from .http_acquisition import DirectHttpAcquisition
 from .source_policy import RecurringSourceGate, SourceOperationDecision, SourceOperationPolicy
@@ -68,6 +70,14 @@ class RecurringAcquisitionCoordinator:
         contract = self._contracts.get(source_id)
         if contract is None:
             raise ValueError("source is not approved for recurring acquisition")
+        if not isinstance(schema_signature, str) or not schema_signature.strip():
+            raise ValueError("schema_signature is required")
+        final_host = urlparse(acquisition.final_url).hostname
+        if final_host is None or final_host.casefold() != contract.operation_policy.host.casefold():
+            return RecurringRunResult(source_id, RecurringRunState.DRIFT, "FINAL_HOST_DRIFT", acquisition.final_url, acquisition.sha256, schema_signature, self._retry_counts.get(source_id, 0), False)
+        actual_sha = hashlib.sha256(acquisition.body).hexdigest()
+        if actual_sha != acquisition.sha256:
+            return RecurringRunResult(source_id, RecurringRunState.DRIFT, "CONTENT_HASH_MISMATCH", acquisition.final_url, acquisition.sha256, schema_signature, self._retry_counts.get(source_id, 0), False)
         if acquisition.content_type != contract.expected_content_type:
             return RecurringRunResult(source_id, RecurringRunState.DRIFT, "CONTENT_TYPE_DRIFT", acquisition.final_url, acquisition.sha256, schema_signature, self._retry_counts.get(source_id, 0), False)
         if schema_signature != contract.expected_schema_signature:
@@ -84,15 +94,12 @@ class RecurringAcquisitionCoordinator:
         contract = self._contracts.get(source_id)
         if contract is None:
             raise ValueError("source is not approved for recurring acquisition")
+        if not isinstance(reason, str) or not reason.strip():
+            raise ValueError("failure reason is required")
         count = self._retry_counts.get(source_id, 0) + 1
         self._retry_counts[source_id] = count
-        if count <= contract.max_retries:
-            state = RecurringRunState.RETRYABLE
-            mutation_required = False
-        else:
-            state = RecurringRunState.DEGRADED
-            mutation_required = False
-        return RecurringRunResult(source_id, state, reason, locator, None, None, count, mutation_required)
+        state = RecurringRunState.RETRYABLE if count <= contract.max_retries else RecurringRunState.DEGRADED
+        return RecurringRunResult(source_id, state, reason.strip(), locator, None, None, count, False)
 
     def reset_failures(self, source_id: str) -> None:
         if source_id not in self._contracts:
