@@ -2,6 +2,18 @@
 
 Canonical tracker for durable unresolved work that should survive beyond one prompt or active plan. Completed implementation evidence belongs in the specialized design records and `exec-plans/completed/`; this file keeps only the durable decision state needed to choose future work.
 
+## GitHub Actions hosted-runner execution
+
+Status: `OPEN / EXTERNAL INTEGRATION BLOCKER`
+
+Issue #112 remains the blocker for executable integration of the post-MVP source-acquisition stack. On workflow run `32907790324`, both `tests` and `minimum-python` completed as failures with `steps=null`; repository commands did not execute. PRs #130–#132 therefore remain draft/PENDING even though their bounded implementation and focused tests are present. Do not bypass this with unapproved runner/infrastructure workarounds; once hosted execution is restored, validate and integrate the stack in dependency order and run mission-level readiness/quality gates.
+
+## WSDenatran access
+
+Status: `UNDECIDED / EXTERNAL AUTHORIZATION`
+
+WSDenatran remains the strongest identified Brazilian row-level candidate for finer official identity evidence, but legitimate automated access requires SENATRAN authorization/SERPRO contracting. Do not probe undocumented endpoints, reuse third-party credentials, or bypass the access model. Reopen only when legitimate access is available or a new measured gap justifies evaluating another source.
+
 ## Release policy: private/proprietary
 
 Status: `INTENTIONAL_PRIVATE_BLOCK`
