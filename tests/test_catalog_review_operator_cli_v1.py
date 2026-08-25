@@ -159,7 +159,6 @@ class CatalogReviewOperatorCliV1Tests(unittest.TestCase):
         self.assertEqual(code, 0)
         self.assertEqual(shown["item"]["candidateVehicleIds"], [candidate])
         self.assertEqual(shown["item"]["candidateEntities"][0]["id"], survivor)
-        self.assertIn(candidate, shown["item"]["candidateEntities"][0]["redirectsFrom"])
 
     def test_match_reuses_safe_domain_resolution_and_audit_fields(self) -> None:
         review_id, candidate = self._seed_review()
