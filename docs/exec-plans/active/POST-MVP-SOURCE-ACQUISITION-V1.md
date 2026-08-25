@@ -2,7 +2,7 @@
 
 Status: active
 Parent mission: #122
-Current block: #123
+Current block: #125
 
 ## Outcome
 
@@ -38,18 +38,18 @@ Expand Podium 7's evidence-backed automotive acquisition/enrichment layer using 
 
 ## Execution sequence
 
-1. #123 — reconstruct current source baseline and produce `SOURCE-EVIDENCE-GAP-MATRIX-V1.md`.
-2. #124 — qualify only the smallest current source set needed to address measured gaps.
-3. #125 — define source-specific semantic/provenance contracts before coding adapters.
+1. #123 — reconstruct current source baseline and produce `SOURCE-EVIDENCE-GAP-MATRIX-V1.md`. **PASS on branch; PR #129 integration pending repository validation availability.**
+2. #124 — qualify only the smallest current source set needed to address measured gaps. **PASS research qualification; recorded in `SOURCE-QUALIFICATION-V1.md` and candidate ledger.**
+3. #125 — define source-specific semantic/provenance contracts before coding adapters. **Current block.**
 4. #126 — implement bounded approved adapters with deterministic fail-closed behavior.
 5. #127 — validate multi-source fusion, corroboration, conflicts, review load and provenance.
 6. #128 — operationalize recurring acquisition safely, including drift/outage handling.
 
-## Current evidence reconstruction — #123
+## #123 evidence reconstruction
 
-No broad retest is justified. Recoverable durable evidence already establishes:
+No broad retest was justified. Recoverable durable evidence established:
 
-- the catalog identity dimensions and conservative resolver semantics in `CATALOG-IDENTITY-V2.md`;
+- catalog identity dimensions and conservative resolver semantics in `CATALOG-IDENTITY-V2.md`;
 - current evaluated source dispositions in `CANDIDATE-EVALUATION-LEDGER.md` and `COMPLIANT-ALTERNATIVE-SOURCES-V1.md`;
 - bounded three-region source diversity in `PRODUCTION-SOURCE-DISTRIBUTION-V1.md`;
 - a 60-record source-backed replay with 22 `REVIEW` outcomes in `PRODUCTION-OPERATIONAL-MEASUREMENT-V1.md`;
@@ -57,13 +57,38 @@ No broad retest is justified. Recoverable durable evidence already establishes:
 
 The durable gap matrix is `docs/SOURCE-EVIDENCE-GAP-MATRIX-V1.md`.
 
+## #124 targeted qualification
+
+`docs/SOURCE-QUALIFICATION-V1.md` records the bounded primary-source qualification.
+
+Decisions:
+
+- NHTSA vPIC remains `ADAPT` for U.S.-scope discovery and VIN/manufacturer-backed evidence under explicit source semantics.
+- EEA passenger-car monitoring remains `ADAPT` for EU regulatory/type-approval and specification evidence; type/variant/version is not silently treated as retail trim.
+- SENATRAN WSDenatran is `UNDECIDED` for automated use: official documentation exposes the decision-critical Brazil fields, including separate manufacturing/model years, but access requires SENATRAN authorization and SERPRO contracting.
+- SENATRAN public fleet publications are `REFERENCE`: official but aggregate, not row-level catalog identity proof.
+- SENATRAN CAT/SISCAT is `REFERENCE`: authoritative for Brazilian `marca/modelo/versão` homologation semantics; no public anonymous machine-readable CAT catalog was established.
+- Primary manufacturer artifacts are retained as a case-bound `REFERENCE` evidence class for generation, retail-trim and mechanical distinctions; each concrete source requires source-specific qualification.
+
+No new broad live probe was required. Existing NHTSA/EEA live evidence was recoverable; WSDenatran's limiting condition is documented authorization/contract access.
+
 ## Decisions
 
 - Existing source evidence is reused as long as its version/scope remains adequate for the decision.
 - Transport availability, semantic coverage, identity strength, market scope, and reuse/access status are tracked separately.
 - A field exposed by a source is not automatically identity proof; source semantics govern its role.
 - Missing or conflicting evidence stays explicit. Resolver/evidence thresholds are not tuned merely to improve coverage.
+- A source with authoritative semantics but unavailable/contractual access is not disguised as an implementable adapter.
+
+## Next contract scope — #125
+
+Define implementable contracts first for the already-qualified automated sources that directly address measured gaps:
+
+1. NHTSA vPIC source contract: discovery vs VIN-backed evidence, field-presence rule, U.S. scope, provenance, rate control and identifier strength boundaries.
+2. EEA source contract refinement: type-approval/type/variant/version semantics, registration-year nonclaim, mechanical/spec fields, provenance/reuse and conflict behavior.
+3. Record WSDenatran as a deferred contract candidate blocked on authorized access; do not implement against undocumented or bypassed surfaces.
+4. Define the generic case-bound manufacturer-artifact qualification template only if needed to prevent semantic invention during later enrichment; do not create a generic scraper contract.
 
 ## Validation / blockers
 
-#123 is documentation/evidence reconstruction only; no executable behavior is changed and no external source retest is required. Repository harness/CI validation remains required according to `DEVELOPMENT-WORKFLOW.md` before integration. Issue #112 may still block normal GitHub-hosted execution; use only the repository's documented accepted validation path and do not introduce runner workarounds.
+The work through #124 is documentation/research qualification only; no executable behavior changed. Self-review must verify that no source-policy or resolver principle was altered. Repository harness/CI validation remains required according to `DEVELOPMENT-WORKFLOW.md` before integration. Issue #112 may still block normal GitHub-hosted execution; use only the repository's documented accepted validation path and do not introduce runner workarounds.
