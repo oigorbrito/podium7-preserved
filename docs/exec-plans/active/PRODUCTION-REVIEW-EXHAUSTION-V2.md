@@ -9,7 +9,7 @@ Close the current V3 production review queue conservatively after the partial-la
 - Current enriched V3 replay remains failure-free.
 - All 13 current REVIEW items are explicitly dispositioned.
 - No current review is left unassessed.
-- No stale disposition remains for a case no longer present in the current review queue.
+- No stale disposition remains for an exact `(caseId, side)` review item no longer present in the current review queue.
 - No resolver-policy change is introduced by this block.
 - Repository CI on the PR merge candidate is green before merge.
 
@@ -30,14 +30,15 @@ Close the current V3 production review queue conservatively after the partial-la
 ## Execution decisions
 
 - PR #105 corrected partial model-label overlap masking explicit structural contradictions. The current V3 replay is 21 CREATED / 26 MATCHED / 13 REVIEW / 0 failed.
-- The 13 remaining reviews are evidence-bounded human-review cases. The Corolla Altis Hybrid MY25/MY26 family remains REVIEW because the Toyota evidence establishes year-specific variants but does not establish identity equivalence to older generic yearless canonicals.
-- Self-review added an exact-coverage guard so obsolete disposition entries cannot survive silently after the review topology changes.
+- The 13 remaining reviews are evidence-bounded human-review items. The Corolla Altis Hybrid MY25/MY26 family remains REVIEW because the Toyota evidence establishes year-specific variants but does not establish identity equivalence to older generic yearless canonicals.
+- Self-review first added a case-level exact-coverage guard so obsolete case dispositions could not survive silently after topology changes.
+- Further self-review found that case-level coverage was not sufficiently fail-closed because more than one current review item can share a case. The disposition schema is therefore now bound to explicit `left`/`right` sides and exact coverage is checked by `(caseId, side)`. A new review on an unassessed side, or a stale side disposition, is reported rather than inheriting a case-wide decision.
 
 ## Validation evidence
 
-- Earlier PR #106 head with the 13-case disposition gate passed both repository CI lanes before the exact-coverage guard was added.
-- Subsequent GitHub Actions runs on the guard head failed before creating any job steps; rerun reproduced the same pre-step failure in both `tests` and `minimum-python` jobs.
-- The workflow file is unchanged and valid, uses standard `ubuntu-latest` GitHub-hosted runners, and GitHub's public status did not report a contemporaneous Actions incident when checked.
+- Earlier PR #106 head `8f776f35722d25e5f419209907068c22f54fc953` with the 13-review disposition gate received executable green repository CI in run `32709518982`. Its validation artifact reported the full then-current sequential suite PASS.
+- Subsequent GitHub Actions runs after the exact-coverage hardening failed before creating any job steps; repeated reruns reproduce `steps=null` with no job log in both `tests` and `minimum-python`.
+- The workflow file is unchanged and uses standard `ubuntu-latest` GitHub-hosted runners. The current pre-step failure is therefore not observable code-test failure evidence.
 
 ## Remaining blocker
 
