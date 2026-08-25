@@ -2,10 +2,13 @@ import unittest
 from collections import Counter
 from pathlib import Path
 
-from podium7.catalog import CatalogMatchOutcome
+from podium7.catalog import CatalogMatchOutcome, resolve_catalog_pair
 from podium7.catalog_benchmark import (
     evaluate_catalog_identity_benchmark,
     load_catalog_identity_benchmark,
+)
+from podium7.catalog_resolution_precedence import (
+    resolve_catalog_pair_with_structural_precedence,
 )
 
 
@@ -70,6 +73,19 @@ class CatalogIdentityYearSemanticsChallengeTests(unittest.TestCase):
             missing_model_year["reason"],
             "model_year evidence is incomplete",
         )
+
+    def test_operational_precedence_path_preserves_selected_year_semantics(self) -> None:
+        dataset = load_catalog_identity_benchmark(DATASET)
+
+        for case in dataset.cases:
+            with self.subTest(case=case.id):
+                canonical = resolve_catalog_pair(case.left, case.right)
+                operational = resolve_catalog_pair_with_structural_precedence(
+                    case.left,
+                    case.right,
+                )
+                self.assertEqual(operational, canonical)
+                self.assertIs(operational.outcome, case.expected)
 
 
 if __name__ == "__main__":
