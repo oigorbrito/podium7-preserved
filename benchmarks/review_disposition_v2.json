@@ -1,12 +1,15 @@
 {
-  "schema": "podium7.review-disposition.v2",
-  "datasetVersion": "2.1",
+  "schema": "podium7.review-disposition.v3",
+  "datasetVersion": "2.2",
   "assessedAt": "2026-08-24T09:04:00Z",
-  "purpose": "Fail-closed disposition of current V3 operational reviews after partial-label contradiction precedence was corrected. Decisions are bound to the exact current case/side review topology and do not alter resolver policy.",
+  "purpose": "Fail-closed disposition of current V3 operational reviews after partial-label contradiction precedence was corrected. Decisions are bound to exact current case/side/evidenceId review items and do not alter resolver policy.",
   "decisions": [
     {
       "caseId": "review-ford-mustang-variant-missing",
       "sides": ["right"],
+      "evidenceIdsBySide": {
+        "right": "operational:1.0:review-ford-mustang-variant-missing:right"
+      },
       "disposition": "HUMAN_REVIEW_EVIDENCE_EXHAUSTED",
       "evidenceStatus": "REPOSITORY_CURATED",
       "sourceIds": ["ford-mustang-2024-eu-spec"],
@@ -15,6 +18,10 @@
     {
       "caseId": "review-porsche-911-partial-variant-label",
       "sides": ["left", "right"],
+      "evidenceIdsBySide": {
+        "left": "operational:1.0:review-porsche-911-partial-variant-label:left",
+        "right": "operational:1.0:review-porsche-911-partial-variant-label:right"
+      },
       "disposition": "HUMAN_REVIEW_EVIDENCE_EXHAUSTED",
       "evidenceStatus": "REPOSITORY_CURATED",
       "sourceIds": ["porsche-911-generations-2019", "porsche-911-992-powertrain-2019"],
@@ -23,6 +30,10 @@
     {
       "caseId": "review-bmw-g20-generic-vs-330i-label",
       "sides": ["left", "right"],
+      "evidenceIdsBySide": {
+        "left": "operational:1.0:review-bmw-g20-generic-vs-330i-label:left",
+        "right": "operational:1.0:review-bmw-g20-generic-vs-330i-label:right"
+      },
       "disposition": "HUMAN_REVIEW_EVIDENCE_EXHAUSTED",
       "evidenceStatus": "REPOSITORY_CURATED",
       "sourceIds": ["bmw-g20-phev-reference"],
@@ -31,6 +42,9 @@
     {
       "caseId": "br-review-corolla-cross-xrx-hybrid-missing-variant",
       "sides": ["right"],
+      "evidenceIdsBySide": {
+        "right": "operational:br-1.0:br-review-corolla-cross-xrx-hybrid-missing-variant:right"
+      },
       "disposition": "HUMAN_REVIEW_EVIDENCE_EXHAUSTED",
       "evidenceStatus": "REPOSITORY_CURATED",
       "sourceIds": ["toyota-corolla-cross-global-launch", "toyota-corolla-cross-my25-br"],
@@ -39,6 +53,9 @@
     {
       "caseId": "br-review-onix-premier-missing-variant",
       "sides": ["right"],
+      "evidenceIdsBySide": {
+        "right": "operational:br-1.0:br-review-onix-premier-missing-variant:right"
+      },
       "disposition": "HUMAN_REVIEW_EVIDENCE_EXHAUSTED",
       "evidenceStatus": "LIVE_REVALIDATED",
       "sourceIds": ["chevrolet-onix-second-generation", "chevrolet-onix-my25-price-list"],
@@ -47,6 +64,9 @@
     {
       "caseId": "br-review-tcross-250-tsi-missing-variant",
       "sides": ["right"],
+      "evidenceIdsBySide": {
+        "right": "operational:br-1.0:br-review-tcross-250-tsi-missing-variant:right"
+      },
       "disposition": "HUMAN_REVIEW_EVIDENCE_EXHAUSTED",
       "evidenceStatus": "LIVE_REVALIDATED",
       "sourceIds": ["vw-tcross-2019-br-generation", "vw-tcross-current-config"],
@@ -55,6 +75,10 @@
     {
       "caseId": "br-review-shared-fipe-code-alone",
       "sides": ["left", "right"],
+      "evidenceIdsBySide": {
+        "left": "operational:br-1.0:br-review-shared-fipe-code-alone:left",
+        "right": "operational:br-1.0:br-review-shared-fipe-code-alone:right"
+      },
       "disposition": "HUMAN_REVIEW_EVIDENCE_EXHAUSTED",
       "evidenceStatus": "LIVE_REVALIDATED",
       "sourceIds": ["fipe-official-vehicle-index", "corsa-wind-fipe-code-secondary"],
@@ -63,6 +87,9 @@
     {
       "caseId": "br-hard-review-tcross-highline-model-year-present-one-side",
       "sides": ["right"],
+      "evidenceIdsBySide": {
+        "right": "operational:br-adjacent-incomplete-1.0:br-hard-review-tcross-highline-model-year-present-one-side:right"
+      },
       "disposition": "HUMAN_REVIEW_EVIDENCE_EXHAUSTED",
       "evidenceStatus": "LIVE_REVALIDATED",
       "sourceIds": ["vw-tcross-brazil-generation", "vw-tcross-highline-250-tsi-tech-sheet", "vw-tcross-current-product-page", "vw-tcross-my26-owner-manual"],
@@ -71,6 +98,10 @@
     {
       "caseId": "br-hard-no-match-corolla-altis-hybrid-my25-vs-my26",
       "sides": ["left", "right"],
+      "evidenceIdsBySide": {
+        "left": "operational:br-adjacent-incomplete-1.0:br-hard-no-match-corolla-altis-hybrid-my25-vs-my26:left",
+        "right": "operational:br-adjacent-incomplete-1.0:br-hard-no-match-corolla-altis-hybrid-my25-vs-my26:right"
+      },
       "disposition": "HUMAN_REVIEW_EVIDENCE_EXHAUSTED",
       "evidenceStatus": "LIVE_REVALIDATED",
       "sourceIds": ["toyota-connected-services-corolla-my25", "toyota-corolla-altis-hybrid-offer-2026"],
