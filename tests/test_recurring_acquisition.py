@@ -2,7 +2,12 @@ import hashlib
 import unittest
 
 from podium7.http_acquisition import DirectHttpAcquisition
-from podium7.recurring_acquisition import RecurringAcquisitionCoordinator, RecurringRunState, RecurringSourceContract
+from podium7.recurring_acquisition import (
+    RecurringAcquisitionCoordinator,
+    RecurringCheckpoint,
+    RecurringRunState,
+    RecurringSourceContract,
+)
 from podium7.source_policy import RobotsMode, SourceOperationPolicy
 
 
@@ -20,10 +25,12 @@ def acquisition(url, body=b'{"ok":true}', content_type="application/json", sha25
 
 
 class RecurringAcquisitionTests(unittest.TestCase):
-    def coordinator(self):
+    def contract(self):
         policy = SourceOperationPolicy(source_id="nhtsa_vpic", host="vpic.nhtsa.dot.gov", user_agent="Podium7/0.1", min_interval_seconds=10.0, robots_mode=RobotsMode.NOT_APPLICABLE)
-        contract = RecurringSourceContract(source_id="nhtsa_vpic", operation_policy=policy, expected_content_type="application/json", expected_schema_signature="decode-vin-values:v1", max_retries=2)
-        return RecurringAcquisitionCoordinator({"nhtsa_vpic": contract})
+        return RecurringSourceContract(source_id="nhtsa_vpic", operation_policy=policy, expected_content_type="application/json", expected_schema_signature="decode-vin-values:v1", max_retries=2)
+
+    def coordinator(self, checkpoint=None):
+        return RecurringAcquisitionCoordinator({"nhtsa_vpic": self.contract()}, checkpoint=checkpoint)
 
     def test_unapproved_host_and_pacing_are_enforced_by_existing_gate(self):
         coordinator = self.coordinator()
@@ -36,11 +43,13 @@ class RecurringAcquisitionTests(unittest.TestCase):
         self.assertFalse(second.allowed)
         self.assertEqual("HOST_PACING", second.reason)
 
-    def test_identical_content_is_idempotent(self):
+    def test_identical_content_is_idempotent_across_persisted_checkpoint(self):
         coordinator = self.coordinator()
         item = acquisition("https://vpic.nhtsa.dot.gov/api/x")
         first = coordinator.record_success("nhtsa_vpic", item, schema_signature="decode-vin-values:v1")
-        second = coordinator.record_success("nhtsa_vpic", item, schema_signature="decode-vin-values:v1")
+        checkpoint_payload = coordinator.checkpoint().to_dict()
+        restored = self.coordinator(RecurringCheckpoint.from_dict(checkpoint_payload))
+        second = restored.record_success("nhtsa_vpic", item, schema_signature="decode-vin-values:v1")
         self.assertEqual(RecurringRunState.ACCEPTED, first.state)
         self.assertTrue(first.mutation_required)
         self.assertEqual(RecurringRunState.UNCHANGED, second.state)
@@ -65,7 +74,9 @@ class RecurringAcquisitionTests(unittest.TestCase):
         locator = "https://vpic.nhtsa.dot.gov/api/x"
         first = coordinator.record_failure("nhtsa_vpic", locator, reason="TIMEOUT")
         second = coordinator.record_failure("nhtsa_vpic", locator, reason="TIMEOUT")
-        third = coordinator.record_failure("nhtsa_vpic", locator, reason="TIMEOUT")
+        checkpoint = coordinator.checkpoint()
+        restored = self.coordinator(checkpoint)
+        third = restored.record_failure("nhtsa_vpic", locator, reason="TIMEOUT")
         self.assertEqual(RecurringRunState.RETRYABLE, first.state)
         self.assertEqual(RecurringRunState.RETRYABLE, second.state)
         self.assertEqual(RecurringRunState.DEGRADED, third.state)
