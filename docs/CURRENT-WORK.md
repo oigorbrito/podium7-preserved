@@ -1,11 +1,11 @@
 # Current work
 
-Status: active
+Status: blocked
 
-Outcome: establish the formal private-operational path out of MVP through issue #114 and `docs/exec-plans/active/MVP-OPERATIONAL-READINESS-V1.md`.
+No repository implementation mission is active. Operational Readiness V1 and MVP Exit Gate V1 were integrated by PR #115, and issue #114 is complete.
 
-The work is split into three end-to-end blocks: restore executable GitHub-hosted CI (#112), implement Operational Readiness V1, and implement the formal MVP Exit Gate V1.
+The only active blocker is issue #112, `Restore GitHub Actions hosted-runner execution`. GitHub-hosted Actions jobs are still failing before any workflow step is created (`steps=null`, no job logs), so the formal private-MVP exit gate cannot reach `PASS` yet.
 
-Boundaries: no resolver-policy weakening, no public licensing/release decision, no destructive production operations, and no runner/infrastructure workaround for the external Actions blocker.
+Owner action remains limited to GitHub account/repository Actions settings: verify Actions usage/minutes, payment method and budget/spending limits, and repository Actions enablement. Do not change runner architecture or add infrastructure workarounds merely to bypass this condition; ADR-0001 remains in force.
 
-Acceptance: Operational Readiness V1 and MVP Exit Gate V1 are executable and fail closed; final private-MVP `PASS` additionally requires independently verified executable green repository CI on the merge candidate.
+Closure criterion: a normal repository GitHub-hosted workflow run creates and executes actual job steps and is green. Then close #112, run Operational Readiness V1 on the intended merge candidate, evaluate the MVP Exit Gate V1 with verified CI evidence, and refresh this file.
