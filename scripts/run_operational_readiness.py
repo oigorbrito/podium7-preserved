@@ -12,6 +12,50 @@ from typing import Any
 REPORT_SCHEMA = "podium7.operational-readiness.v1"
 
 
+def _apply_semantic_checks(result: dict[str, Any]) -> None:
+    if result.get("passed") is not True:
+        return
+
+    name = result.get("name")
+    payload = result.get("payload")
+    if name == "catalog-identity-golden":
+        if not isinstance(payload, dict):
+            result["passed"] = False
+            result["error"] = "catalog benchmark did not emit JSON"
+            return
+        metrics = payload.get("metrics")
+        total = payload.get("totalCases")
+        if (
+            not isinstance(metrics, dict)
+            or not isinstance(total, int)
+            or total <= 0
+            or metrics.get("correct") != total
+            or metrics.get("falseMergeCount") != 0
+            or metrics.get("ambiguousOvercommitCount") != 0
+        ):
+            result["passed"] = False
+            result["error"] = "catalog benchmark safety metrics are not fully green"
+
+    if name == "project-facts":
+        if not isinstance(payload, dict):
+            result["passed"] = False
+            result["error"] = "project facts did not emit JSON"
+            return
+        runtime = payload.get("runtime")
+        benchmarks = payload.get("catalog_identity_benchmarks")
+        if (
+            not isinstance(runtime, dict)
+            or runtime.get("ready") is not True
+            or not isinstance(payload.get("tests_discovered"), int)
+            or payload["tests_discovered"] <= 0
+            or not isinstance(benchmarks, dict)
+            or not isinstance(benchmarks.get("case_count"), int)
+            or benchmarks["case_count"] <= 0
+        ):
+            result["passed"] = False
+            result["error"] = "project facts do not satisfy private-operational prerequisites"
+
+
 def _run_check(root: Path, name: str, argv: list[str], timeout: int) -> dict[str, Any]:
     completed = subprocess.run(
         argv,
@@ -36,6 +80,7 @@ def _run_check(root: Path, name: str, argv: list[str], timeout: int) -> dict[str
             result["payload"] = json.loads(stdout)
         except json.JSONDecodeError:
             pass
+    _apply_semantic_checks(result)
     return result
 
 
