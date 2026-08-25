@@ -15,8 +15,9 @@ from .source_backed_enrichment import (
 )
 
 
-REVIEW_DISPOSITION_SCHEMA = "podium7.review-disposition.v1"
+REVIEW_DISPOSITION_SCHEMA = "podium7.review-disposition.v2"
 DURABLE_HUMAN_REVIEW = "HUMAN_REVIEW_EVIDENCE_EXHAUSTED"
+_VALID_SIDES = {"left", "right"}
 
 
 def _provenance_cases(paths: Iterable[str | Path]) -> dict[str, set[str]]:
@@ -41,7 +42,7 @@ def _provenance_cases(paths: Iterable[str | Path]) -> dict[str, set[str]]:
 def load_review_dispositions(
     paths: Iterable[str | Path],
     disposition_path: str | Path,
-) -> dict[str, dict[str, Any]]:
+) -> dict[tuple[str, str], dict[str, Any]]:
     benchmark_cases = _provenance_cases(paths)
     payload = json.loads(Path(disposition_path).read_text(encoding="utf-8"))
     if payload.get("schema") != REVIEW_DISPOSITION_SCHEMA:
@@ -50,19 +51,31 @@ def load_review_dispositions(
     if not isinstance(decisions, list) or not decisions:
         raise ValueError("review disposition decisions are required")
 
-    result: dict[str, dict[str, Any]] = {}
+    result: dict[tuple[str, str], dict[str, Any]] = {}
+    seen_cases: set[str] = set()
     for decision in decisions:
         if not isinstance(decision, dict):
             raise ValueError("review disposition decision must be an object")
         case_id = decision.get("caseId")
+        sides = decision.get("sides")
         disposition = decision.get("disposition")
         source_ids = decision.get("sourceIds")
         rationale = decision.get("rationale")
         evidence_status = decision.get("evidenceStatus")
         if not isinstance(case_id, str) or case_id not in benchmark_cases:
             raise ValueError(f"unknown review disposition case {case_id!r}")
-        if case_id in result:
+        if case_id in seen_cases:
             raise ValueError(f"duplicate review disposition case {case_id!r}")
+        seen_cases.add(case_id)
+        if (
+            not isinstance(sides, list)
+            or not sides
+            or any(not isinstance(side, str) or side not in _VALID_SIDES for side in sides)
+            or len(set(sides)) != len(sides)
+        ):
+            raise ValueError(
+                f"review disposition {case_id!r} requires unique left/right sides"
+            )
         if disposition != DURABLE_HUMAN_REVIEW:
             raise ValueError(f"unsupported review disposition {disposition!r}")
         if not isinstance(source_ids, list) or not source_ids:
@@ -76,8 +89,16 @@ def load_review_dispositions(
             raise ValueError(f"review disposition {case_id!r} has invalid evidenceStatus")
         if not isinstance(rationale, str) or not rationale.strip():
             raise ValueError(f"review disposition {case_id!r} requires rationale")
-        result[case_id] = dict(decision)
+        for side in sides:
+            result[(case_id, side)] = {**decision, "side": side}
     return result
+
+
+def _review_key_payload(keys: Iterable[tuple[str, str]]) -> list[dict[str, str]]:
+    return [
+        {"caseId": case_id, "side": side}
+        for case_id, side in sorted(keys)
+    ]
 
 
 def evaluate_review_dispositions(
@@ -97,13 +118,16 @@ def evaluate_review_dispositions(
     candidates = diagnostics["reviewCandidatesByEvidence"]
     dispositions = load_review_dispositions(dataset_paths, disposition_path)
 
-    current_case_ids = {item["caseId"] for item in work["items"]}
-    unused_disposition_case_ids = sorted(set(dispositions) - current_case_ids)
+    current_review_keys = {
+        (item["caseId"], item["side"])
+        for item in work["items"]
+    }
+    unused_disposition_keys = set(dispositions) - current_review_keys
 
     durable: list[dict[str, Any]] = []
     unassessed: list[dict[str, Any]] = []
     for item in work["items"]:
-        decision = dispositions.get(item["caseId"])
+        decision = dispositions.get((item["caseId"], item["side"]))
         if decision is None:
             unassessed.append(
                 {
@@ -125,18 +149,26 @@ def evaluate_review_dispositions(
         )
 
     blocked = list(work["blockedItems"])
+    unassessed_keys = {
+        (item["caseId"], item["side"])
+        for item in unassessed
+    }
     return {
-        "schema": "podium7.production-review-disposition-report.v1",
+        "schema": "podium7.production-review-disposition-report.v2",
         "summary": {
             "openReviews": work["summary"]["openReviews"],
             "durableHumanReview": len(durable),
             "unassessed": len(unassessed),
-            "unusedDispositions": len(unused_disposition_case_ids),
+            "unusedDispositions": len(unused_disposition_keys),
             "blocked": len(blocked),
             "resolverPolicyChanges": 0,
         },
         "unassessedCaseIds": sorted({item["caseId"] for item in unassessed}),
-        "unusedDispositionCaseIds": unused_disposition_case_ids,
+        "unusedDispositionCaseIds": sorted(
+            {case_id for case_id, _ in unused_disposition_keys}
+        ),
+        "unassessedReviewKeys": _review_key_payload(unassessed_keys),
+        "unusedDispositionKeys": _review_key_payload(unused_disposition_keys),
         "durableHumanReviewItems": durable,
         "unassessedItems": unassessed,
         "blockedItems": blocked,
