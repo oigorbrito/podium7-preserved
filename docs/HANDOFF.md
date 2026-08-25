@@ -23,23 +23,24 @@ This file is the compact resume point for a new chat, Codex session, or agent ha
 
 ## Remote state at refresh
 
-- `main` is `519ca47a957dd1c8d871802b4ebea5eeb5dfbd00` after PR #115.
-- PRs #106–#115 relevant to the current sequence are merged; there are no open pull requests at this refresh.
-- PR #115 integrated Operational Readiness V1 and MVP Exit Gate V1.
-- Issue #114 is complete at repository scope; its execution plan is archived under `docs/exec-plans/completed/`.
-- Issue #112 (`Restore GitHub Actions hosted-runner execution`) remains open and is the only active blocker.
-- GitHub-hosted Actions jobs are still failing before any workflow step is created (`steps=null`, no job logs). Treat this as an external account/repository execution blocker, not observable code-test failure. Do not add runner or infrastructure workarounds merely to bypass it; ADR-0001 remains in force.
+- `main` is `b12049d6d78eb0793ee6a41fda8befc9e945237f` after PR #116.
+- PR #117 is open with a test-only fix for Operational Readiness command matching discovered by agent-local validation.
+- Agent-local evidence for the #117 delta is green: 5/5 focused readiness/MVP-gate tests pass and `py_compile` passes.
+- Issue #112 (`Restore GitHub Actions hosted-runner execution`) remains open and is the external blocker.
+- The #117 Actions run `32867616895` failed before any job step was created; `tests` and `minimum-python` have `steps=null` and no logs. Treat this as an external account/repository execution blocker, not observable code-test failure.
+- Do not add runner or infrastructure workarounds merely to bypass #112; ADR-0001 remains in force.
 - The formal private-MVP exit gate remains `PENDING` until a normal repository workflow executes real steps and is green.
 
 ## Resume order
 
 1. Refresh live `main`, PRs, issues, CI, and repository-declared work.
 2. If #112 remains open, check for a material account/Actions condition change before re-running CI; do not repeatedly rerun unchanged blocked jobs.
-3. When Actions execution is restored, require a normal hosted workflow to create real steps/logs and be green.
-4. Run Operational Readiness V1 on the intended merge candidate and evaluate MVP Exit Gate V1 with independently verified green CI evidence.
-5. Close #112 and refresh durable state when the gate can reach `PASS`.
-6. Continue any independent repository-scoped work that appears; do not stop merely because a merge occurred.
-7. If no further work is declared, stop rather than inventing scope.
+3. When Actions execution is restored, require the current #117 merge-candidate head to execute real steps/logs and pass.
+4. Integrate #117 only after executable green repository CI.
+5. Run Operational Readiness V1 and evaluate MVP Exit Gate V1 with independently verified green CI evidence.
+6. Close #112 and refresh durable state when the gate can reach `PASS`.
+7. Continue any independent repository-scoped work that appears; do not stop merely because a merge occurred.
+8. If no further work is declared, stop rather than inventing scope.
 
 ## Operating style
 
