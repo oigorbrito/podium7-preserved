@@ -17,7 +17,12 @@ class CatalogReviewOperatorCanonicalPathV1Tests(unittest.TestCase):
                 CatalogReviewQueue(store)
 
             alias = Path(directory) / "catalog-link.sqlite"
-            alias.symlink_to(target)
+            try:
+                alias.symlink_to(target)
+            except OSError as exc:
+                if getattr(exc, "winerror", None) == 1314:
+                    self.skipTest("symlink privilege is unavailable on this Windows runner")
+                raise
 
             validated = _require_review_database(str(alias))
 

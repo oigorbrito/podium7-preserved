@@ -3,6 +3,11 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
+import sys
+
+ROOT = Path(__file__).resolve().parents[1]
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
 
 from podium7.catalog_benchmark import (
     evaluate_catalog_identity_benchmark,
@@ -11,7 +16,7 @@ from podium7.catalog_benchmark import (
 
 
 DEFAULT_DATASET = (
-    Path(__file__).resolve().parents[1]
+    ROOT
     / "benchmarks"
     / "catalog_identity_golden_v1.json"
 )
