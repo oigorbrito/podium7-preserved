@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from datetime import datetime
 import hashlib
 import json
+import re
 from typing import Any
 from urllib.parse import quote
 
@@ -12,11 +13,7 @@ from .domain import CandidateFact, RawEvidence
 
 NHTSA_VPIC_SOURCE_ID = "nhtsa_vpic"
 NHTSA_VPIC_EXTRACTION_METHOD = "nhtsa_vpic.decode_vin_values.v1"
-
-# Only fields whose source semantics are explicitly admitted by
-# docs/NHTSA-VPIC-EVIDENCE-CONTRACT-V1.md are emitted. Source-native
-# configuration fields stay namespaced instead of being silently promoted
-# to canonical retail-trim / body / powertrain semantics.
+_RAW_REF_PATTERN = re.compile(r"^sha256:([0-9a-f]{64})@(.+)$")
 _FIELD_MAP: dict[str, tuple[str, str]] = {
     "Make": ("make", "text"),
     "MakeID": ("nhtsa.make_id", "int"),
@@ -45,7 +42,7 @@ def build_nhtsa_decode_vin_values_locator(vin: str, model_year: int) -> str:
     vin_text = vin.strip().upper() if isinstance(vin, str) else ""
     if not vin_text or len(vin_text) > 17:
         raise ValueError("VIN must be non-empty and at most 17 characters")
-    if any(not (char.isdigit() or "A" <= char <= "Z" or char == "*") for char in vin_text):
+    if any(not (char.isdigit() or char in "ABCDEFGHJKLMNPRSTUVWXYZ*") for char in vin_text):
         raise ValueError("VIN contains unsupported characters")
     if not isinstance(model_year, int) or isinstance(model_year, bool) or model_year < 1981:
         raise ValueError("model_year must be an integer >= 1981")
@@ -75,10 +72,25 @@ def _normalize_source_value(value: Any, kind: str, source_field: str) -> Any | N
     raise AssertionError(f"unsupported field kind {kind!r}")
 
 
+def _validate_raw_content_ref(raw_content_ref: str, digest: str) -> str:
+    if not isinstance(raw_content_ref, str):
+        raise ValueError("raw_content_ref is required")
+    match = _RAW_REF_PATTERN.fullmatch(raw_content_ref)
+    if match is None:
+        raise ValueError("raw_content_ref must be a content-addressed sha256 reference")
+    referenced_digest, retained_location = match.groups()
+    if referenced_digest != digest:
+        raise ValueError("raw_content_ref digest does not match raw_payload")
+    if not retained_location.strip():
+        raise ValueError("raw_content_ref must retain a snapshot location")
+    return raw_content_ref
+
+
 def parse_nhtsa_decode_vin_values(
     raw_payload: bytes,
     *,
     locator: str,
+    raw_content_ref: str,
     retrieved_at: datetime,
     entity_candidate_id: str,
 ) -> NhtsaVpicEvidenceResult:
@@ -91,6 +103,8 @@ def parse_nhtsa_decode_vin_values(
     if not isinstance(entity_candidate_id, str) or not entity_candidate_id.strip():
         raise ValueError("entity_candidate_id is required")
 
+    digest = hashlib.sha256(raw_payload).hexdigest()
+    durable_raw_ref = _validate_raw_content_ref(raw_content_ref, digest)
     try:
         payload = json.loads(raw_payload.decode("utf-8"))
     except (UnicodeDecodeError, json.JSONDecodeError) as exc:
@@ -104,15 +118,11 @@ def parse_nhtsa_decode_vin_values(
         raise ValueError("NHTSA DecodeVinValues response must contain exactly one result")
     row = results[0]
 
-    # Make/model/model-year are the minimum identity context for this bounded
-    # adapter. Other admitted fields are optional and their absence is not a
-    # negative fact.
     for required in ("Make", "Model", "ModelYear"):
         value = row.get(required)
         if not isinstance(value, str) or not value.strip():
             raise ValueError(f"NHTSA response requires non-empty {required}")
 
-    digest = hashlib.sha256(raw_payload).hexdigest()
     evidence_id = f"nhtsa-vpic:{digest}"
     evidence = RawEvidence(
         id=evidence_id,
@@ -120,7 +130,7 @@ def parse_nhtsa_decode_vin_values(
         locator=locator,
         retrieved_at=retrieved_at,
         acquisition_method="direct_http_json",
-        raw_content_ref=f"sha256:{digest}@{locator}",
+        raw_content_ref=durable_raw_ref,
     )
 
     facts: list[CandidateFact] = []
@@ -128,14 +138,12 @@ def parse_nhtsa_decode_vin_values(
         normalized = _normalize_source_value(row.get(source_field), kind, source_field)
         if normalized is None:
             continue
-        raw_value = row[source_field]
-        fact_id = f"{evidence_id}:{source_field}"
         facts.append(
             CandidateFact(
-                id=fact_id,
+                id=f"{evidence_id}:{source_field}",
                 entity_candidate_id=entity_candidate_id.strip(),
                 attribute=attribute,
-                raw_value=raw_value,
+                raw_value=row[source_field],
                 normalized_value=normalized,
                 unit=None,
                 evidence_id=evidence_id,
