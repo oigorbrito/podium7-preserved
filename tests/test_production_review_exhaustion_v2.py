@@ -66,7 +66,9 @@ class ProductionReviewExhaustionV2Tests(unittest.TestCase):
             for item in payload["decisions"]
             if item["caseId"] == "review-porsche-911-partial-variant-label"
         )
+        right_evidence_id = decision["evidenceIdsBySide"]["right"]
         decision["sides"] = ["right"]
+        decision["evidenceIdsBySide"] = {"right": right_evidence_id}
 
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "review-disposition.json"
@@ -76,7 +78,13 @@ class ProductionReviewExhaustionV2Tests(unittest.TestCase):
         self.assertEqual(report["summary"]["unassessed"], 1)
         self.assertEqual(
             report["unassessedReviewKeys"],
-            [{"caseId": "review-porsche-911-partial-variant-label", "side": "left"}],
+            [
+                {
+                    "caseId": "review-porsche-911-partial-variant-label",
+                    "side": "left",
+                    "evidenceId": "operational:1.0:review-porsche-911-partial-variant-label:left",
+                }
+            ],
         )
         self.assertNotIn(
             ("review-porsche-911-partial-variant-label", "left"),
@@ -93,7 +101,13 @@ class ProductionReviewExhaustionV2Tests(unittest.TestCase):
             for item in payload["decisions"]
             if item["caseId"] == "review-ford-mustang-variant-missing"
         )
+        right_evidence_id = decision["evidenceIdsBySide"]["right"]
+        left_evidence_id = "operational:1.0:review-ford-mustang-variant-missing:left"
         decision["sides"] = ["left", "right"]
+        decision["evidenceIdsBySide"] = {
+            "left": left_evidence_id,
+            "right": right_evidence_id,
+        }
 
         with tempfile.TemporaryDirectory() as tmp:
             path = Path(tmp) / "review-disposition.json"
@@ -103,7 +117,13 @@ class ProductionReviewExhaustionV2Tests(unittest.TestCase):
         self.assertEqual(report["summary"]["unusedDispositions"], 1)
         self.assertEqual(
             report["unusedDispositionKeys"],
-            [{"caseId": "review-ford-mustang-variant-missing", "side": "left"}],
+            [
+                {
+                    "caseId": "review-ford-mustang-variant-missing",
+                    "side": "left",
+                    "evidenceId": left_evidence_id,
+                }
+            ],
         )
 
 
