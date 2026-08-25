@@ -23,20 +23,20 @@ This file is the compact resume point for a new chat, Codex session, or agent ha
 
 ## Remote state at refresh
 
-- `main` is `5ee601c189f5c47a69e3f757cd1edfd27a5244aa` after PR #110.
-- PR #106 (`Exhaust current production reviews V2`) is merged as `630e1e462458ede1790f241d6d7e2841f372370e`; exact `(caseId, side, evidenceId)` review-disposition coverage is integrated.
-- PR #107 (`Expose catalog review operator CLI V1`) is merged as `c2653ae7ea15124782b4ab0e35b1e54c8ae30b32`; the private operator preflight/canonical-path safety contract is integrated.
-- PR #108 (`Add durable chat and agent handoff`) is merged as `1f8cbbffe67cf4b6f2efc75d4b150eb927806b6f`.
-- PR #109 (`Wire market-first infrastructure principle into workflow`) is merged as `a8d302d6cccf424c4bcaf060d23abd5f69974f36`.
-- PR #110 (`Preserve Senatran year semantics through operational resolver path`) is merged as `5ee601c189f5c47a69e3f757cd1edfd27a5244aa`.
-- There are no open pull requests or issues at this refresh.
-- `CURRENT-WORK.md` is `Status: none`; the completed Production Review Exhaustion V2 plan is archived under `docs/exec-plans/completed/`.
+- `main` is `54db0975e668ccb46d75c562e7eb23083a8f08fa` after PR #111.
+- PRs #106–#111 are merged.
+- Issue #112 (`Restore GitHub Actions hosted-runner execution`) is open and is the only currently declared active repository item.
+- GitHub-hosted Actions jobs on independent PR heads are failing before any workflow step is created (`steps=null`, no job logs). Re-running workflow `32856816240` reproduced the same pre-step failure with new job IDs.
+- Treat #112 as an external account/repository execution blocker, not observable code-test failure. Do not add runner or infrastructure workarounds merely to bypass it; ADR-0001 remains in force.
+- `CURRENT-WORK.md` records this external blocker as active; completed Production Review Exhaustion V2 history remains archived under `docs/exec-plans/completed/`.
 
 ## Resume order
 
 1. Refresh live `main`, PRs, issues, CI, and repository-declared work.
-2. If no new work is declared, stop rather than inventing scope.
-3. If new work appears, follow `DEVELOPMENT-WORKFLOW.md`, preserve the stable constraints above, and use a fresh execution plan when required.
+2. If #112 remains open, check for a material account/Actions condition change before re-running CI; do not repeatedly rerun unchanged blocked jobs.
+3. When account/repository Actions execution is restored, require a normal hosted workflow to create real steps/logs, preferably green, then close #112 and refresh durable state.
+4. Continue any independent repository-scoped work that appears; do not stop merely because a merge occurred.
+5. If no further work is declared, stop rather than inventing scope.
 
 ## Operating style
 
