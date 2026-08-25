@@ -1,13 +1,20 @@
 # Current work
 
-Status: complete
+Status: active
 
-The current private technical MVP is complete. PR #119 integrated the independent-equivalent validation path, and the intended merge-candidate head passed Operational Readiness V1 and MVP Exit Gate V1 with `validation_source=independent-equivalent`.
+Outcome: execute post-MVP mission #122 to expand Podium 7's evidence-backed automotive acquisition/enrichment layer using qualified multi-source evidence without changing existing evidence, fusion, ambiguity, identity-resolution, or publication principles.
 
-No repository implementation mission is active and no functional MVP blocker is open.
+Current block: #123 — reconstruct the existing qualified-source baseline and map measured catalog evidence gaps before any new source search or implementation.
 
-Issue #112, `Restore GitHub Actions hosted-runner execution`, remains open as an infrastructure/operations debt item. GitHub-hosted Actions jobs are still failing before any workflow step is created (`steps=null`, no job logs). This no longer blocks the private MVP because the accepted independent-equivalent execution path produced a passing gate without pretending official CI was green.
+Boundaries:
 
-Owner action for #112 remains limited to GitHub account/repository Actions settings: verify Actions usage/minutes, payment method and budget/spending limits, and repository Actions enablement. Do not change runner architecture or add infrastructure workarounds merely to bypass this condition; ADR-0001 remains in force.
+- existing evidence/source hierarchy, semantic conservatism, ambiguity handling, fusion/conflict and publication principles require explicit owner authorization to change;
+- reconstruct durable source evidence before retesting;
+- no Reddit/forums/blogs/opaque aggregators as canonical evidence and no stealth/proxy/CAPTCHA bypass;
+- bounded measurements must not be presented as production-wide completeness.
 
-Next work must be declared as a post-MVP mission rather than silently extending the completed MVP scope.
+Acceptance for #123: a durable gap matrix separates semantic coverage, identity strength, market scope, transport/access and reuse status; turns uncovered dimensions into decision questions for #124; and requires no broad historical retest unless existing evidence is decision-inadequate.
+
+Plan: `docs/exec-plans/active/POST-MVP-SOURCE-ACQUISITION-V1.md`.
+
+Issue #112 (`Restore GitHub Actions hosted-runner execution`) remains infrastructure/operations debt. Do not add runner/infrastructure workarounds merely to bypass it.
