@@ -1,0 +1,6 @@
+# Frozen web-acquisition snapshots are evidence bytes, not text files.
+# Preserve repository bytes exactly across platforms so pinned Git blob identities
+# remain stable on Windows and Unix checkouts.
+data/raw/web/*.txt -text
+data/raw/web/corpus-v1/*.txt -text
+data/raw/web/fueleconomy-v1/*.txt -text

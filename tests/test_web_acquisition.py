@@ -57,6 +57,16 @@ class WebAcquisitionEvidenceTests(unittest.TestCase):
         self.assertEqual(metrics["issueCount"], 0)
         self.assertGreater(metrics["verifiedBytes"], 0)
 
+    def test_current_snapshot_directories_disable_text_conversion(self):
+        manifest = load_current_web_acquisition_manifest(ROOT)
+        attributes = {
+            line.strip()
+            for line in (ROOT / ".gitattributes").read_text(encoding="utf-8").splitlines()
+            if line.strip() and not line.lstrip().startswith("#")
+        }
+        for snapshot_dir in {Path(item.snapshot).parent.as_posix() for item in manifest.entries}:
+            self.assertIn(f"{snapshot_dir}/*.txt -text", attributes)
+
     def test_current_evidence_uses_sha256_content_references(self):
         report = evaluate_current_web_acquisition(ROOT)
         self.assertTrue(report.ok)

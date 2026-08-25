@@ -3,11 +3,13 @@ from __future__ import annotations
 import argparse
 import json
 from pathlib import Path
+import subprocess
 from typing import Any
 
 
 REPORT_SCHEMA = "podium7.mvp-exit-gate.v1"
 READINESS_SCHEMA = "podium7.operational-readiness.v1"
+INDEPENDENT_SCHEMA = "podium7.independent-validation.v1"
 REQUIRED_CHECKS = {
     "runtime-health",
     "harness",
@@ -19,7 +21,30 @@ REQUIRED_CHECKS = {
 }
 
 
-def evaluate(readiness: dict[str, Any], *, ci_green: bool) -> dict[str, Any]:
+def verify_independent_evidence(evidence: dict[str, Any], *, expected_commit: str) -> tuple[bool, list[str]]:
+    reasons: list[str] = []
+    if evidence.get("schema") != INDEPENDENT_SCHEMA:
+        reasons.append("invalid independent-validation schema")
+    if evidence.get("status") != "PASS":
+        reasons.append("independent validation did not pass")
+    if evidence.get("commit_sha") != expected_commit:
+        reasons.append("independent validation commit does not match current candidate")
+    if evidence.get("clean_worktree") is not True:
+        reasons.append("independent validation did not use a clean tracked worktree")
+    if evidence.get("readiness_status") != "PASS":
+        reasons.append("independent validation readiness did not pass")
+    if evidence.get("sequential_tests_passed") is not True:
+        reasons.append("independent validation full sequential tests did not pass")
+    return not reasons, reasons
+
+
+def evaluate(
+    readiness: dict[str, Any],
+    *,
+    ci_green: bool = False,
+    independent_validation: bool = False,
+    independent_reasons: list[str] | None = None,
+) -> dict[str, Any]:
     reasons: list[str] = []
     if readiness.get("schema") != READINESS_SCHEMA:
         reasons.append("invalid operational-readiness schema")
@@ -58,18 +83,42 @@ def evaluate(readiness: dict[str, Any], *, ci_green: bool) -> dict[str, Any]:
             reasons.append("catalog identity benchmark coverage is empty")
 
     repository_gate_passed = not reasons
-    overall_passed = repository_gate_passed and ci_green
-    if repository_gate_passed and not ci_green:
-        reasons.append("official merge-candidate GitHub Actions evidence is not green")
+    if independent_reasons:
+        reasons.extend(independent_reasons)
+    validation_passed = ci_green or independent_validation
+    overall_passed = repository_gate_passed and validation_passed and not independent_reasons
+    if repository_gate_passed and not validation_passed and not independent_reasons:
+        reasons.append("no independently verified execution evidence is green")
+
+    validation_source = (
+        "github-actions"
+        if ci_green
+        else "independent-equivalent"
+        if independent_validation and not independent_reasons
+        else "none"
+    )
 
     return {
         "schema": REPORT_SCHEMA,
         "status": "PASS" if overall_passed else "PENDING" if repository_gate_passed else "FAIL",
         "repository_gate": "PASS" if repository_gate_passed else "FAIL",
+        "execution_validation": "PASS" if overall_passed else "PENDING",
+        "validation_source": validation_source,
         "official_ci": "PASS" if ci_green else "PENDING",
         "public_release_required": False,
         "reasons": reasons,
     }
+
+
+def _current_commit(root: Path) -> str:
+    completed = subprocess.run(
+        ["git", "rev-parse", "HEAD"],
+        cwd=root,
+        check=True,
+        capture_output=True,
+        text=True,
+    )
+    return completed.stdout.strip()
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -77,10 +126,16 @@ def main(argv: list[str] | None = None) -> int:
         description="Evaluate the Podium 7 private-MVP exit gate from an operational-readiness report"
     )
     parser.add_argument("readiness_report", type=Path)
-    parser.add_argument(
+    evidence = parser.add_mutually_exclusive_group()
+    evidence.add_argument(
         "--ci-green",
         action="store_true",
         help="attest only after independently verifying executable green repository CI on the merge candidate",
+    )
+    evidence.add_argument(
+        "--independent-validation-report",
+        type=Path,
+        help="verified podium7.independent-validation.v1 evidence for the exact current candidate",
     )
     args = parser.parse_args(argv)
 
@@ -90,7 +145,26 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps({"schema": REPORT_SCHEMA, "status": "FAIL", "error": str(exc)}, sort_keys=True))
         return 2
 
-    report = evaluate(readiness, ci_green=args.ci_green)
+    independent_validation = False
+    independent_reasons: list[str] = []
+    if args.independent_validation_report is not None:
+        try:
+            independent = json.loads(args.independent_validation_report.read_text(encoding="utf-8"))
+            expected_commit = _current_commit(Path(__file__).resolve().parents[1])
+        except (OSError, json.JSONDecodeError, subprocess.CalledProcessError) as exc:
+            print(json.dumps({"schema": REPORT_SCHEMA, "status": "FAIL", "error": str(exc)}, sort_keys=True))
+            return 2
+        independent_validation, independent_reasons = verify_independent_evidence(
+            independent,
+            expected_commit=expected_commit,
+        )
+
+    report = evaluate(
+        readiness,
+        ci_green=args.ci_green,
+        independent_validation=independent_validation,
+        independent_reasons=independent_reasons,
+    )
     print(json.dumps(report, ensure_ascii=False, indent=2, sort_keys=True))
     if report["status"] == "PASS":
         return 0

@@ -5,7 +5,7 @@ from pathlib import Path
 import unittest
 from unittest.mock import patch
 
-from scripts.check_mvp_exit import REQUIRED_CHECKS, evaluate
+from scripts.check_mvp_exit import REQUIRED_CHECKS, evaluate, verify_independent_evidence
 from scripts.run_operational_readiness import REPORT_SCHEMA, build_report
 
 
@@ -84,6 +84,8 @@ class OperationalReadinessTests(unittest.TestCase):
 
 
 class MvpExitGateTests(unittest.TestCase):
+    COMMIT = "a" * 40
+
     def readiness(self) -> dict[str, object]:
         checks = [{"name": name, "passed": True} for name in REQUIRED_CHECKS]
         for check in checks:
@@ -99,23 +101,67 @@ class MvpExitGateTests(unittest.TestCase):
             "checks": checks,
         }
 
-    def test_repository_gate_waits_for_official_ci(self) -> None:
-        report = evaluate(self.readiness(), ci_green=False)
+    def independent_evidence(self) -> dict[str, object]:
+        return {
+            "schema": "podium7.independent-validation.v1",
+            "status": "PASS",
+            "commit_sha": self.COMMIT,
+            "clean_worktree": True,
+            "readiness_status": "PASS",
+            "sequential_tests_passed": True,
+        }
+
+    def test_repository_gate_waits_for_execution_validation(self) -> None:
+        report = evaluate(self.readiness())
         self.assertEqual("PENDING", report["status"])
         self.assertEqual("PASS", report["repository_gate"])
-        self.assertEqual("PENDING", report["official_ci"])
+        self.assertEqual("PENDING", report["execution_validation"])
+        self.assertEqual("none", report["validation_source"])
 
-    def test_gate_passes_only_with_repository_readiness_and_ci(self) -> None:
+    def test_gate_passes_with_verified_github_actions(self) -> None:
         report = evaluate(self.readiness(), ci_green=True)
         self.assertEqual("PASS", report["status"])
+        self.assertEqual("PASS", report["execution_validation"])
+        self.assertEqual("github-actions", report["validation_source"])
+        self.assertEqual("PASS", report["official_ci"])
         self.assertEqual([], report["reasons"])
 
-    def test_missing_required_check_fails_closed(self) -> None:
+    def test_gate_passes_with_verified_independent_equivalent_validation(self) -> None:
+        verified, reasons = verify_independent_evidence(
+            self.independent_evidence(),
+            expected_commit=self.COMMIT,
+        )
+        self.assertTrue(verified)
+        report = evaluate(
+            self.readiness(),
+            independent_validation=verified,
+            independent_reasons=reasons,
+        )
+        self.assertEqual("PASS", report["status"])
+        self.assertEqual("independent-equivalent", report["validation_source"])
+        self.assertEqual("PENDING", report["official_ci"])
+
+    def test_independent_validation_rejects_wrong_commit(self) -> None:
+        verified, reasons = verify_independent_evidence(
+            self.independent_evidence(),
+            expected_commit="b" * 40,
+        )
+        self.assertFalse(verified)
+        self.assertIn("independent validation commit does not match current candidate", reasons)
+
+    def test_independent_validation_rejects_dirty_worktree(self) -> None:
+        evidence = self.independent_evidence()
+        evidence["clean_worktree"] = False
+        verified, reasons = verify_independent_evidence(evidence, expected_commit=self.COMMIT)
+        self.assertFalse(verified)
+        self.assertIn("independent validation did not use a clean tracked worktree", reasons)
+
+    def test_missing_required_check_fails_closed_even_with_validation(self) -> None:
         readiness = self.readiness()
         readiness["checks"] = [
             item for item in readiness["checks"] if item["name"] != "harness"
         ]
-        report = evaluate(readiness, ci_green=True)
+        report = evaluate(readiness, independent_validation=True)
         self.assertEqual("FAIL", report["status"])
         self.assertTrue(any("missing required" in reason for reason in report["reasons"]))
 
