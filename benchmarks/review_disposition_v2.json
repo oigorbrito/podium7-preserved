@@ -1,11 +1,12 @@
 {
-  "schema": "podium7.review-disposition.v1",
-  "datasetVersion": "2.0",
+  "schema": "podium7.review-disposition.v2",
+  "datasetVersion": "2.1",
   "assessedAt": "2026-08-24T09:04:00Z",
-  "purpose": "Fail-closed disposition of current V3 operational reviews after partial-label contradiction precedence was corrected. Decisions are case-bound and do not alter resolver policy.",
+  "purpose": "Fail-closed disposition of current V3 operational reviews after partial-label contradiction precedence was corrected. Decisions are bound to the exact current case/side review topology and do not alter resolver policy.",
   "decisions": [
     {
       "caseId": "review-ford-mustang-variant-missing",
+      "sides": ["right"],
       "disposition": "HUMAN_REVIEW_EVIDENCE_EXHAUSTED",
       "evidenceStatus": "REPOSITORY_CURATED",
       "sourceIds": ["ford-mustang-2024-eu-spec"],
@@ -13,20 +14,23 @@
     },
     {
       "caseId": "review-porsche-911-partial-variant-label",
+      "sides": ["left", "right"],
       "disposition": "HUMAN_REVIEW_EVIDENCE_EXHAUSTED",
       "evidenceStatus": "REPOSITORY_CURATED",
       "sourceIds": ["porsche-911-generations-2019", "porsche-911-992-powertrain-2019"],
-      "rationale": "The official Porsche evidence distinguishes Carrera variants. A generic Carrera label does not establish Carrera 4S identity."
+      "rationale": "The official Porsche evidence distinguishes Carrera variants. The operational observations remain insufficient to collapse either current review into an existing Carrera identity without stronger case-bound evidence."
     },
     {
       "caseId": "review-bmw-g20-generic-vs-330i-label",
+      "sides": ["left", "right"],
       "disposition": "HUMAN_REVIEW_EVIDENCE_EXHAUSTED",
       "evidenceStatus": "REPOSITORY_CURATED",
       "sourceIds": ["bmw-g20-phev-reference"],
-      "rationale": "The retained BMW reference distinguishes specific G20 configurations. A generic G20 3 Series 2.0 petrol observation does not itself establish the 330i variant label."
+      "rationale": "The retained BMW reference distinguishes specific G20 configurations. The generic 3 Series observation does not establish 330i identity, and the partial 330i label observation remains review-bound against the existing catalog topology."
     },
     {
       "caseId": "br-review-corolla-cross-xrx-hybrid-missing-variant",
+      "sides": ["right"],
       "disposition": "HUMAN_REVIEW_EVIDENCE_EXHAUSTED",
       "evidenceStatus": "REPOSITORY_CURATED",
       "sourceIds": ["toyota-corolla-cross-global-launch", "toyota-corolla-cross-my25-br"],
@@ -34,6 +38,7 @@
     },
     {
       "caseId": "br-review-onix-premier-missing-variant",
+      "sides": ["right"],
       "disposition": "HUMAN_REVIEW_EVIDENCE_EXHAUSTED",
       "evidenceStatus": "LIVE_REVALIDATED",
       "sourceIds": ["chevrolet-onix-second-generation", "chevrolet-onix-my25-price-list"],
@@ -41,6 +46,7 @@
     },
     {
       "caseId": "br-review-tcross-250-tsi-missing-variant",
+      "sides": ["right"],
       "disposition": "HUMAN_REVIEW_EVIDENCE_EXHAUSTED",
       "evidenceStatus": "LIVE_REVALIDATED",
       "sourceIds": ["vw-tcross-2019-br-generation", "vw-tcross-current-config"],
@@ -48,24 +54,27 @@
     },
     {
       "caseId": "br-review-shared-fipe-code-alone",
+      "sides": ["left", "right"],
       "disposition": "HUMAN_REVIEW_EVIDENCE_EXHAUSTED",
       "evidenceStatus": "LIVE_REVALIDATED",
       "sourceIds": ["fipe-official-vehicle-index", "corsa-wind-fipe-code-secondary"],
-      "rationale": "FIPE lookup requires code plus model year under the curated semantics. A shared code without model-year evidence is insufficient for deterministic catalog identity."
+      "rationale": "FIPE lookup requires code plus model year under the curated semantics. The two current code-only observations lack model-year evidence and are insufficient for deterministic catalog identity."
     },
     {
       "caseId": "br-hard-review-tcross-highline-model-year-present-one-side",
+      "sides": ["right"],
       "disposition": "HUMAN_REVIEW_EVIDENCE_EXHAUSTED",
       "evidenceStatus": "LIVE_REVALIDATED",
       "sourceIds": ["vw-tcross-brazil-generation", "vw-tcross-highline-250-tsi-tech-sheet", "vw-tcross-current-product-page", "vw-tcross-my26-owner-manual"],
-      "rationale": "The evidence establishes the Highline 250 TSI mechanical family and MY26 context but does not establish that the yearless observation itself is MY26. Senatran-aligned policy therefore preserves REVIEW."
+      "rationale": "The evidence establishes the Highline 250 TSI mechanical family and MY26 context but does not establish that the yearless observation itself is MY26. Senatran-aligned policy therefore preserves REVIEW for the current MY26-side observation."
     },
     {
       "caseId": "br-hard-no-match-corolla-altis-hybrid-my25-vs-my26",
+      "sides": ["left", "right"],
       "disposition": "HUMAN_REVIEW_EVIDENCE_EXHAUSTED",
       "evidenceStatus": "LIVE_REVALIDATED",
       "sourceIds": ["toyota-connected-services-corolla-my25", "toyota-corolla-altis-hybrid-offer-2026"],
-      "rationale": "Toyota explicitly establishes Altis Hybrid Premium in model year 2025 and Altis Premium Hybrid 26/26, but the operational candidates are older generic Corolla sedan canonicals with no model-year or variant evidence. The case evidence does not establish that either year-specific observation is the same catalog identity as those yearless generic canonicals. Auto-matching would infer the missing model-year and variant dimensions, so the Senatran-aligned one-sided-year policy preserves human review."
+      "rationale": "Toyota explicitly establishes Altis Hybrid Premium in model year 2025 and Altis Premium Hybrid 26/26, but the operational candidates are older generic Corolla sedan canonicals with no model-year or variant evidence. Neither year-specific observation is established as the same catalog identity as those yearless generic canonicals. Auto-matching would infer missing model-year and variant dimensions, so both current case sides remain human review."
     }
   ]
 }
