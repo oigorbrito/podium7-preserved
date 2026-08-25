@@ -2,6 +2,6 @@
 
 Status: none
 
-No implementation mission is active. PRs #106 and #107 completed the production-review exhaustion and catalog review operator work on `main`. Remaining open PRs are independent documentation/test hardening and must be refreshed against current `main` before integration.
+No implementation mission is active. PRs #106–#110 are integrated on `main`; there are currently no open pull requests or issues declaring further repository-scoped work.
 
 Durable unresolved work remains tracked in `TECH-DEBT.md`; completed execution history belongs under `exec-plans/completed/`.
