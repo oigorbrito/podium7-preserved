@@ -14,6 +14,7 @@ from podium7.catalog import CatalogStore, CatalogVehicleIdentity
 from podium7.catalog_ingestion import CatalogIngestionAction, ingest_catalog_record
 from podium7.catalog_review import CatalogReviewQueue, CatalogReviewState
 from podium7.domain import RawEvidence, Source
+from scripts.resolve_catalog_review import main as legacy_review_main
 
 
 SOURCE = Source(
@@ -88,6 +89,12 @@ class CatalogReviewOperatorCliV1Tests(unittest.TestCase):
             code = main(argv)
         return code, json.loads(output.getvalue())
 
+    def _run_legacy(self, argv: list[str]) -> tuple[int, dict[str, object]]:
+        output = StringIO()
+        with redirect_stdout(output):
+            code = legacy_review_main(argv)
+        return code, json.loads(output.getvalue())
+
     def _schema_objects(self) -> set[tuple[str, str]]:
         with sqlite3.connect(self.database) as connection:
             return {
@@ -134,6 +141,25 @@ class CatalogReviewOperatorCliV1Tests(unittest.TestCase):
             shown["item"]["evidence"]["rawContentRef"],
             "sha256:operator-review",
         )
+
+    def test_show_resolves_historical_candidate_to_canonical_entity(self) -> None:
+        review_id, candidate = self._seed_review("operator-review-redirect")
+        with CatalogStore(self.database) as store:
+            survivor = store.create_catalog_vehicle(full_identity())
+            store.merge_catalog_vehicle_ids(survivor, candidate)
+
+        code, shown = self._run([
+            "review",
+            "show",
+            review_id,
+            "--database",
+            self.database,
+        ])
+
+        self.assertEqual(code, 0)
+        self.assertEqual(shown["item"]["candidateVehicleIds"], [candidate])
+        self.assertEqual(shown["item"]["candidateEntities"][0]["id"], survivor)
+        self.assertIn(candidate, shown["item"]["candidateEntities"][0]["redirectsFrom"])
 
     def test_match_reuses_safe_domain_resolution_and_audit_fields(self) -> None:
         review_id, candidate = self._seed_review()
@@ -201,6 +227,34 @@ class CatalogReviewOperatorCliV1Tests(unittest.TestCase):
         self.assertEqual(payload["status"], "FAIL")
         self.assertIn("Podium catalog review schema", payload["error"])
         self.assertEqual(os.path.getsize(self.database), before_size)
+
+    def test_legacy_entrypoint_cannot_bypass_existing_database_preflight(self) -> None:
+        before_size = os.path.getsize(self.database)
+
+        code, payload = self._run_legacy([
+            "--database",
+            self.database,
+            "list",
+        ])
+
+        self.assertEqual(code, 1)
+        self.assertEqual(payload["status"], "FAIL")
+        self.assertIn("Podium catalog review schema", payload["error"])
+        self.assertEqual(os.path.getsize(self.database), before_size)
+
+    def test_legacy_entrypoint_delegates_to_canonical_list_surface(self) -> None:
+        review_id, _ = self._seed_review("operator-review-legacy")
+
+        code, payload = self._run_legacy([
+            "--database",
+            self.database,
+            "list",
+        ])
+
+        self.assertEqual(code, 0)
+        self.assertEqual(payload["status"], "PASS")
+        self.assertEqual(payload["count"], 1)
+        self.assertEqual(payload["items"][0]["id"], review_id)
 
     def test_review_commands_reject_catalog_without_review_schema_without_mutation(self) -> None:
         with CatalogStore(self.database):
