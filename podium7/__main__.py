@@ -62,8 +62,9 @@ def _require_review_database(database: str) -> Path:
     if database == ":memory:" or not path.is_file():
         raise ValueError(error)
 
+    resolved_path = path.resolve()
     try:
-        uri = path.resolve().as_uri() + "?mode=ro"
+        uri = resolved_path.as_uri() + "?mode=ro"
         with sqlite3.connect(uri, uri=True) as connection:
             user_version = int(connection.execute("PRAGMA user_version").fetchone()[0])
             schema_objects = connection.execute(
@@ -92,7 +93,7 @@ def _require_review_database(database: str) -> Path:
         CATALOG_REVIEW_SCHEMA_COMPONENT: CATALOG_REVIEW_SCHEMA_VERSION,
     }:
         raise ValueError(error)
-    return path
+    return resolved_path
 
 
 def _review_evidence_payload(store: CatalogStore, task: CatalogReviewTask) -> dict[str, object]:
