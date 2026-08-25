@@ -1,5 +1,6 @@
 from pathlib import Path
 import json
+import tempfile
 import unittest
 
 from podium7.review_disposition import evaluate_review_dispositions
@@ -56,6 +57,53 @@ class ProductionReviewExhaustionV2Tests(unittest.TestCase):
                 for item in report["durableHumanReviewItems"]
             },
             EXPECTED_REVIEW_KEYS,
+        )
+
+    def test_case_disposition_does_not_cover_an_unassessed_side(self) -> None:
+        payload = json.loads(DISPOSITIONS.read_text(encoding="utf-8"))
+        decision = next(
+            item
+            for item in payload["decisions"]
+            if item["caseId"] == "review-porsche-911-partial-variant-label"
+        )
+        decision["sides"] = ["right"]
+
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "review-disposition.json"
+            path.write_text(json.dumps(payload), encoding="utf-8")
+            report = evaluate_review_dispositions(DATASETS, ENRICHMENT_V3, path)
+
+        self.assertEqual(report["summary"]["unassessed"], 1)
+        self.assertEqual(
+            report["unassessedReviewKeys"],
+            [{"caseId": "review-porsche-911-partial-variant-label", "side": "left"}],
+        )
+        self.assertNotIn(
+            ("review-porsche-911-partial-variant-label", "left"),
+            {
+                (item["caseId"], item["side"])
+                for item in report["durableHumanReviewItems"]
+            },
+        )
+
+    def test_stale_side_disposition_is_reported(self) -> None:
+        payload = json.loads(DISPOSITIONS.read_text(encoding="utf-8"))
+        decision = next(
+            item
+            for item in payload["decisions"]
+            if item["caseId"] == "review-ford-mustang-variant-missing"
+        )
+        decision["sides"] = ["left", "right"]
+
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "review-disposition.json"
+            path.write_text(json.dumps(payload), encoding="utf-8")
+            report = evaluate_review_dispositions(DATASETS, ENRICHMENT_V3, path)
+
+        self.assertEqual(report["summary"]["unusedDispositions"], 1)
+        self.assertEqual(
+            report["unusedDispositionKeys"],
+            [{"caseId": "review-ford-mustang-variant-missing", "side": "left"}],
         )
 
 
