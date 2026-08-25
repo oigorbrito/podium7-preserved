@@ -38,6 +38,7 @@
 ## Acquisition, extraction, review, export, and operational readiness
 
 - [`FIRST-REAL-STRUCTURED-INGESTION.md`](FIRST-REAL-STRUCTURED-INGESTION.md)
+- [`POST-MVP-SOURCE-ACQUISITION-OUTCOME-V1.md`](POST-MVP-SOURCE-ACQUISITION-OUTCOME-V1.md) — implementation outcome for mission #122 across source contracts, bounded adapters, multi-source validation and recurring acquisition; integration remains pending external CI #112.
 - [`SOURCE-EVIDENCE-GAP-MATRIX-V1.md`](SOURCE-EVIDENCE-GAP-MATRIX-V1.md) — reconstructed qualified-source coverage and decision-critical evidence gaps for the post-MVP acquisition mission.
 - [`SOURCE-QUALIFICATION-V1.md`](SOURCE-QUALIFICATION-V1.md) — targeted primary-source qualification against measured post-MVP identity/evidence gaps.
 - [`NHTSA-VPIC-EVIDENCE-CONTRACT-V1.md`](NHTSA-VPIC-EVIDENCE-CONTRACT-V1.md) — source-specific discovery/VIN-backed evidence, provenance, nonclaims and fail-closed boundaries.
