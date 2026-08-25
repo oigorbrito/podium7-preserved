@@ -4,22 +4,23 @@ Status: active
 
 Outcome: execute post-MVP mission #122 to expand Podium 7's evidence-backed automotive acquisition/enrichment layer using qualified multi-source evidence without changing existing evidence, fusion, ambiguity, identity-resolution, or publication principles.
 
-Current block: #125 — define source-specific semantic and provenance contracts for the already-qualified implementable sources before any new adapter code is written.
+Current block: #126 — implement the smallest bounded source adapters/enrichment slices authorized by the source-specific contracts, beginning with NHTSA vPIC VIN-backed evidence and EEA regulatory identity/support evidence.
 
-Completed research blocks on the active branch:
+Completed research/contract blocks on the active branch:
 
-- #123 reconstructed the existing source baseline and produced `docs/SOURCE-EVIDENCE-GAP-MATRIX-V1.md` without broad historical retesting.
-- #124 produced `docs/SOURCE-QUALIFICATION-V1.md` and updated the candidate ledger: NHTSA vPIC and EEA remain `ADAPT`; SENATRAN WSDenatran is `UNDECIDED` pending legitimate authorization/contract access; SENATRAN fleet and CAT/SISCAT remain `REFERENCE`; manufacturer artifacts remain case-bound primary evidence rather than a generic source family.
+- #123: `docs/SOURCE-EVIDENCE-GAP-MATRIX-V1.md` reconstructs qualified-source coverage and measured evidence gaps without broad historical retesting.
+- #124: `docs/SOURCE-QUALIFICATION-V1.md` plus the candidate ledger retain NHTSA/EEA as `ADAPT`, WSDenatran as `UNDECIDED` pending legitimate access, and SENATRAN fleet/CAT plus manufacturer artifacts as bounded reference evidence.
+- #125: `docs/NHTSA-VPIC-EVIDENCE-CONTRACT-V1.md` and `docs/EEA-EVIDENCE-CONTRACT-V2.md` define source semantics, nonclaims, provenance and fail-closed behavior before coding.
 
 Boundaries:
 
 - existing evidence/source hierarchy, semantic conservatism, ambiguity handling, fusion/conflict and publication principles require explicit owner authorization to change;
-- reconstruct durable source evidence before retesting;
 - no Reddit/forums/blogs/opaque aggregators as canonical evidence and no stealth/proxy/CAPTCHA bypass;
-- bounded measurements must not be presented as production-wide completeness;
-- do not implement WSDenatran or another restricted source through an undocumented/bypass path.
+- do not implement WSDenatran or another restricted source through an undocumented/bypass path;
+- do not promote new `STRONG` identifier namespaces, conflate registration/manufacturing/model year, or infer missing source fields;
+- bounded measurements must not be presented as production-wide completeness.
 
-Acceptance for #125: every selected implementable source has an explicit contract defining source/version locator, field semantics, strength/nonclaims, market/year scope, normalization boundaries, conflict/abstention behavior, provenance/raw-hash chain, access/reuse constraints and deterministic fixtures before adapter implementation starts.
+Acceptance for #126: approved sources produce deterministic source-backed candidates/evidence inside their documented scope, with complete provenance, explicit missing/unsupported/error paths, no identity-safety regression, and repository-required executable validation before integration.
 
 Plan: `docs/exec-plans/active/POST-MVP-SOURCE-ACQUISITION-V1.md`.
 
