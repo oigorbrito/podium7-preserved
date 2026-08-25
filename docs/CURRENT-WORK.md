@@ -1,11 +1,7 @@
 # Current work
 
-Status: active
+Status: none
 
-Outcome: exhaust the current V3 production review queue conservatively and fail closed on both unassessed and stale review dispositions.
+No implementation mission is active. PRs #106 and #107 completed the production-review exhaustion and catalog review operator work on `main`. Remaining open PRs are independent documentation/test hardening and must be refreshed against current `main` before integration.
 
-Boundaries: no resolver weakening, no inferred identity promotion, no licensing/public-release change, and no runner-architecture substitution merely to bypass CI infrastructure failure.
-
-Acceptance: all 13 current review items explicitly dispositioned by exact `(caseId, side, evidenceId)`, zero unassessed/stale item dispositions, zero resolver-policy changes, and green CI on the PR merge candidate before integration.
-
-Plan: [`exec-plans/active/PRODUCTION-REVIEW-EXHAUSTION-V2.md`](exec-plans/active/PRODUCTION-REVIEW-EXHAUSTION-V2.md)
+Durable unresolved work remains tracked in `TECH-DEBT.md`; completed execution history belongs under `exec-plans/completed/`.
