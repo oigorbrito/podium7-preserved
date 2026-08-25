@@ -7,6 +7,9 @@ from podium7.catalog import (
     ExternalIdentifierStrength,
     resolve_catalog_pair,
 )
+from podium7.catalog_resolution_precedence import (
+    resolve_catalog_pair_with_structural_precedence,
+)
 
 
 def vehicle(**kwargs):
@@ -51,6 +54,53 @@ class CatalogExternalIdentifierPolicyTests(unittest.TestCase):
             namespace_registry=registry,
         )
         self.assertEqual(decision.outcome, CatalogMatchOutcome.NO_MATCH)
+
+    def test_operational_precedence_preserves_external_identifier_policy(self) -> None:
+        unknown = ExternalIdentifier("unknown-source", "shared-123")
+        fipe = ExternalIdentifier("fipe", "004001-0")
+        strong = ExternalIdentifier("test-strong", "shared-123")
+        registry = {"test-strong": ExternalIdentifierStrength.STRONG}
+        cases = (
+            (
+                vehicle(external_identifiers=(unknown,)),
+                vehicle(external_identifiers=(unknown,)),
+                None,
+                CatalogMatchOutcome.REVIEW,
+            ),
+            (
+                vehicle(external_identifiers=(fipe,)),
+                vehicle(external_identifiers=(fipe,)),
+                None,
+                CatalogMatchOutcome.REVIEW,
+            ),
+            (
+                vehicle(external_identifiers=(strong,)),
+                vehicle(external_identifiers=(strong,)),
+                registry,
+                CatalogMatchOutcome.MATCH,
+            ),
+            (
+                vehicle(generation="E170", external_identifiers=(strong,)),
+                vehicle(generation="E210", external_identifiers=(strong,)),
+                registry,
+                CatalogMatchOutcome.NO_MATCH,
+            ),
+        )
+
+        for left, right, namespace_registry, expected in cases:
+            with self.subTest(expected=expected.value):
+                canonical = resolve_catalog_pair(
+                    left,
+                    right,
+                    namespace_registry=namespace_registry,
+                )
+                operational = resolve_catalog_pair_with_structural_precedence(
+                    left,
+                    right,
+                    namespace_registry=namespace_registry,
+                )
+                self.assertEqual(operational, canonical)
+                self.assertIs(operational.outcome, expected)
 
 
 if __name__ == "__main__":
