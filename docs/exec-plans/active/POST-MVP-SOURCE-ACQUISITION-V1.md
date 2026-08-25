@@ -2,7 +2,7 @@
 
 Status: active
 Parent mission: #122
-Current block: #125
+Current block: #126
 
 ## Outcome
 
@@ -34,43 +34,53 @@ Expand Podium 7's evidence-backed automotive acquisition/enrichment layer using 
 - `docs/DATA-FUSION-AND-CONFLICTS-V1.md`
 - `docs/CANDIDATE-EVALUATION-LEDGER.md`
 - `docs/COMPLIANT-ALTERNATIVE-SOURCES-V1.md`
+- `docs/SOURCE-EVIDENCE-GAP-MATRIX-V1.md`
+- `docs/SOURCE-QUALIFICATION-V1.md`
+- `docs/NHTSA-VPIC-EVIDENCE-CONTRACT-V1.md`
+- `docs/EEA-EVIDENCE-CONTRACT-V2.md`
 - source/acquisition/provenance contracts indexed by `docs/INDEX.md`
 
 ## Execution sequence
 
-1. #123 — reconstruct current source baseline and produce `SOURCE-EVIDENCE-GAP-MATRIX-V1.md`. **PASS on branch; PR #129 integration pending repository validation availability.**
-2. #124 — qualify only the smallest current source set needed to address measured gaps. **PASS research qualification; recorded in `SOURCE-QUALIFICATION-V1.md` and candidate ledger.**
-3. #125 — define source-specific semantic/provenance contracts before coding adapters. **Current block.**
-4. #126 — implement bounded approved adapters with deterministic fail-closed behavior.
+1. #123 — reconstruct current source baseline and produce `SOURCE-EVIDENCE-GAP-MATRIX-V1.md`. **PASS on branch; integration pending repository validation availability.**
+2. #124 — qualify only the smallest current source set needed to address measured gaps. **PASS.**
+3. #125 — define source-specific semantic/provenance contracts before coding adapters. **PASS for NHTSA vPIC and EEA; restricted WSDenatran remains intentionally deferred.**
+4. #126 — implement bounded approved adapters with deterministic fail-closed behavior. **Current block.**
 5. #127 — validate multi-source fusion, corroboration, conflicts, review load and provenance.
 6. #128 — operationalize recurring acquisition safely, including drift/outage handling.
 
 ## #123 evidence reconstruction
 
-No broad retest was justified. Recoverable durable evidence established:
-
-- catalog identity dimensions and conservative resolver semantics in `CATALOG-IDENTITY-V2.md`;
-- current evaluated source dispositions in `CANDIDATE-EVALUATION-LEDGER.md` and `COMPLIANT-ALTERNATIVE-SOURCES-V1.md`;
-- bounded three-region source diversity in `PRODUCTION-SOURCE-DISTRIBUTION-V1.md`;
-- a 60-record source-backed replay with 22 `REVIEW` outcomes in `PRODUCTION-OPERATIONAL-MEASUREMENT-V1.md`;
-- measured review causes of 13 `MISSING_IDENTITY_EVIDENCE` and 9 `LABEL_AMBIGUITY` in `PRODUCTION-OPERATIONAL-GAP-PRIORITY-V1.md`.
-
-The durable gap matrix is `docs/SOURCE-EVIDENCE-GAP-MATRIX-V1.md`.
+Recoverable durable evidence established the source baseline and measured primary gaps: 13 `MISSING_IDENTITY_EVIDENCE` and 9 `LABEL_AMBIGUITY` review causes on the retained 60-record replay. No broad retest was justified.
 
 ## #124 targeted qualification
 
-`docs/SOURCE-QUALIFICATION-V1.md` records the bounded primary-source qualification.
+- NHTSA vPIC remains `ADAPT` within documented U.S. discovery/VIN semantics.
+- EEA passenger-car monitoring remains `ADAPT` within EU regulatory/type-approval semantics.
+- WSDenatran is `UNDECIDED` for automated use because official access requires SENATRAN authorization and SERPRO contracting.
+- SENATRAN fleet and CAT/SISCAT remain `REFERENCE`, not substitutes for row-level identity evidence.
+- Manufacturer-published primary artifacts remain a case-bound `REFERENCE` evidence class.
 
-Decisions:
+## #125 contracts
 
-- NHTSA vPIC remains `ADAPT` for U.S.-scope discovery and VIN/manufacturer-backed evidence under explicit source semantics.
-- EEA passenger-car monitoring remains `ADAPT` for EU regulatory/type-approval and specification evidence; type/variant/version is not silently treated as retail trim.
-- SENATRAN WSDenatran is `UNDECIDED` for automated use: official documentation exposes the decision-critical Brazil fields, including separate manufacturing/model years, but access requires SENATRAN authorization and SERPRO contracting.
-- SENATRAN public fleet publications are `REFERENCE`: official but aggregate, not row-level catalog identity proof.
-- SENATRAN CAT/SISCAT is `REFERENCE`: authoritative for Brazilian `marca/modelo/versão` homologation semantics; no public anonymous machine-readable CAT catalog was established.
-- Primary manufacturer artifacts are retained as a case-bound `REFERENCE` evidence class for generation, retail-trim and mechanical distinctions; each concrete source requires source-specific qualification.
+### NHTSA vPIC
 
-No new broad live probe was required. Existing NHTSA/EEA live evidence was recoverable; WSDenatran's limiting condition is documented authorization/contract access.
+`NHTSA-VPIC-EVIDENCE-CONTRACT-V1.md` fixes discovery-vs-evidence roles, U.S. scope, field-presence semantics, identifier-strength nonclaims, normalization boundaries, conflicts/abstention, provenance, rate/access constraints and deterministic fixture requirements.
+
+### EEA
+
+`EEA-EVIDENCE-CONTRACT-V2.md` fixes regulatory type-approval/type/variant/version roles, registration-year nonclaims, external-identifier boundaries, normalization/conflict behavior, provenance/reuse constraints and deterministic fixture requirements.
+
+No contract promotes a new `STRONG` namespace, changes year semantics, weakens `REVIEW`, or converts missing data into inferred facts.
+
+## #126 implementation order
+
+1. Inspect the existing NHTSA discovery adapter/domain/evidence primitives and EEA source-family implementation before editing.
+2. Prefer additive source-specific parsing/extraction over generic framework changes.
+3. Implement the smallest deterministic NHTSA VIN-backed evidence slice justified by frozen inspected fixtures.
+4. Implement only the smallest EEA regulatory identity/support enrichment needed to exercise the V2 contract; reuse existing EEA acquisition/parser code rather than duplicate it.
+5. Preserve raw/source-native values and explicit unsupported/missing-field issues.
+6. Run required harness/focused/sequential validation before integration when executable validation is available.
 
 ## Decisions
 
@@ -80,15 +90,6 @@ No new broad live probe was required. Existing NHTSA/EEA live evidence was recov
 - Missing or conflicting evidence stays explicit. Resolver/evidence thresholds are not tuned merely to improve coverage.
 - A source with authoritative semantics but unavailable/contractual access is not disguised as an implementable adapter.
 
-## Next contract scope — #125
-
-Define implementable contracts first for the already-qualified automated sources that directly address measured gaps:
-
-1. NHTSA vPIC source contract: discovery vs VIN-backed evidence, field-presence rule, U.S. scope, provenance, rate control and identifier strength boundaries.
-2. EEA source contract refinement: type-approval/type/variant/version semantics, registration-year nonclaim, mechanical/spec fields, provenance/reuse and conflict behavior.
-3. Record WSDenatran as a deferred contract candidate blocked on authorized access; do not implement against undocumented or bypassed surfaces.
-4. Define the generic case-bound manufacturer-artifact qualification template only if needed to prevent semantic invention during later enrichment; do not create a generic scraper contract.
-
 ## Validation / blockers
 
-The work through #124 is documentation/research qualification only; no executable behavior changed. Self-review must verify that no source-policy or resolver principle was altered. Repository harness/CI validation remains required according to `DEVELOPMENT-WORKFLOW.md` before integration. Issue #112 may still block normal GitHub-hosted execution; use only the repository's documented accepted validation path and do not introduce runner workarounds.
+The work through #125 is documentation/research/contract-only and does not alter executable behavior. Issue #112 still prevents normal GitHub-hosted execution evidence from being assumed. For #126 code changes, do not claim PASS without the repository-required executable validation path; if execution remains unavailable, complete reviewable implementation as far as possible and record the validation blocker rather than bypassing it.
