@@ -1,6 +1,6 @@
 # MVP Exit Gate V1
 
-Status: implementation candidate
+Status: active
 
 This is the formal technical gate for declaring the current private Podium 7 MVP complete. It is deliberately narrower than public/commercial release readiness.
 
@@ -51,6 +51,10 @@ python scripts/check_mvp_exit.py /tmp/podium7-readiness.json \
 ```
 
 The two evidence paths are mutually exclusive. The independent report is rejected if its commit does not match the checkout running the MVP gate, if tracked files were dirty, if Operational Readiness was not `PASS`, or if the full sequential tests did not pass. `official_ci` remains `PENDING` when this path is used; the gate instead records `execution_validation=PASS` and `validation_source=independent-equivalent`. Issue #112 remains open until GitHub Actions itself executes normally again.
+
+## Current MVP result
+
+The private technical MVP has reached `PASS` using the accepted independent-equivalent validation path. This does not assert that GitHub Actions is green; #112 remains a separate infrastructure/operations debt item.
 
 ## Noncriteria
 
