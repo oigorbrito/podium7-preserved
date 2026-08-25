@@ -1,29 +1,28 @@
 # Current work
 
-Status: active
+Status: implementation complete / integration pending external CI
 
 Outcome: execute post-MVP mission #122 to expand Podium 7's evidence-backed automotive acquisition/enrichment layer using qualified multi-source evidence without changing existing evidence, fusion, ambiguity, identity-resolution, or publication principles.
 
-Current integration scope: #123–#125 — source baseline/gap matrix, targeted primary-source qualification, and source-specific NHTSA/EEA semantic/provenance contracts. Executable adapter work belongs to #126 on a separate branch/PR.
+Completed implementation stack:
 
-Completed research/contract blocks on this branch:
+- #123–#125 / PR #129: measured source-gap baseline, targeted source qualification, and source-specific NHTSA vPIC / EEA semantic and provenance contracts.
+- #126 / PR #130: bounded NHTSA vPIC and EEA adapters producing `RawEvidence` and `CandidateFact` records with content-addressed provenance and fail-closed source semantics.
+- #127 / PR #131: bounded multi-source validation measuring contribution, corroboration, explicit conflict, REVIEW/abstention and provenance completeness without resolver-policy changes.
+- #128 / PR #132: recurring qualified-source coordinator preserving existing host/robots/pacing/network controls and adding schema/media/host/hash drift detection, idempotency, bounded retries and degraded-state reporting.
 
-- #123: `docs/SOURCE-EVIDENCE-GAP-MATRIX-V1.md` reconstructs qualified-source coverage and measured evidence gaps without broad historical retesting.
-- #124: `docs/SOURCE-QUALIFICATION-V1.md` plus the candidate ledger retain NHTSA/EEA as `ADAPT`, WSDenatran as `UNDECIDED` pending legitimate access, and SENATRAN fleet/CAT plus manufacturer artifacts as bounded reference evidence.
-- #125: `docs/NHTSA-VPIC-EVIDENCE-CONTRACT-V1.md` and `docs/EEA-EVIDENCE-CONTRACT-V2.md` define source semantics, nonclaims, provenance and fail-closed behavior before coding.
+Durable outcome: `docs/POST-MVP-SOURCE-ACQUISITION-OUTCOME-V1.md`.
 
-Next executable block: #126 — implement the smallest bounded source adapters/enrichment slices authorized by those contracts, beginning with NHTSA vPIC VIN-backed evidence and EEA regulatory identity/support evidence.
+Boundaries remain unchanged:
 
-Boundaries:
-
-- existing evidence/source hierarchy, semantic conservatism, ambiguity handling, fusion/conflict and publication principles require explicit owner authorization to change;
+- no evidence/source hierarchy, semantic conservatism, ambiguity, fusion/conflict, identity-resolution or publication principle changes without explicit owner authorization;
 - no Reddit/forums/blogs/opaque aggregators as canonical evidence and no stealth/proxy/CAPTCHA bypass;
-- do not implement WSDenatran or another restricted source through an undocumented/bypass path;
-- do not promote new `STRONG` identifier namespaces, conflate registration/manufacturing/model year, or infer missing source fields;
-- bounded measurements must not be presented as production-wide completeness.
+- no WSDenatran or other restricted source through undocumented access;
+- no new `STRONG` identifier namespace and no registration/manufacturing/model-year conflation;
+- bounded measurements are not production-wide completeness claims.
 
-Acceptance for this integration scope: durable gap/qualification/contract artifacts are internally consistent, indexed, preserve the existing principles, and are validated under the repository workflow. #126 has separate executable acceptance requiring deterministic fixtures/tests and repository-required execution evidence.
+Integration blocker: #112 (`Restore GitHub Actions hosted-runner execution`). The latest stack run `32907790324` created `tests` and `minimum-python`, but both completed as failures with `steps=null`; repository commands did not execute. The executable PRs therefore remain draft/PENDING and must not be merged or marked PASS until required harness/sequential/CI validation actually runs.
+
+Integration order after runner recovery: #129 -> #130 -> #131 -> #132, each with repository-required validation and squash merge, followed by mission-level readiness/quality gates and issue closure.
 
 Plan: `docs/exec-plans/active/POST-MVP-SOURCE-ACQUISITION-V1.md`.
-
-Issue #112 (`Restore GitHub Actions hosted-runner execution`) remains infrastructure/operations debt. Do not add runner/infrastructure workarounds merely to bypass it.
