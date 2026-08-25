@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
-import tempfile
 import unittest
 from unittest.mock import patch
 
@@ -17,9 +16,20 @@ class OperationalReadinessTests(unittest.TestCase):
             class Result:
                 returncode = 0
                 stderr = ""
-                stdout = "{}" if "project_facts.py" in argv else "PASS"
+                stdout = "PASS"
 
-            if "project_facts.py" in argv:
+            if "run_catalog_identity_benchmark.py" in argv:
+                Result.stdout = json.dumps(
+                    {
+                        "totalCases": 3,
+                        "metrics": {
+                            "correct": 3,
+                            "falseMergeCount": 0,
+                            "ambiguousOvercommitCount": 0,
+                        },
+                    }
+                )
+            elif "project_facts.py" in argv:
                 Result.stdout = json.dumps(
                     {
                         "runtime": {"ready": True},
@@ -34,6 +44,42 @@ class OperationalReadinessTests(unittest.TestCase):
         self.assertEqual(REPORT_SCHEMA, report["schema"])
         self.assertEqual("PASS", report["status"])
         self.assertEqual(REQUIRED_CHECKS, {item["name"] for item in report["checks"]})
+
+    @patch("scripts.run_operational_readiness.subprocess.run")
+    def test_benchmark_regression_fails_readiness_even_with_zero_exit(self, run) -> None:
+        class Result:
+            returncode = 0
+            stderr = ""
+            stdout = "PASS"
+
+        def completed(argv, **kwargs):
+            result = Result()
+            if "run_catalog_identity_benchmark.py" in argv:
+                result.stdout = json.dumps(
+                    {
+                        "totalCases": 3,
+                        "metrics": {
+                            "correct": 2,
+                            "falseMergeCount": 1,
+                            "ambiguousOvercommitCount": 0,
+                        },
+                    }
+                )
+            elif "project_facts.py" in argv:
+                result.stdout = json.dumps(
+                    {
+                        "runtime": {"ready": True},
+                        "tests_discovered": 1,
+                        "catalog_identity_benchmarks": {"case_count": 1},
+                    }
+                )
+            return result
+
+        run.side_effect = completed
+        report = build_report(Path("."), include_sequential_tests=True, timeout=30)
+        self.assertEqual("FAIL", report["status"])
+        benchmark = next(item for item in report["checks"] if item["name"] == "catalog-identity-golden")
+        self.assertFalse(benchmark["passed"])
 
 
 class MvpExitGateTests(unittest.TestCase):
