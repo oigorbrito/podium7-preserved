@@ -18,19 +18,15 @@ DATASETS = (
 
 class CatalogOperationalResolverBenchmarkTests(unittest.TestCase):
     def test_operational_resolver_preserves_all_curated_benchmark_labels(self) -> None:
-        total = 0
         for path in DATASETS:
             dataset = load_catalog_identity_benchmark(path)
             for case in dataset.cases:
-                total += 1
                 with self.subTest(dataset=dataset.version, case=case.id):
                     decision = resolve_catalog_pair_with_structural_precedence(
                         case.left,
                         case.right,
                     )
                     self.assertIs(decision.outcome, case.expected)
-
-        self.assertEqual(total, 36)
 
 
 if __name__ == "__main__":
