@@ -21,7 +21,7 @@ python -m podium7 review create <review_id> --database <path> --actor <id> --rea
 
 The operator requires an **existing** SQLite file that already contains the supported Podium evidence, Catalog V2, and durable catalog-review schemas.
 
-Before normal opening, the canonical operator performs a read-only SQLite preflight that verifies:
+Before normal opening, the canonical operator resolves the supplied filesystem path and performs a read-only SQLite preflight on that canonical target. The same resolved path is then used for the normal CatalogStore open, so a symlink/relative alias is not validated through one pathname and reopened through another. The preflight verifies:
 
 - the V1 persistence `PRAGMA user_version` is exactly supported;
 - the required evidence/catalog/review tables and indexes exist;
