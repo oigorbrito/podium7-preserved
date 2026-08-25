@@ -1,24 +1,36 @@
 from __future__ import annotations
 
 import argparse
-import json
 from pathlib import Path
 
-from podium7.catalog import CatalogStore
-from podium7.catalog_ingestion import (
-    resolve_catalog_review_create,
-    resolve_catalog_review_match,
-)
-from podium7.catalog_review import CatalogReviewQueue
+from podium7.__main__ import main as podium_main
 
 
-def _print(payload: object) -> None:
-    print(json.dumps(payload, ensure_ascii=False, indent=2, sort_keys=True))
+def _translate_args(args: argparse.Namespace) -> list[str]:
+    translated = ["review", args.command]
+    if args.command in {"show", "match", "create"}:
+        translated.append(args.review_id)
+    if args.command == "match":
+        translated.append(args.vehicle_id)
+    translated.extend(["--database", str(args.database)])
+    if args.command == "list":
+        translated.extend(["--limit", str(args.limit)])
+    if args.command in {"match", "create"}:
+        translated.extend(["--actor", args.actor, "--reason", args.reason])
+    return translated
 
 
 def main(argv: list[str] | None = None) -> int:
+    """Compatibility entry point for the canonical catalog review operator.
+
+    New automation should use ``python -m podium7 review ...`` directly. This
+    wrapper intentionally contains no database-opening or resolution logic so
+    the legacy command cannot bypass the canonical existing-database preflight
+    or mutation/audit rules.
+    """
+
     parser = argparse.ArgumentParser(
-        description="Inspect and resolve Podium 7 catalog review tasks"
+        description="Compatibility wrapper for the Podium 7 catalog review operator"
     )
     parser.add_argument(
         "--database",
@@ -29,6 +41,9 @@ def main(argv: list[str] | None = None) -> int:
 
     list_parser = subparsers.add_parser("list", help="list open review tasks")
     list_parser.add_argument("--limit", type=int, default=100)
+
+    show_parser = subparsers.add_parser("show", help="show one review task")
+    show_parser.add_argument("review_id")
 
     match_parser = subparsers.add_parser(
         "match",
@@ -48,43 +63,7 @@ def main(argv: list[str] | None = None) -> int:
     create_parser.add_argument("--reason", required=True)
 
     args = parser.parse_args(argv)
-
-    try:
-        with CatalogStore(args.database) as store:
-            queue = CatalogReviewQueue(store)
-            if args.command == "list":
-                _print(
-                    {
-                        "openCount": queue.count_open(),
-                        "items": [
-                            task.to_payload()
-                            for task in queue.open_tasks(limit=args.limit)
-                        ],
-                    }
-                )
-                return 0
-
-            if args.command == "match":
-                task = resolve_catalog_review_match(
-                    store,
-                    args.review_id,
-                    args.vehicle_id,
-                    actor_id=args.actor,
-                    reason=args.reason,
-                )
-                _print(task.to_payload())
-                return 0
-
-            task = resolve_catalog_review_create(
-                store,
-                args.review_id,
-                actor_id=args.actor,
-                reason=args.reason,
-            )
-            _print(task.to_payload())
-            return 0
-    except (OSError, ValueError) as exc:
-        parser.exit(2, f"catalog review failed: {exc}\n")
+    return podium_main(_translate_args(args))
 
 
 if __name__ == "__main__":

@@ -1,10 +1,9 @@
 # Podium 7 documentation index
 
-`docs/` is the repository system of record. This index is the progressive-disclosure entry point after `AGENTS.md` and the compact resume handoff.
+`docs/` is the repository system of record. This index is the progressive-disclosure entry point after `AGENTS.md`.
 
 ## Always-read operating context
 
-- [`HANDOFF.md`](HANDOFF.md) — compact resume point for a new chat/session; refreshes the active remote context without duplicating canonical policy.
 - [`CURRENT-STATE.md`](CURRENT-STATE.md) — current factual repository/product state; short, no history dump.
 - [`CURRENT-WORK.md`](CURRENT-WORK.md) — the active outcome, boundaries, acceptance criteria, and blockers only.
 - [`DEVELOPMENT-WORKFLOW.md`](DEVELOPMENT-WORKFLOW.md) — the single canonical source for autonomy, approvals, Git/PR/CI, validation, self-review, done, and stopping rules.
@@ -32,6 +31,7 @@
 - [`CATALOG-IDENTITY-BENCHMARK-V1.md`](CATALOG-IDENTITY-BENCHMARK-V1.md)
 - [`CATALOG-YEAR-SEMANTICS-CHALLENGE-V1.md`](CATALOG-YEAR-SEMANTICS-CHALLENGE-V1.md)
 - [`CATALOG-BATCH-INGESTION-V1.md`](CATALOG-BATCH-INGESTION-V1.md)
+- [`CATALOG-REVIEW-OPERATOR-V1.md`](CATALOG-REVIEW-OPERATOR-V1.md) — canonical private operator CLI, existing-database safety boundary, review context, and audited mutation contract.
 - [`BOM-PRATICHE-CONTRACT-V2.md`](BOM-PRATICHE-CONTRACT-V2.md)
 
 ## Acquisition, extraction, review, and export design records

@@ -1,13 +1,11 @@
 # Current work
 
-Status: blocked — external GitHub Actions execution
+Status: active
 
-Current outcome: finish the production-review exhaustion work, then validate the catalog review operator surface.
+Outcome: exhaust the current V3 production review queue conservatively and fail closed on both unassessed and stale review dispositions.
 
-- PR #106 (`Exhaust current production reviews V2`) is the first integration target.
-- PR #107 (`Expose catalog review operator CLI V1`) follows after #106 is integrated/reconciled.
-- Both are currently blocked because GitHub Actions fails before creating any workflow step on independent branches. This is an external repository/account execution blocker, not code PASS/FAIL.
-- Acceptance: executable repository CI returns green on each merge-candidate head, followed by self-review, concurrency check, and squash integration.
-- Resume context: [`HANDOFF.md`](HANDOFF.md).
+Boundaries: no resolver weakening, no inferred identity promotion, no licensing/public-release change, and no runner-architecture substitution merely to bypass CI infrastructure failure.
 
-Do not merge either PR without executable green repository CI. Do not change licensing or resolver safety policy to bypass this blocker.
+Acceptance: all 13 current review items explicitly dispositioned by exact `(caseId, side, evidenceId)`, zero unassessed/stale item dispositions, zero resolver-policy changes, and green CI on the PR merge candidate before integration.
+
+Plan: [`exec-plans/active/PRODUCTION-REVIEW-EXHAUSTION-V2.md`](exec-plans/active/PRODUCTION-REVIEW-EXHAUSTION-V2.md)
