@@ -28,16 +28,7 @@ def _require_content_ref(raw_payload: bytes, raw_content_ref: str) -> str:
     return digest
 
 
-def _fact(
-    *,
-    evidence_id: str,
-    entity_candidate_id: str,
-    source_record_id: int,
-    attribute: str,
-    raw_value: Any,
-    normalized_value: Any,
-    unit: str | None = None,
-) -> CandidateFact:
+def _fact(*, evidence_id: str, entity_candidate_id: str, source_record_id: int, attribute: str, raw_value: Any, normalized_value: Any, unit: str | None = None) -> CandidateFact:
     return CandidateFact(
         id=f"{evidence_id}:{source_record_id}:{attribute}",
         entity_candidate_id=entity_candidate_id,
@@ -52,14 +43,7 @@ def _fact(
     )
 
 
-def parse_eea_evidence(
-    raw_payload: bytes,
-    *,
-    locator: str,
-    retrieved_at: datetime,
-    raw_content_ref: str,
-    entity_candidate_ids: dict[int, str],
-) -> tuple[EeaEvidenceRecord, ...]:
+def parse_eea_evidence(raw_payload: bytes, *, locator: str, retrieved_at: datetime, raw_content_ref: str, entity_candidate_ids: dict[int, str]) -> tuple[EeaEvidenceRecord, ...]:
     if not isinstance(raw_payload, bytes) or not raw_payload:
         raise ValueError("raw_payload must be non-empty bytes")
     if not isinstance(locator, str) or not locator.startswith("https://discodata.eea.europa.eu/"):
@@ -71,14 +55,7 @@ def parse_eea_evidence(
 
     digest = _require_content_ref(raw_payload, raw_content_ref)
     evidence_id = f"eea-co2-cars:{digest}"
-    evidence = RawEvidence(
-        id=evidence_id,
-        source_id=EEA_SOURCE_ID,
-        locator=locator,
-        retrieved_at=retrieved_at,
-        acquisition_method="bounded_structured_dataset",
-        raw_content_ref=raw_content_ref,
-    )
+    evidence = RawEvidence(id=evidence_id, source_id=EEA_SOURCE_ID, locator=locator, retrieved_at=retrieved_at, acquisition_method="bounded_structured_dataset", raw_content_ref=raw_content_ref)
 
     reports = extract_eea_response(raw_payload)
     output: list[EeaEvidenceRecord] = []
@@ -86,37 +63,24 @@ def parse_eea_evidence(
     for report in reports:
         identity = report.identity
         record_id = identity.source_record_id
+        if report.issues:
+            codes = ", ".join(issue.code for issue in report.issues)
+            raise ValueError(f"EEA record {record_id} has incomplete or unsupported evidence: {codes}")
         candidate_id = entity_candidate_ids.get(record_id)
         if not isinstance(candidate_id, str) or not candidate_id.strip():
             raise ValueError(f"missing entity candidate binding for EEA record {record_id}")
+        candidate_id = candidate_id.strip()
         observed_ids.add(record_id)
         facts: list[CandidateFact] = [
-            _fact(evidence_id=evidence_id, entity_candidate_id=candidate_id.strip(), source_record_id=record_id, attribute="make", raw_value=identity.make, normalized_value=identity.make),
-            _fact(evidence_id=evidence_id, entity_candidate_id=candidate_id.strip(), source_record_id=record_id, attribute="model", raw_value=identity.commercial_name, normalized_value=identity.commercial_name),
-            _fact(evidence_id=evidence_id, entity_candidate_id=candidate_id.strip(), source_record_id=record_id, attribute="eea.registration_year", raw_value=identity.registration_year, normalized_value=identity.registration_year),
+            _fact(evidence_id=evidence_id, entity_candidate_id=candidate_id, source_record_id=record_id, attribute="make", raw_value=identity.make, normalized_value=identity.make),
+            _fact(evidence_id=evidence_id, entity_candidate_id=candidate_id, source_record_id=record_id, attribute="model", raw_value=identity.commercial_name, normalized_value=identity.commercial_name),
+            _fact(evidence_id=evidence_id, entity_candidate_id=candidate_id, source_record_id=record_id, attribute="eea.registration_year", raw_value=identity.registration_year, normalized_value=identity.registration_year),
         ]
-        optional_identity = (
-            ("eea.type_approval_number", identity.type_approval_number),
-            ("eea.vehicle_type", identity.vehicle_type),
-            ("eea.variant", identity.variant),
-            ("eea.version", identity.version),
-        )
-        for attribute, value in optional_identity:
+        for attribute, value in (("eea.type_approval_number", identity.type_approval_number), ("eea.vehicle_type", identity.vehicle_type), ("eea.variant", identity.variant), ("eea.version", identity.version)):
             if value is not None:
-                facts.append(_fact(evidence_id=evidence_id, entity_candidate_id=candidate_id.strip(), source_record_id=record_id, attribute=attribute, raw_value=value, normalized_value=value))
-
+                facts.append(_fact(evidence_id=evidence_id, entity_candidate_id=candidate_id, source_record_id=record_id, attribute=attribute, raw_value=value, normalized_value=value))
         for extracted in report.facts:
-            facts.append(
-                _fact(
-                    evidence_id=evidence_id,
-                    entity_candidate_id=candidate_id.strip(),
-                    source_record_id=record_id,
-                    attribute=extracted.attribute,
-                    raw_value=extracted.raw_value,
-                    normalized_value=extracted.normalized_value,
-                    unit=extracted.unit,
-                )
-            )
+            facts.append(_fact(evidence_id=evidence_id, entity_candidate_id=candidate_id, source_record_id=record_id, attribute=extracted.attribute, raw_value=extracted.raw_value, normalized_value=extracted.normalized_value, unit=extracted.unit))
         output.append(EeaEvidenceRecord(evidence=evidence, source_record_id=record_id, facts=tuple(facts), report=report))
 
     extra_bindings = sorted(set(entity_candidate_ids) - observed_ids)
