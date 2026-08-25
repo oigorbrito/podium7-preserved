@@ -38,6 +38,34 @@ class RecurringSourceContract:
 
 
 @dataclass(frozen=True)
+class RecurringCheckpoint:
+    last_sha: dict[str, str]
+    retry_counts: dict[str, int]
+
+    def __post_init__(self) -> None:
+        if any(not isinstance(key, str) or not key.strip() or not isinstance(value, str) or len(value) != 64 for key, value in self.last_sha.items()):
+            raise ValueError("checkpoint last_sha entries must contain source ids and SHA-256 hex digests")
+        if any(not isinstance(key, str) or not key.strip() or isinstance(value, bool) or not isinstance(value, int) or value < 0 for key, value in self.retry_counts.items()):
+            raise ValueError("checkpoint retry_counts must contain non-negative integers")
+
+    def to_dict(self) -> dict[str, dict[str, object]]:
+        return {
+            "lastSha": dict(sorted(self.last_sha.items())),
+            "retryCounts": dict(sorted(self.retry_counts.items())),
+        }
+
+    @classmethod
+    def from_dict(cls, payload: Mapping[str, object]) -> "RecurringCheckpoint":
+        if not isinstance(payload, Mapping):
+            raise ValueError("checkpoint payload must be an object")
+        raw_last = payload.get("lastSha", {})
+        raw_retry = payload.get("retryCounts", {})
+        if not isinstance(raw_last, Mapping) or not isinstance(raw_retry, Mapping):
+            raise ValueError("checkpoint maps are required")
+        return cls(last_sha=dict(raw_last), retry_counts=dict(raw_retry))  # type: ignore[arg-type]
+
+
+@dataclass(frozen=True)
 class RecurringRunResult:
     source_id: str
     state: RecurringRunState
@@ -50,15 +78,22 @@ class RecurringRunResult:
 
 
 class RecurringAcquisitionCoordinator:
-    def __init__(self, contracts: Mapping[str, RecurringSourceContract]) -> None:
+    def __init__(self, contracts: Mapping[str, RecurringSourceContract], *, checkpoint: RecurringCheckpoint | None = None) -> None:
         if not contracts:
             raise ValueError("at least one recurring source contract is required")
         self._contracts = dict(contracts)
         if set(self._contracts) != {contract.source_id for contract in self._contracts.values()}:
             raise ValueError("contract mapping keys must match source ids")
         self._gates = {source_id: RecurringSourceGate(contract.operation_policy) for source_id, contract in self._contracts.items()}
-        self._last_sha: dict[str, str] = {}
-        self._retry_counts: dict[str, int] = {}
+        checkpoint = checkpoint or RecurringCheckpoint({}, {})
+        unknown = (set(checkpoint.last_sha) | set(checkpoint.retry_counts)) - set(self._contracts)
+        if unknown:
+            raise ValueError("checkpoint references unapproved sources: " + ", ".join(sorted(unknown)))
+        self._last_sha = dict(checkpoint.last_sha)
+        self._retry_counts = dict(checkpoint.retry_counts)
+
+    def checkpoint(self) -> RecurringCheckpoint:
+        return RecurringCheckpoint(dict(self._last_sha), dict(self._retry_counts))
 
     def authorize(self, source_id: str, locator: str, *, now: float, robots_text: str | None = None) -> SourceOperationDecision:
         gate = self._gates.get(source_id)
@@ -107,4 +142,4 @@ class RecurringAcquisitionCoordinator:
         self._retry_counts[source_id] = 0
 
 
-__all__ = ["RecurringAcquisitionCoordinator", "RecurringRunResult", "RecurringRunState", "RecurringSourceContract"]
+__all__ = ["RecurringAcquisitionCoordinator", "RecurringCheckpoint", "RecurringRunResult", "RecurringRunState", "RecurringSourceContract"]
