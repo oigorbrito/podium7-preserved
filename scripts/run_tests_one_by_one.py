@@ -207,6 +207,8 @@ def _write_report(
 def main() -> int:
     root = Path(__file__).resolve().parents[1]
     tests_dir = root / "tests"
+    if str(root) not in sys.path:
+        sys.path.insert(0, str(root))
     try:
         test_ids = _discover_test_ids(tests_dir)
     except KeyboardInterrupt:

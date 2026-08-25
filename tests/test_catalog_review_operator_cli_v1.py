@@ -3,10 +3,12 @@ from __future__ import annotations
 from contextlib import redirect_stdout
 from datetime import datetime, timezone
 from io import StringIO
+import gc
 import json
 import os
 import sqlite3
 import tempfile
+import time
 import unittest
 
 from podium7.__main__ import main
@@ -58,7 +60,15 @@ class CatalogReviewOperatorCliV1Tests(unittest.TestCase):
 
     def _cleanup(self) -> None:
         if os.path.exists(self.database):
-            os.remove(self.database)
+            for attempt in range(5):
+                gc.collect()
+                try:
+                    os.remove(self.database)
+                    return
+                except PermissionError:
+                    if attempt == 4:
+                        raise
+                    time.sleep(0.1)
 
     def _seed_review(self, identifier: str = "operator-review") -> tuple[str, str]:
         with CatalogStore(self.database) as store:
