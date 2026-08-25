@@ -13,6 +13,21 @@ DATASETS = (
 )
 ENRICHMENT_V3 = ROOT / "benchmarks" / "source_backed_enrichment_v3.json"
 DISPOSITIONS = ROOT / "benchmarks" / "review_disposition_v2.json"
+EXPECTED_REVIEW_KEYS = {
+    ("review-ford-mustang-variant-missing", "right"),
+    ("review-porsche-911-partial-variant-label", "left"),
+    ("review-porsche-911-partial-variant-label", "right"),
+    ("review-bmw-g20-generic-vs-330i-label", "left"),
+    ("review-bmw-g20-generic-vs-330i-label", "right"),
+    ("br-review-corolla-cross-xrx-hybrid-missing-variant", "right"),
+    ("br-review-onix-premier-missing-variant", "right"),
+    ("br-review-tcross-250-tsi-missing-variant", "right"),
+    ("br-review-shared-fipe-code-alone", "left"),
+    ("br-review-shared-fipe-code-alone", "right"),
+    ("br-hard-review-tcross-highline-model-year-present-one-side", "right"),
+    ("br-hard-no-match-corolla-altis-hybrid-my25-vs-my26", "left"),
+    ("br-hard-no-match-corolla-altis-hybrid-my25-vs-my26", "right"),
+}
 
 
 class ProductionReviewExhaustionV2Tests(unittest.TestCase):
@@ -32,7 +47,16 @@ class ProductionReviewExhaustionV2Tests(unittest.TestCase):
         })
         self.assertEqual(report["unassessedCaseIds"], [])
         self.assertEqual(report["unusedDispositionCaseIds"], [])
+        self.assertEqual(report["unassessedReviewKeys"], [])
+        self.assertEqual(report["unusedDispositionKeys"], [])
         self.assertEqual(report["blockedItems"], [])
+        self.assertEqual(
+            {
+                (item["caseId"], item["side"])
+                for item in report["durableHumanReviewItems"]
+            },
+            EXPECTED_REVIEW_KEYS,
+        )
 
 
 if __name__ == "__main__":
