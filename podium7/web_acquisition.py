@@ -279,8 +279,6 @@ def evaluate_frozen_web_acquisition(
             continue
 
         data = snapshot_path.read_bytes()
-        # Normalize CRLF to LF to match Git blob hashes generated on LF systems
-        data = data.replace(b"\r\n", b"\n")
         if not data:
             issues.append(
                 AcquisitionIssue(
