@@ -12,11 +12,11 @@ from podium7.recurring_acquisition import (
 from podium7.source_policy import RobotsMode, SourceOperationPolicy
 
 
-def acquisition(url, body=b'{"ok":true}', content_type="application/json", sha256=None):
+def acquisition(url, body=b'{"ok":true}', content_type="application/json", sha256=None, final_url=None):
     return DirectHttpAcquisition(
         requested_url=url,
-        final_url=url,
-        redirect_count=0,
+        final_url=final_url or url,
+        redirect_count=0 if final_url in (None, url) else 1,
         status=200,
         content_type=content_type,
         charset="utf-8",
@@ -115,7 +115,7 @@ class RecurringAcquisitionTests(unittest.TestCase):
         self.assertFalse(result.mutation_required)
         self.assertEqual(pin.locator, result.terms_locator)
 
-    def test_terms_locator_and_content_hash_are_verified(self):
+    def test_terms_locator_final_locator_and_content_hash_are_verified(self):
         terms_body = b"official terms v1"
         pin = self.terms_pin(terms_body)
         coordinator = self.coordinator(terms_pin=pin)
@@ -127,6 +127,22 @@ class RecurringAcquisitionTests(unittest.TestCase):
         )
         self.assertEqual(RecurringRunState.REVIEW_REQUIRED, locator_mismatch.state)
         self.assertEqual("TERMS_LOCATOR_MISMATCH", locator_mismatch.reason)
+
+        final_locator_drift = coordinator.record_success(
+            "nhtsa_vpic",
+            acquisition("https://vpic.nhtsa.dot.gov/api/x"),
+            schema_signature="decode-vin-values:v1",
+            terms_acquisition=acquisition(
+                pin.locator,
+                body=terms_body,
+                content_type="text/plain",
+                final_url="https://vpic.nhtsa.dot.gov/terms-v2",
+            ),
+        )
+        self.assertEqual(RecurringRunState.REVIEW_REQUIRED, final_locator_drift.state)
+        self.assertEqual("TERMS_FINAL_LOCATOR_DRIFT", final_locator_drift.reason)
+        self.assertFalse(final_locator_drift.mutation_required)
+
         hash_mismatch = coordinator.record_success(
             "nhtsa_vpic",
             acquisition("https://vpic.nhtsa.dot.gov/api/x"),
