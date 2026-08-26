@@ -31,6 +31,7 @@
 - [`CATALOG-CONSUMER-API-V2.md`](CATALOG-CONSUMER-API-V2.md)
 - [`CATALOG-IDENTITY-BENCHMARK-V1.md`](CATALOG-IDENTITY-BENCHMARK-V1.md)
 - [`CATALOG-YEAR-SEMANTICS-CHALLENGE-V1.md`](CATALOG-YEAR-SEMANTICS-CHALLENGE-V1.md)
+- [`FIELD-SOURCE-PROVENANCE-V1.md`](FIELD-SOURCE-PROVENANCE-V1.md) — additive explicit field→source benchmark provenance and fail-closed source-contribution-by-dimension measurement without inferred attribution.
 - [`CATALOG-BATCH-INGESTION-V1.md`](CATALOG-BATCH-INGESTION-V1.md)
 - [`CATALOG-REVIEW-OPERATOR-V1.md`](CATALOG-REVIEW-OPERATOR-V1.md) — canonical private operator CLI, existing-database safety boundary, review context, and audited mutation contract.
 - [`BOM-PRATICHE-CONTRACT-V2.md`](BOM-PRATICHE-CONTRACT-V2.md)
