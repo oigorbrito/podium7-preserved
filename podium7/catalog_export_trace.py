@@ -11,8 +11,12 @@ def catalog_evidence_trace(store: CatalogStore, vehicle_id: str) -> list[dict[st
     if store.get_catalog_vehicle(canonical) is None:
         raise ValueError("catalog vehicle does not exist")
 
+    candidates = store.catalog_candidates_for_entity(canonical)
+    if not candidates:
+        raise ValueError("catalog vehicle has no persisted candidate evidence")
+
     entries: list[dict[str, Any]] = []
-    for candidate in store.catalog_candidates_for_entity(canonical):
+    for candidate in candidates:
         evidence = store.get_raw_evidence(candidate.evidence_id)
         if evidence is None:
             raise ValueError(
