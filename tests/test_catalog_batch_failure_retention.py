@@ -4,7 +4,7 @@ import unittest
 
 from podium7.catalog import CatalogStore
 from podium7.catalog_batch import ingest_catalog_batch, parse_catalog_batch_payload
-from podium7.catalog_batch_failure import CatalogBatchFailureStore
+from podium7.catalog_batch_failure import CatalogBatchFailureSnapshot, CatalogBatchFailureStore
 
 
 def _record(*, evidence_id: str, generation: object | None = None) -> dict[str, object]:
@@ -58,29 +58,53 @@ class CatalogBatchFailureRetentionTests(unittest.TestCase):
             self.assertIsNotNone(retained)
             self.assertEqual(retained.raw_content_ref, "test:evidence:bad")
             self.assertEqual(CatalogBatchFailureStore(reopened).count(), 1)
+            reopened.close()
 
     def test_repeated_identical_failure_is_idempotent(self) -> None:
         store = CatalogStore()
-        envelopes = parse_catalog_batch_payload(
-            {"records": [_record(evidence_id="evidence:bad", generation=17)]}
-        )
-        first = ingest_catalog_batch(store, envelopes)
-        second = ingest_catalog_batch(store, envelopes)
-        self.assertEqual(first.failed, 1)
-        self.assertEqual(second.failed, 1)
-        self.assertEqual(CatalogBatchFailureStore(store).count(), 1)
+        try:
+            envelopes = parse_catalog_batch_payload(
+                {"records": [_record(evidence_id="evidence:bad", generation=17)]}
+            )
+            first = ingest_catalog_batch(store, envelopes)
+            second = ingest_catalog_batch(store, envelopes)
+            self.assertEqual(first.failed, 1)
+            self.assertEqual(second.failed, 1)
+            self.assertEqual(CatalogBatchFailureStore(store).count(), 1)
+        finally:
+            store.close()
 
     def test_same_evidence_id_with_different_failure_metadata_is_rejected(self) -> None:
         store = CatalogStore()
-        first = parse_catalog_batch_payload(
-            {"records": [_record(evidence_id="evidence:bad", generation=17)]}
-        )
-        ingest_catalog_batch(store, first)
-        changed = _record(evidence_id="evidence:bad", generation=19)
-        changed["recordId"] = "changed-record"
-        second = parse_catalog_batch_payload({"records": [changed]})
-        with self.assertRaisesRegex(ValueError, "already exists with different metadata"):
-            ingest_catalog_batch(store, second)
+        try:
+            first = parse_catalog_batch_payload(
+                {"records": [_record(evidence_id="evidence:bad", generation=17)]}
+            )
+            ingest_catalog_batch(store, first)
+            changed = _record(evidence_id="evidence:bad", generation=19)
+            changed["recordId"] = "changed-record"
+            second = parse_catalog_batch_payload({"records": [changed]})
+            with self.assertRaisesRegex(ValueError, "already exists with different metadata"):
+                ingest_catalog_batch(store, second)
+        finally:
+            store.close()
+
+    def test_malformed_failure_snapshot_fails_closed(self) -> None:
+        valid = {
+            "evidence_id": "evidence:bad",
+            "index": 0,
+            "record_id": "record:evidence:bad",
+            "source_id": "source:test",
+            "source_locator": "https://example.test/source",
+            "evidence_locator": "https://example.test/evidence",
+            "raw_content_ref": "test:evidence:bad",
+            "error_code": "CATALOG_BATCH_RECORD_INVALID",
+            "error_message": "invalid vehicle",
+        }
+        for field, value in (("index", -1), ("index", False), ("evidence_id", ""), ("error_message", " ")):
+            with self.subTest(field=field, value=value):
+                with self.assertRaises(ValueError):
+                    CatalogBatchFailureSnapshot(**{**valid, field: value})
 
 
 if __name__ == "__main__":
