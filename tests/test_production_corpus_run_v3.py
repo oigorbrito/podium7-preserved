@@ -2,7 +2,7 @@ from pathlib import Path
 import unittest
 
 from podium7.catalog import CatalogStore
-from podium7.catalog_api import list_catalog_vehicles
+from podium7.catalog_api import CATALOG_API_MAX_PAGE_SIZE, list_catalog_vehicles
 from podium7.catalog_operational import (
     build_source_backed_operational_records,
     run_source_backed_operational_corpus,
@@ -27,30 +27,33 @@ class ProductionCorpusRunV3Tests(unittest.TestCase):
         self.assertTrue(all(record["evidence"]["rawContentRef"].startswith("benchmark:") for record in records))
 
         store = CatalogStore()
-        report = run_source_backed_operational_corpus(store, DATASETS)
-        self.assertTrue(report.ok)
-        self.assertEqual(report.total, 72)
-        self.assertEqual(report.failed, 0)
-        self.assertEqual(report.created + report.matched + report.review, 72)
-        self.assertGreater(report.created, 0)
-        self.assertGreater(report.matched, 0)
-        self.assertGreater(report.review, 0)
+        try:
+            report = run_source_backed_operational_corpus(store, DATASETS)
+            self.assertTrue(report.ok)
+            self.assertEqual(report.total, 72)
+            self.assertEqual(report.failed, 0)
+            self.assertEqual(report.created + report.matched + report.review, 72)
+            self.assertGreater(report.created, 0)
+            self.assertGreater(report.matched, 0)
+            self.assertGreater(report.review, 0)
 
-        consumer = list_catalog_vehicles(store, limit=200)
-        self.assertTrue(consumer["ok"])
-        self.assertGreater(len(consumer["items"]), 0)
+            consumer = list_catalog_vehicles(store, limit=CATALOG_API_MAX_PAGE_SIZE)
+            self.assertTrue(consumer["ok"])
+            self.assertGreater(len(consumer["items"]), 0)
 
-        print(
-            "PRODUCTION_CORPUS_RUN_V3",
-            {
-                "total": report.total,
-                "created": report.created,
-                "matched": report.matched,
-                "review": report.review,
-                "failed": report.failed,
-                "consumerItems": len(consumer["items"]),
-            },
-        )
+            print(
+                "PRODUCTION_CORPUS_RUN_V3",
+                {
+                    "total": report.total,
+                    "created": report.created,
+                    "matched": report.matched,
+                    "review": report.review,
+                    "failed": report.failed,
+                    "consumerItems": len(consumer["items"]),
+                },
+            )
+        finally:
+            store.close()
 
 
 if __name__ == "__main__":
