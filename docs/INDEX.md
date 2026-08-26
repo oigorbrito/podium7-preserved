@@ -69,6 +69,7 @@
 - [`AUTONOMOUS-ENRICHMENT-LOOP-V1.md`](AUTONOMOUS-ENRICHMENT-LOOP-V1.md)
 - [`AI-DISCOVERY-V1.md`](AI-DISCOVERY-V1.md)
 - [`EXPORT-V1.md`](EXPORT-V1.md)
+- [`EXPORT-EVIDENCE-TRACEABILITY-V1.md`](EXPORT-EVIDENCE-TRACEABILITY-V1.md) — additive Catalog V2 consumer evidence trace from canonical vehicle to persisted candidate, raw evidence and source records.
 - [`END-TO-END-ACCEPTANCE-V1.md`](END-TO-END-ACCEPTANCE-V1.md)
 
 ## Reference and generated material
