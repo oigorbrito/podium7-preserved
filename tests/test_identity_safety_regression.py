@@ -1,4 +1,6 @@
+import json
 from pathlib import Path
+import tempfile
 import unittest
 
 from podium7.catalog_quality import evaluate_identity_quality
@@ -65,6 +67,32 @@ class IdentitySafetyRegressionTests(unittest.TestCase):
         }
         with self.assertRaisesRegex(ValueError, "case-count contract mismatch"):
             compare_identity_quality_to_baseline(quality, baseline)
+
+    def test_boolean_or_out_of_range_metrics_fail_closed(self) -> None:
+        baseline = load_identity_safety_baseline(BASELINE)
+        for metric, value in (
+            ("autoMatchPrecision", True),
+            ("autoMatchRecall", 1.01),
+            ("falseMergeCount", False),
+            ("ambiguousOvercommitCount", -1),
+        ):
+            with self.subTest(metric=metric, value=value):
+                quality = {
+                    "datasets": list(baseline["datasets"]),
+                    "totalCases": baseline["totalCases"],
+                    "metrics": {**baseline["metrics"], metric: value},
+                }
+                with self.assertRaisesRegex(ValueError, metric):
+                    compare_identity_quality_to_baseline(quality, baseline)
+
+    def test_malformed_baseline_metric_fails_closed_on_load(self) -> None:
+        payload = json.loads(BASELINE.read_text(encoding="utf-8"))
+        payload["metrics"]["autoMatchPrecision"] = True
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "bad-baseline.json"
+            path.write_text(json.dumps(payload), encoding="utf-8")
+            with self.assertRaisesRegex(ValueError, "autoMatchPrecision"):
+                load_identity_safety_baseline(path)
 
 
 if __name__ == "__main__":
