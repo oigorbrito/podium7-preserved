@@ -59,6 +59,10 @@ class RecurringAcquisitionTests(unittest.TestCase):
         self.assertEqual(RecurringRunState.UNCHANGED, second.state)
         self.assertFalse(second.mutation_required)
 
+    def test_checkpoint_rejects_non_hex_sha256_value(self):
+        with self.assertRaisesRegex(ValueError, "SHA-256 hex digests"):
+            RecurringCheckpoint({"nhtsa_vpic": "z" * 64}, {})
+
     def test_schema_content_host_and_hash_drift_fail_closed(self):
         coordinator = self.coordinator()
         schema_drift = coordinator.record_success("nhtsa_vpic", acquisition("https://vpic.nhtsa.dot.gov/api/x"), schema_signature="decode-vin-values:v2")
