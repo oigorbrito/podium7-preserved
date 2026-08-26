@@ -59,6 +59,15 @@ class RecurringAcquisitionTests(unittest.TestCase):
         self.assertEqual(RecurringRunState.UNCHANGED, second.state)
         self.assertFalse(second.mutation_required)
 
+    def test_checkpoint_normalizes_valid_uppercase_sha256_for_idempotence(self):
+        item = acquisition("https://vpic.nhtsa.dot.gov/api/x")
+        checkpoint = RecurringCheckpoint({"nhtsa_vpic": item.sha256.upper()}, {})
+        self.assertEqual(checkpoint.last_sha["nhtsa_vpic"], item.sha256)
+        restored = self.coordinator(checkpoint)
+        result = restored.record_success("nhtsa_vpic", item, schema_signature="decode-vin-values:v1")
+        self.assertEqual(RecurringRunState.UNCHANGED, result.state)
+        self.assertFalse(result.mutation_required)
+
     def test_checkpoint_rejects_non_hex_sha256_value(self):
         with self.assertRaisesRegex(ValueError, "SHA-256 hex digests"):
             RecurringCheckpoint({"nhtsa_vpic": "z" * 64}, {})
