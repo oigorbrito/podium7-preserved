@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from collections.abc import Mapping
-from dataclasses import dataclass, fields as dataclass_fields
+from dataclasses import dataclass, field, fields as dataclass_fields
 import json
 from pathlib import Path
 from typing import Any
@@ -16,7 +16,7 @@ from .catalog import (
 
 
 CATALOG_BENCHMARK_SCHEMA = "podium7.catalog-identity-golden.v1"
-IDENTITY_FIELD_NAMES = frozenset(field.name for field in dataclass_fields(CatalogVehicleIdentity))
+IDENTITY_FIELD_NAMES = frozenset(item.name for item in dataclass_fields(CatalogVehicleIdentity))
 
 
 @dataclass(frozen=True)
@@ -27,8 +27,8 @@ class CatalogBenchmarkCase:
     right: CatalogVehicleIdentity
     source_ids: tuple[str, ...]
     rationale: str
-    left_field_source_ids: Mapping[str, tuple[str, ...]]
-    right_field_source_ids: Mapping[str, tuple[str, ...]]
+    left_field_source_ids: Mapping[str, tuple[str, ...]] = field(default_factory=dict)
+    right_field_source_ids: Mapping[str, tuple[str, ...]] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
@@ -236,8 +236,8 @@ def evaluate_catalog_identity_benchmark(
                 "reason": decision.reason,
                 "correct": decision.outcome is case.expected,
                 "fieldSourceIds": {
-                    "left": {field: list(source_ids) for field, source_ids in case.left_field_source_ids.items()},
-                    "right": {field: list(source_ids) for field, source_ids in case.right_field_source_ids.items()},
+                    "left": {field_name: list(source_ids) for field_name, source_ids in case.left_field_source_ids.items()},
+                    "right": {field_name: list(source_ids) for field_name, source_ids in case.right_field_source_ids.items()},
                 },
             }
         )
