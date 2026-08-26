@@ -4,19 +4,19 @@ Status: active
 
 Parent mission: #139 — production-scale evidence-backed catalog operation.
 
-Current block: #140 — build a larger reproducible source-backed operating corpus using only already-qualified/versioned evidence before opening any new source, region or semantic work.
+Current block: #141 — measure identity quality and review load on the expanded source-backed operating corpus.
 
-First bounded increment: Production Corpus Run V3 composes the existing three V2 identity gold sets plus `catalog_identity_year_semantics_challenge_v1.json`, increasing the operational replay from 60 to 72 records without inventing cases or changing resolver/evidence/fusion semantics.
+Dependency: #140 / Production Corpus Run V3 defines the 72-record / 36-case corpus. This block reuses the existing repository quality and operational measurement paths; it does not introduce new sources, regions, semantic rules or resolver changes.
 
 Acceptance for this block:
 
-- 72 source-backed records traverse batch ingestion, identity resolution, evidence persistence and consumer reads;
-- every replay record retains an HTTPS source locator and deterministic benchmark provenance;
-- manufacture year and model year remain distinct;
-- reviews/conflicts/failures remain measured outputs, not reasons to weaken policy;
-- no new source family, region, semantic field or infrastructure is introduced without a measured need;
-- #141 performs precision/recall and review-load measurement after the expanded corpus exists.
+- measure auto-match precision/recall, false merges, missed matches and ambiguous overcommit on the 36 identity cases;
+- measure CREATED/MATCHED/REVIEW/failure distribution and durable review causes on the 72 operational observations;
+- verify source/evidence locators and benchmark provenance remain complete;
+- preserve fail-closed review semantics and all evidence/fusion/publication rules regardless of measured values;
+- do not create follow-up source/region/semantic/resolver issues until executable results establish a concrete need;
+- do not invent per-dimension source contribution: the current gold schema binds `sourceIds` at case level, not field level.
 
-Plan: `docs/exec-plans/active/PRODUCTION-CORPUS-RUN-V3.md`.
+Plan: `docs/exec-plans/active/PRODUCTION-QUALITY-MEASUREMENT-V2.md`.
 
-Issue #112 remains external GitHub Actions debt. Do not add a runner workaround.
+Issue #112 remains external GitHub Actions debt. Numerical results and PASS status remain pending until code actually executes.
