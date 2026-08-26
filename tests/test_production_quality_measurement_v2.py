@@ -6,24 +6,36 @@ from podium7.catalog_operational import (
     measure_source_backed_operational_corpus,
 )
 from podium7.catalog_quality import evaluate_identity_quality
+from podium7.identity_regression import (
+    compare_identity_quality_to_baseline,
+    load_identity_safety_baseline,
+)
 
 
 ROOT = Path(__file__).resolve().parents[1]
-DATASETS = (
+RETAINED_DATASETS = (
     ROOT / "benchmarks" / "catalog_identity_golden_v1.json",
     ROOT / "benchmarks" / "catalog_identity_golden_br_v1.json",
     ROOT / "benchmarks" / "catalog_identity_br_adjacent_incomplete_v1.json",
+)
+DATASETS = RETAINED_DATASETS + (
     ROOT / "benchmarks" / "catalog_identity_year_semantics_challenge_v1.json",
 )
+BASELINE = ROOT / "benchmarks" / "production_identity_safety_baseline_v3.json"
 
 
 class ProductionQualityMeasurementV2Tests(unittest.TestCase):
     def test_v3_identity_quality_and_operational_load_are_measurable(self) -> None:
         quality = evaluate_identity_quality(DATASETS)
+        retained_quality = evaluate_identity_quality(RETAINED_DATASETS)
+        baseline = load_identity_safety_baseline(BASELINE)
+        regression = compare_identity_quality_to_baseline(retained_quality, baseline)
         operational = measure_source_backed_operational_corpus(DATASETS)
         records = build_source_backed_operational_records(DATASETS)
 
         self.assertEqual(quality["totalCases"], 36)
+        self.assertTrue(regression["passed"])
+        self.assertEqual([], regression["regressions"])
         self.assertEqual(operational["summary"]["total"], 72)
         self.assertEqual(len(records), 72)
 
@@ -39,10 +51,7 @@ class ProductionQualityMeasurementV2Tests(unittest.TestCase):
 
         summary = operational["summary"]
         self.assertEqual(summary["failed"], 0)
-        self.assertEqual(
-            summary["created"] + summary["matched"] + summary["review"],
-            72,
-        )
+        self.assertEqual(summary["created"] + summary["matched"] + summary["review"], 72)
         self.assertEqual(sum(operational["reviewCauses"].values()), summary["openReviewTasks"])
 
         self.assertTrue(all(record["source"]["locator"].startswith("https://") for record in records))
@@ -51,7 +60,11 @@ class ProductionQualityMeasurementV2Tests(unittest.TestCase):
 
         print(
             "PRODUCTION_QUALITY_MEASUREMENT_V2",
-            {"identityQuality": quality["metrics"], "operational": operational},
+            {
+                "identityQuality": quality["metrics"],
+                "retainedSafetyRegression": regression,
+                "operational": operational,
+            },
         )
 
 
