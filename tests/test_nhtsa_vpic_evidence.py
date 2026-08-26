@@ -77,6 +77,16 @@ class NhtsaVpicEvidenceTests(unittest.TestCase):
         )
         self.assertEqual(result.source_error_code, "6")
 
+    def test_clean_and_partial_vin_codes_are_accepted_but_accuracy_errors_fail_closed(self):
+        clean = self._parse(self._raw(ErrorCode="0", ErrorText="0 - VIN decoded clean"))
+        self.assertEqual("0", clean.source_error_code)
+        partial = self._parse(self._raw(ErrorCode="6", ErrorText="6 - Incomplete VIN"))
+        self.assertEqual("6", partial.source_error_code)
+        for error_code in ("11", "6,11", "6,8", "400", "6,7,11,400"):
+            with self.subTest(error_code=error_code):
+                with self.assertRaisesRegex(ValueError, "unsupported decode error code"):
+                    self._parse(self._raw(ErrorCode=error_code, ErrorText="source warning"))
+
     def test_blank_optional_fields_are_absence_of_evidence(self):
         result = self._parse(self._raw(Trim="", BodyClass="", FuelTypePrimary=""))
         attributes = {fact.attribute for fact in result.facts}
@@ -98,7 +108,7 @@ class NhtsaVpicEvidenceTests(unittest.TestCase):
                 {
                     "Count": 1,
                     "Results": [
-                        {"Make": "BMW", "Model": "X3", "ModelYear": "2011", "MakeID": "x"}
+                        {"Make": "BMW", "Model": "X3", "ModelYear": "2011", "MakeID": "x", "ErrorCode": "0"}
                     ],
                 }
             ).encode(),
