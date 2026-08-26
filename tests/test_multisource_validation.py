@@ -98,6 +98,33 @@ class MultiSourceValidationTests(unittest.TestCase):
         review_ids = {item["caseId"] for item in report["results"] if item["disposition"] == "REVIEW"}
         self.assertEqual({"unsupported-retail-trim", "unsupported-manufacture-year"}, review_ids)
 
+    def test_duplicate_case_ids_are_rejected_before_measurement(self):
+        case = self.corpus()[0]
+        with self.assertRaisesRegex(ValueError, "case ids must be unique"):
+            evaluate_multisource_cases((case, case))
+
+    def test_required_text_and_source_id_cannot_be_whitespace(self):
+        with self.assertRaisesRegex(ValueError, "source_id is required"):
+            fact("   ", "blank-source", "make", "VOLVO")
+        with self.assertRaisesRegex(ValueError, "case_id is required"):
+            MultiSourceCase(
+                "   ",
+                "vehicle:test",
+                "make",
+                (),
+                "REVIEW",
+                "missing evidence",
+            )
+        with self.assertRaisesRegex(ValueError, "rationale is required"):
+            MultiSourceCase(
+                "blank-rationale",
+                "vehicle:test",
+                "make",
+                (),
+                "REVIEW",
+                "   ",
+            )
+
 
 if __name__ == "__main__":
     unittest.main()
