@@ -4,7 +4,20 @@ from typing import Any
 
 from .catalog import CatalogStore
 from .catalog_api import lookup_catalog_vehicle
-from .catalog_review import CatalogReviewQueue
+from .catalog_review import CatalogReviewQueue, CatalogReviewState
+
+
+def _all_catalog_vehicle_ids(store: CatalogStore, *, page_size: int = 100) -> list[str]:
+    vehicle_ids: list[str] = []
+    after_id: str | None = None
+    while True:
+        page = store.catalog_vehicle_ids_page(after_id=after_id, limit=page_size)
+        if not page:
+            return vehicle_ids
+        vehicle_ids.extend(page)
+        if len(page) < page_size:
+            return vehicle_ids
+        after_id = page[-1]
 
 
 def audit_catalog_provenance(store: CatalogStore) -> dict[str, Any]:
@@ -12,7 +25,7 @@ def audit_catalog_provenance(store: CatalogStore) -> dict[str, Any]:
     checked_links = 0
     complete_links = 0
 
-    vehicle_ids = store.catalog_vehicle_ids_page(limit=100)
+    vehicle_ids = _all_catalog_vehicle_ids(store)
     for vehicle_id in vehicle_ids:
         candidates = store.catalog_candidates_for_entity(vehicle_id)
         checked_links += 1
@@ -44,18 +57,29 @@ def audit_catalog_provenance(store: CatalogStore) -> dict[str, Any]:
             complete_links += 1
 
     review_queue = CatalogReviewQueue(store)
-    for task in review_queue.open_tasks(limit=100):
+    open_review_rows = store._connection.execute(
+        """
+        SELECT id, evidence_id
+        FROM catalog_v2_review_tasks
+        WHERE state = ?
+        ORDER BY created_at, id
+        """,
+        (CatalogReviewState.OPEN.value,),
+    ).fetchall()
+    for row in open_review_rows:
+        review_id = row["id"]
+        evidence_id = row["evidence_id"]
         checked_links += 1
-        evidence = store.get_raw_evidence(task.evidence_id)
+        evidence = store.get_raw_evidence(evidence_id)
         if evidence is None:
-            incomplete.append({"kind": "REVIEW_MISSING_EVIDENCE", "reviewId": task.id})
+            incomplete.append({"kind": "REVIEW_MISSING_EVIDENCE", "reviewId": review_id})
             continue
         complete_links += 1
 
         checked_links += 1
         source = store.get_source(evidence.source_id)
         if source is None:
-            incomplete.append({"kind": "REVIEW_EVIDENCE_MISSING_SOURCE", "reviewId": task.id})
+            incomplete.append({"kind": "REVIEW_EVIDENCE_MISSING_SOURCE", "reviewId": review_id})
         else:
             complete_links += 1
 
@@ -63,7 +87,7 @@ def audit_catalog_provenance(store: CatalogStore) -> dict[str, Any]:
         "schema": "podium7.catalog-provenance-audit.v1",
         "summary": {
             "catalogVehicles": len(vehicle_ids),
-            "openReviewTasks": review_queue.count_open(),
+            "openReviewTasks": len(open_review_rows),
             "checkedLinks": checked_links,
             "completeLinks": complete_links,
             "incompleteLinks": len(incomplete),
