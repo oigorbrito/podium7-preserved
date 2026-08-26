@@ -21,6 +21,7 @@
 - [`PERSISTENCE-AND-EVIDENCE-STORE.md`](PERSISTENCE-AND-EVIDENCE-STORE.md) — persistence/provenance design.
 - [`ENTITY-RESOLUTION-V1.md`](ENTITY-RESOLUTION-V1.md) — V1 entity-resolution design record.
 - [`DATA-FUSION-AND-CONFLICTS-V1.md`](DATA-FUSION-AND-CONFLICTS-V1.md) — fusion/conflict design record.
+- [`MULTISOURCE-CONFLICT-DISPOSITION-V1.md`](MULTISOURCE-CONFLICT-DISPOSITION-V1.md) — explicit conflict-state telemetry for bounded multi-source validation without changing fusion policy.
 - [`NORMALIZATION-V1.md`](NORMALIZATION-V1.md) — normalization design record.
 
 ## Catalog product contracts
@@ -62,9 +63,9 @@
 - [`BROWSER-ACQUISITION-CHARACTERIZATION-V1.md`](BROWSER-ACQUISITION-CHARACTERIZATION-V1.md) — controlled Chromium measurement; generic browser fallback was not selected.
 - [`COMPLIANT-ALTERNATIVE-SOURCES-V1.md`](COMPLIANT-ALTERNATIVE-SOURCES-V1.md) — current primary-source evaluation and selected official-source paths.
 - [`EEA-SOURCE-FAMILY-V1.md`](EEA-SOURCE-FAMILY-V1.md) — frozen official EEA passenger-car monitoring source family.
-- [`EEA-SEMANTIC-EXPANSION-V2.md`](EEA-SEMANTIC-EXPANSION-V2.md) — source-backed fuel semantics plus regulatory identity nonclaims.
-- [`OFFICIAL-SOURCE-DISCOVERY-V1.md`](OFFICIAL-SOURCE-DISCOVERY-V1.md) — bounded official-source candidate discovery with explicit non-identity-proof contract.
-- [`RECURRING-SOURCE-POLICY-V1.md`](RECURRING-SOURCE-POLICY-V1.md) — fail-closed robots interpretation and per-host pacing gate required before repeated live acquisition.
+- [`EEA-SEMANTIC-EXPANSION-V2.md`](EEA-SEMANTIC-EXPANSION-V2.md) — source-backed fuel semantics plus the explicit decision that EEA type/variant/version are regulatory evidence, not canonical retail identity proof.
+- [`OFFICIAL-SOURCE-DISCOVERY-V1.md`](OFFICIAL-SOURCE-DISCOVERY-V1.md) — bounded official-source candidate discovery with source-native identifiers/locators and an explicit `identity_proof=False` contract.
+- [`RECURRING-SOURCE-POLICY-V1.md`](RECURRING-SOURCE-POLICY-V1.md) — fail-closed recurring-operation robots interpretation and per-host pacing gate using stdlib robots semantics plus the existing Podium rate limiter.
 - [`REPEATABLE-WEB-EXTRACTION-V1.md`](REPEATABLE-WEB-EXTRACTION-V1.md)
 - [`DOCUMENT-EXTRACTION-V1.md`](DOCUMENT-EXTRACTION-V1.md)
 - [`SELECTIVE-REVIEW-V1.md`](SELECTIVE-REVIEW-V1.md)
