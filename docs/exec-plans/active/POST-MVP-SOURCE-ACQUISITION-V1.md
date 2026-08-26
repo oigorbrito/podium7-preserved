@@ -1,8 +1,8 @@
 # Post-MVP source acquisition execution plan V1
 
-Status: active
+Status: implementation prepared through #128; integration/executable validation pending
 Parent mission: #122
-Current block: #126
+Current block: #128 complete on branch; mission pending repository validation
 
 ## Outcome
 
@@ -42,12 +42,12 @@ Expand Podium 7's evidence-backed automotive acquisition/enrichment layer using 
 
 ## Execution sequence
 
-1. #123 — reconstruct current source baseline and produce `SOURCE-EVIDENCE-GAP-MATRIX-V1.md`. **PASS on branch; integration pending repository validation availability.**
-2. #124 — qualify only the smallest current source set needed to address measured gaps. **PASS.**
-3. #125 — define source-specific semantic/provenance contracts before coding adapters. **PASS for NHTSA vPIC and EEA; restricted WSDenatran remains intentionally deferred.**
-4. #126 — implement bounded approved adapters with deterministic fail-closed behavior. **Current block.**
-5. #127 — validate multi-source fusion, corroboration, conflicts, review load and provenance.
-6. #128 — operationalize recurring acquisition safely, including drift/outage handling.
+1. #123 — reconstruct current source baseline and produce `SOURCE-EVIDENCE-GAP-MATRIX-V1.md`. **Prepared on branch; integration pending repository validation availability.**
+2. #124 — qualify only the smallest current source set needed to address measured gaps. **Prepared.**
+3. #125 — define source-specific semantic/provenance contracts before coding adapters. **Prepared for NHTSA vPIC and EEA; restricted WSDenatran intentionally deferred.**
+4. #126 — implement bounded approved adapters with deterministic fail-closed behavior. **Prepared; focused contracts hardened against malformed boolean/int coercion.**
+5. #127 — validate multi-source fusion, corroboration, conflicts, review load and provenance. **Prepared; validation fixtures reject duplicate/malformed cases.**
+6. #128 — operationalize recurring acquisition safely, including drift/outage handling. **Prepared; integration/executable validation pending.**
 
 ## #123 evidence reconstruction
 
@@ -73,14 +73,17 @@ Recoverable durable evidence established the source baseline and measured primar
 
 No contract promotes a new `STRONG` namespace, changes year semantics, weakens `REVIEW`, or converts missing data into inferred facts.
 
-## #126 implementation order
+## #126 implementation
 
-1. Inspect the existing NHTSA discovery adapter/domain/evidence primitives and EEA source-family implementation before editing.
-2. Prefer additive source-specific parsing/extraction over generic framework changes.
-3. Implement the smallest deterministic NHTSA VIN-backed evidence slice justified by frozen inspected fixtures.
-4. Implement only the smallest EEA regulatory identity/support enrichment needed to exercise the V2 contract; reuse existing EEA acquisition/parser code rather than duplicate it.
-5. Preserve raw/source-native values and explicit unsupported/missing-field issues.
-6. Run required harness/focused/sequential validation before integration when executable validation is available.
+The bounded NHTSA and EEA adapters are prepared on the stacked branch. They preserve raw/source-native semantics, use exact content-addressed evidence, fail closed on malformed/unsupported responses, and do not promote regulatory/source-scoped fields into stronger retail identity semantics.
+
+## #127 validation
+
+The bounded multi-source harness is prepared. It retains explicit conflicts and REVIEW outcomes, measures source contribution/corroboration/provenance, and now rejects duplicate case IDs or malformed fixture identifiers before measurement so corpus counts cannot be inflated silently.
+
+## #128 recurring acquisition
+
+The recurring coordinator is prepared with contracted-source-only operation, existing host/HTTPS/robots/pacing authority, expected media/schema checks, content hash verification, idempotent unchanged checkpoints, bounded retry/degraded behavior, and fail-closed drift states. Source terms/license drift is extended separately by #164/#165 without changing evidence or resolver policy.
 
 ## Decisions
 
@@ -92,4 +95,4 @@ No contract promotes a new `STRONG` namespace, changes year semantics, weakens `
 
 ## Validation / blockers
 
-The work through #125 is documentation/research/contract-only and does not alter executable behavior. Issue #112 still prevents normal GitHub-hosted execution evidence from being assumed. For #126 code changes, do not claim PASS without the repository-required executable validation path; if execution remains unavailable, complete reviewable implementation as far as possible and record the validation blocker rather than bypassing it.
+Issue #112 still prevents normal GitHub-hosted execution evidence from being assumed: observed hosted jobs terminate before executing workflow steps (`steps=null`). Therefore implementation through #128 is reviewable/prepared but cannot be called repository-executable PASS or integrated by bypassing CI. No repeated rerun is justified while #112 is unchanged.
