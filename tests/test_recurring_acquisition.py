@@ -36,6 +36,10 @@ class RecurringAcquisitionTests(unittest.TestCase):
     def terms_pin(self, body=b"official terms v1"):
         return SourceTermsPin(locator="https://vpic.nhtsa.dot.gov/terms", expected_sha256=hashlib.sha256(body).hexdigest())
 
+    def authorize(self, coordinator, locator, now=10.0):
+        decision = coordinator.authorize("nhtsa_vpic", locator, now=now)
+        self.assertTrue(decision.allowed)
+
     def test_unapproved_host_and_pacing_are_enforced_by_existing_gate(self):
         coordinator = self.coordinator()
         denied = coordinator.authorize("nhtsa_vpic", "https://example.com/x", now=1.0)
@@ -47,12 +51,28 @@ class RecurringAcquisitionTests(unittest.TestCase):
         self.assertFalse(second.allowed)
         self.assertEqual("HOST_PACING", second.reason)
 
+    def test_success_requires_matching_one_shot_authorization(self):
+        coordinator = self.coordinator()
+        locator = "https://vpic.nhtsa.dot.gov/api/x"
+        missing = coordinator.record_success("nhtsa_vpic", acquisition(locator), schema_signature="decode-vin-values:v1")
+        self.assertEqual(RecurringRunState.DRIFT, missing.state)
+        self.assertEqual("AUTHORIZATION_MISSING", missing.reason)
+        self.assertFalse(missing.mutation_required)
+        self.authorize(coordinator, locator, now=20.0)
+        mismatch = coordinator.record_success("nhtsa_vpic", acquisition("https://vpic.nhtsa.dot.gov/api/y"), schema_signature="decode-vin-values:v1")
+        self.assertEqual("AUTHORIZED_LOCATOR_MISMATCH", mismatch.reason)
+        consumed = coordinator.record_success("nhtsa_vpic", acquisition(locator), schema_signature="decode-vin-values:v1")
+        self.assertEqual("AUTHORIZATION_MISSING", consumed.reason)
+
     def test_identical_content_is_idempotent_across_persisted_checkpoint(self):
         coordinator = self.coordinator()
-        item = acquisition("https://vpic.nhtsa.dot.gov/api/x")
+        locator = "https://vpic.nhtsa.dot.gov/api/x"
+        item = acquisition(locator)
+        self.authorize(coordinator, locator, now=10.0)
         first = coordinator.record_success("nhtsa_vpic", item, schema_signature="decode-vin-values:v1")
         checkpoint_payload = coordinator.checkpoint().to_dict()
         restored = self.coordinator(RecurringCheckpoint.from_dict(checkpoint_payload))
+        self.authorize(restored, locator, now=10.0)
         second = restored.record_success("nhtsa_vpic", item, schema_signature="decode-vin-values:v1")
         self.assertEqual(RecurringRunState.ACCEPTED, first.state)
         self.assertTrue(first.mutation_required)
@@ -60,10 +80,12 @@ class RecurringAcquisitionTests(unittest.TestCase):
         self.assertFalse(second.mutation_required)
 
     def test_checkpoint_normalizes_valid_uppercase_sha256_for_idempotence(self):
-        item = acquisition("https://vpic.nhtsa.dot.gov/api/x")
+        locator = "https://vpic.nhtsa.dot.gov/api/x"
+        item = acquisition(locator)
         checkpoint = RecurringCheckpoint({"nhtsa_vpic": item.sha256.upper()}, {})
         self.assertEqual(checkpoint.last_sha["nhtsa_vpic"], item.sha256)
         restored = self.coordinator(checkpoint)
+        self.authorize(restored, locator, now=10.0)
         result = restored.record_success("nhtsa_vpic", item, schema_signature="decode-vin-values:v1")
         self.assertEqual(RecurringRunState.UNCHANGED, result.state)
         self.assertFalse(result.mutation_required)
@@ -74,13 +96,18 @@ class RecurringAcquisitionTests(unittest.TestCase):
 
     def test_schema_content_host_and_hash_drift_fail_closed(self):
         coordinator = self.coordinator()
-        schema_drift = coordinator.record_success("nhtsa_vpic", acquisition("https://vpic.nhtsa.dot.gov/api/x"), schema_signature="decode-vin-values:v2")
+        locator = "https://vpic.nhtsa.dot.gov/api/x"
+        self.authorize(coordinator, locator, now=10.0)
+        schema_drift = coordinator.record_success("nhtsa_vpic", acquisition(locator), schema_signature="decode-vin-values:v2")
+        self.authorize(coordinator, locator, now=20.0)
+        media_drift = coordinator.record_success("nhtsa_vpic", acquisition(locator, content_type="text/html"), schema_signature="decode-vin-values:v1")
+        self.authorize(coordinator, locator, now=30.0)
+        host_drift = coordinator.record_success("nhtsa_vpic", acquisition(locator, final_url="https://example.com/api/x"), schema_signature="decode-vin-values:v1")
+        self.authorize(coordinator, locator, now=40.0)
+        hash_drift = coordinator.record_success("nhtsa_vpic", acquisition(locator, sha256="0" * 64), schema_signature="decode-vin-values:v1")
         self.assertEqual("SCHEMA_DRIFT", schema_drift.reason)
-        media_drift = coordinator.record_success("nhtsa_vpic", acquisition("https://vpic.nhtsa.dot.gov/api/x", content_type="text/html"), schema_signature="decode-vin-values:v1")
         self.assertEqual("CONTENT_TYPE_DRIFT", media_drift.reason)
-        host_drift = coordinator.record_success("nhtsa_vpic", acquisition("https://example.com/api/x"), schema_signature="decode-vin-values:v1")
         self.assertEqual("FINAL_HOST_DRIFT", host_drift.reason)
-        hash_drift = coordinator.record_success("nhtsa_vpic", acquisition("https://vpic.nhtsa.dot.gov/api/x", sha256="0" * 64), schema_signature="decode-vin-values:v1")
         self.assertEqual("CONTENT_HASH_MISMATCH", hash_drift.reason)
         for result in (schema_drift, media_drift, host_drift, hash_drift):
             self.assertEqual(RecurringRunState.DRIFT, result.state)
@@ -90,9 +117,11 @@ class RecurringAcquisitionTests(unittest.TestCase):
         terms_body = b"official terms v1"
         pin = self.terms_pin(terms_body)
         coordinator = self.coordinator(terms_pin=pin)
+        locator = "https://vpic.nhtsa.dot.gov/api/x"
+        self.authorize(coordinator, locator, now=10.0)
         result = coordinator.record_success(
             "nhtsa_vpic",
-            acquisition("https://vpic.nhtsa.dot.gov/api/x"),
+            acquisition(locator),
             schema_signature="decode-vin-values:v1",
             terms_acquisition=acquisition(pin.locator, body=terms_body, content_type="text/plain"),
         )
@@ -104,9 +133,11 @@ class RecurringAcquisitionTests(unittest.TestCase):
     def test_terms_drift_requires_review_and_blocks_mutation(self):
         pin = self.terms_pin()
         coordinator = self.coordinator(terms_pin=pin)
+        locator = "https://vpic.nhtsa.dot.gov/api/x"
+        self.authorize(coordinator, locator, now=10.0)
         result = coordinator.record_success(
             "nhtsa_vpic",
-            acquisition("https://vpic.nhtsa.dot.gov/api/x"),
+            acquisition(locator),
             schema_signature="decode-vin-values:v1",
             terms_acquisition=acquisition(pin.locator, body=b"changed terms", content_type="text/plain"),
         )
@@ -118,9 +149,11 @@ class RecurringAcquisitionTests(unittest.TestCase):
     def test_missing_terms_evidence_requires_review_and_blocks_mutation(self):
         pin = self.terms_pin()
         coordinator = self.coordinator(terms_pin=pin)
+        locator = "https://vpic.nhtsa.dot.gov/api/x"
+        self.authorize(coordinator, locator, now=10.0)
         result = coordinator.record_success(
             "nhtsa_vpic",
-            acquisition("https://vpic.nhtsa.dot.gov/api/x"),
+            acquisition(locator),
             schema_signature="decode-vin-values:v1",
         )
         self.assertEqual(RecurringRunState.REVIEW_REQUIRED, result.state)
@@ -132,18 +165,22 @@ class RecurringAcquisitionTests(unittest.TestCase):
         terms_body = b"official terms v1"
         pin = self.terms_pin(terms_body)
         coordinator = self.coordinator(terms_pin=pin)
+        locator = "https://vpic.nhtsa.dot.gov/api/x"
+
+        self.authorize(coordinator, locator, now=10.0)
         locator_mismatch = coordinator.record_success(
             "nhtsa_vpic",
-            acquisition("https://vpic.nhtsa.dot.gov/api/x"),
+            acquisition(locator),
             schema_signature="decode-vin-values:v1",
             terms_acquisition=acquisition("https://vpic.nhtsa.dot.gov/other", body=terms_body, content_type="text/plain"),
         )
         self.assertEqual(RecurringRunState.REVIEW_REQUIRED, locator_mismatch.state)
         self.assertEqual("TERMS_LOCATOR_MISMATCH", locator_mismatch.reason)
 
+        self.authorize(coordinator, locator, now=20.0)
         final_locator_drift = coordinator.record_success(
             "nhtsa_vpic",
-            acquisition("https://vpic.nhtsa.dot.gov/api/x"),
+            acquisition(locator),
             schema_signature="decode-vin-values:v1",
             terms_acquisition=acquisition(
                 pin.locator,
@@ -156,9 +193,10 @@ class RecurringAcquisitionTests(unittest.TestCase):
         self.assertEqual("TERMS_FINAL_LOCATOR_DRIFT", final_locator_drift.reason)
         self.assertFalse(final_locator_drift.mutation_required)
 
+        self.authorize(coordinator, locator, now=30.0)
         hash_mismatch = coordinator.record_success(
             "nhtsa_vpic",
-            acquisition("https://vpic.nhtsa.dot.gov/api/x"),
+            acquisition(locator),
             schema_signature="decode-vin-values:v1",
             terms_acquisition=acquisition(pin.locator, body=terms_body, content_type="text/plain", sha256="0" * 64),
         )
@@ -166,11 +204,13 @@ class RecurringAcquisitionTests(unittest.TestCase):
         self.assertEqual("TERMS_HASH_MISMATCH", hash_mismatch.reason)
         self.assertFalse(hash_mismatch.mutation_required)
 
-    def test_source_without_terms_pin_preserves_existing_behavior(self):
+    def test_source_without_terms_pin_preserves_existing_behavior_after_authorization(self):
         coordinator = self.coordinator()
+        locator = "https://vpic.nhtsa.dot.gov/api/x"
+        self.authorize(coordinator, locator, now=10.0)
         result = coordinator.record_success(
             "nhtsa_vpic",
-            acquisition("https://vpic.nhtsa.dot.gov/api/x"),
+            acquisition(locator),
             schema_signature="decode-vin-values:v1",
         )
         self.assertEqual(RecurringRunState.ACCEPTED, result.state)
@@ -198,10 +238,19 @@ class RecurringAcquisitionTests(unittest.TestCase):
         self.assertEqual(3, third.retry_count)
         self.assertFalse(third.mutation_required)
 
+    def test_failure_consumes_pending_authorization(self):
+        coordinator = self.coordinator()
+        locator = "https://vpic.nhtsa.dot.gov/api/x"
+        self.authorize(coordinator, locator, now=10.0)
+        coordinator.record_failure("nhtsa_vpic", locator, reason="TIMEOUT")
+        result = coordinator.record_success("nhtsa_vpic", acquisition(locator), schema_signature="decode-vin-values:v1")
+        self.assertEqual("AUTHORIZATION_MISSING", result.reason)
+
     def test_success_resets_failure_budget(self):
         coordinator = self.coordinator()
         locator = "https://vpic.nhtsa.dot.gov/api/x"
         coordinator.record_failure("nhtsa_vpic", locator, reason="NETWORK_ERROR")
+        self.authorize(coordinator, locator, now=10.0)
         result = coordinator.record_success("nhtsa_vpic", acquisition(locator, body=b'{"v":1}'), schema_signature="decode-vin-values:v1")
         self.assertEqual(0, result.retry_count)
         after = coordinator.record_failure("nhtsa_vpic", locator, reason="NETWORK_ERROR")
