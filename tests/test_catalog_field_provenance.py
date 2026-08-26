@@ -7,6 +7,15 @@ from podium7.catalog_benchmark import load_catalog_identity_benchmark
 from podium7.catalog_quality import measure_field_source_contribution
 
 
+ROOT = Path(__file__).resolve().parents[1]
+V3_DATASETS = (
+    ROOT / "benchmarks" / "catalog_identity_golden_v1.json",
+    ROOT / "benchmarks" / "catalog_identity_golden_br_v1.json",
+    ROOT / "benchmarks" / "catalog_identity_br_adjacent_incomplete_v1.json",
+    ROOT / "benchmarks" / "catalog_identity_year_semantics_challenge_v1.json",
+)
+
+
 def _payload() -> dict:
     return {
         "schema": "podium7.catalog-identity-golden.v1",
@@ -108,6 +117,17 @@ class CatalogFieldProvenanceTests(unittest.TestCase):
         self.assertEqual(report["attributionCoverage"], 0.0)
         self.assertEqual(report["sourceContributionByDimension"], {})
         self.assertTrue(all(value > 0 for value in report["unattributedByDimension"].values()))
+
+    def test_existing_v3_corpus_reports_missing_field_attribution_instead_of_inferring_it(self) -> None:
+        report = measure_field_source_contribution(V3_DATASETS)
+        self.assertGreater(report["totalPresentFieldObservations"], 0)
+        self.assertEqual(report["attributedFieldObservations"], 0)
+        self.assertEqual(report["attributionCoverage"], 0.0)
+        self.assertEqual(report["sourceContributionByDimension"], {})
+        self.assertEqual(
+            sum(report["unattributedByDimension"].values()),
+            report["totalPresentFieldObservations"],
+        )
 
     def test_field_attribution_rejects_unknown_source(self) -> None:
         payload = _payload()
