@@ -164,6 +164,19 @@ class RecurringAcquisitionCoordinator:
                     terms_acquisition.requested_url,
                     terms_acquisition.sha256,
                 )
+            if terms_acquisition.final_url != contract.terms_pin.locator:
+                return RecurringRunResult(
+                    source_id,
+                    RecurringRunState.REVIEW_REQUIRED,
+                    "TERMS_FINAL_LOCATOR_DRIFT",
+                    acquisition.final_url,
+                    acquisition.sha256,
+                    schema_signature,
+                    self._retry_counts.get(source_id, 0),
+                    False,
+                    terms_acquisition.final_url,
+                    terms_acquisition.sha256,
+                )
             actual_terms_sha = hashlib.sha256(terms_acquisition.body).hexdigest()
             terms_sha256 = actual_terms_sha
             if actual_terms_sha != terms_acquisition.sha256:
