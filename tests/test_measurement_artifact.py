@@ -54,6 +54,24 @@ class MeasurementArtifactTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "datasetVersion is required"):
                 build_measurement_artifact((path,))
 
+    def test_duplicate_dataset_input_fails_closed(self) -> None:
+        with self.assertRaisesRegex(ValueError, "dataset inputs must be unique"):
+            build_measurement_artifact((DATASETS[0], DATASETS[0]))
+
+    def test_duplicate_dataset_name_fails_closed(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            first_dir = Path(directory) / "a"
+            second_dir = Path(directory) / "b"
+            first_dir.mkdir()
+            second_dir.mkdir()
+            first = first_dir / "same.json"
+            second = second_dir / "same.json"
+            raw = DATASETS[0].read_bytes()
+            first.write_bytes(raw)
+            second.write_bytes(raw)
+            with self.assertRaisesRegex(ValueError, "dataset names must be unique"):
+                build_measurement_artifact((first, second))
+
 
 if __name__ == "__main__":
     unittest.main()
