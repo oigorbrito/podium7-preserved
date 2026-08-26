@@ -30,6 +30,15 @@ def build_measurement_artifact(paths: Iterable[str | Path]) -> dict[str, Any]:
     normalized = tuple(Path(path) for path in paths)
     if not normalized:
         raise ValueError("measurement artifact requires at least one dataset")
+
+    resolved = tuple(path.resolve() for path in normalized)
+    if len(set(resolved)) != len(resolved):
+        raise ValueError("measurement artifact dataset inputs must be unique")
+
+    names = tuple(path.name for path in normalized)
+    if len(set(names)) != len(names):
+        raise ValueError("measurement artifact dataset names must be unique")
+
     datasets = [_dataset_descriptor(path) for path in normalized]
     return {
         "schema": MEASUREMENT_ARTIFACT_SCHEMA,
