@@ -1,6 +1,6 @@
 # Production Corpus Run V3
 
-Status: implementation prepared; executable validation pending
+Status: PENDING — exact source attribution gap identified before executable acceptance
 
 Issue: #140
 Parent mission: #139
@@ -21,13 +21,27 @@ and adds the existing source-backed year-semantics regression set:
 
 - `catalog_identity_year_semantics_challenge_v1.json` (`datasetVersion=year-semantics-1.1`).
 
-The added set contains six curated identity pairs, therefore twelve additional replay observations. The operational corpus increases from 60 to 72 records without generating duplicate/synthetic filler cases.
+The intended composition contains six additional curated identity pairs, therefore twelve additional replay observations, for an intended 72-record operating corpus.
 
-## Why this dataset is admissible
+## Provenance blocker discovered during validation
 
-The existing `build_source_backed_operational_records` contract accepts only `podium7.catalog-identity-golden.v1` datasets with a non-empty `datasetVersion`, explicit source IDs and source locators. The year-semantics challenge satisfies that exact contract and is already part of the repository's selected Senatran-aligned identity policy regression evidence.
+The retained benchmark schema stores `sourceIds` at the **case** level. Several cases defensibly cite more than one primary source, but the schema does not establish which source produced each left/right record or which source supports each individual field.
 
-It contributes decision-relevant cases for:
+The previous operational replay selected `sourceIds[0]` and assigned that source to both sides. That behavior was removed because it silently invented source-specific provenance. A case with multiple `sourceIds` now fails closed with `ambiguous case-level source attribution`.
+
+This is intentionally stricter than the previous 72-record replay claim:
+
+```text
+CASE_LEVEL_SOURCE_SET != RECORD_SIDE_SOURCE
+RECORD_SIDE_SOURCE != FIELD_SOURCE
+NO_DEFENSIBLE_MAPPING -> FAIL_CLOSED
+```
+
+Single-source benchmark cases remain executable through the existing pipeline and retain exact source/evidence locators and benchmark raw-content references.
+
+## Decision-relevant coverage retained in V3 inputs
+
+The year-semantics challenge still contributes useful curated cases for:
 
 - manufacture-year contradiction while model year agrees;
 - missing manufacture-year evidence;
@@ -36,22 +50,36 @@ It contributes decision-relevant cases for:
 - overlapping manufacture-year ranges;
 - explicit model-year contradiction with equal manufacture year.
 
+These inputs remain valid identity benchmark evidence. They are not yet all admissible as record-level operational replay evidence until source attribution is explicit enough to preserve provenance without inference.
+
 ## Acceptance gate
 
-- 72 records are produced from the four versioned datasets;
+The original 72-record acceptance remains the target, but is currently blocked. It may pass only when every replayed left/right record has defensible source attribution without selecting a source by list order.
+
+Required acceptance remains:
+
+- 72 records from the four versioned datasets **only after exact record-side/source provenance is representable**;
 - every record keeps an HTTPS source/evidence locator and benchmark raw-content reference;
-- all 72 execute through batch ingestion with zero record-level ingestion failures;
+- all records execute through batch ingestion with zero record-level ingestion failures;
 - `CREATED`, `MATCHED` and `REVIEW` remain exercised;
 - resulting canonical records remain readable through the consumer API;
 - no resolver, evidence, fusion, ambiguity or publication rule changes are introduced.
 
+## Current executable assertions
+
+`tests/test_production_corpus_run_v3.py` now proves two things deterministically:
+
+1. the current V3 inputs fail closed when a case has ambiguous case-level source attribution;
+2. an exactly attributed single-source fixture still traverses the operational replay end to end.
+
 ## Nonclaims
 
-- 72 records are still a bounded operating corpus, not production or market completeness.
-- Adding the year-semantics challenge does not increase geographic breadth by itself; it increases decision-semantic coverage within already-documented evidence.
-- This block does not claim improved precision/recall or reduced review load. #141 owns those measurements after executable V3 evidence exists.
-- No new source family, new infrastructure or new semantic-field policy is selected by V3.
+- No 72-record operational PASS is claimed while attribution remains ambiguous.
+- Case-level source participation is not promoted to record-side or field-level provenance.
+- The bounded identity benchmark remains useful even when a case cannot yet be replayed as a single-source operational record.
+- No resolver/evidence/fusion threshold is weakened to recover the previous record count.
+- No source is selected by convenience or list position.
 
 ## Validation state
 
-The implementation is deterministic and committed as `tests/test_production_corpus_run_v3.py`. Repository-required executable validation remains pending while #112 prevents GitHub-hosted jobs from executing steps. Do not mark this corpus PASS until the focused test and required repository validation execute successfully.
+Static validation identified and corrected the provenance overclaim. Repository-required executable validation remains additionally blocked by #112, where hosted jobs terminate without executing steps. The current block is therefore `PENDING`, not `PASS`.
