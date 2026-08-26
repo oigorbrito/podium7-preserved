@@ -99,6 +99,13 @@ class CatalogExportEvidenceTraceTests(unittest.TestCase):
         self.assertEqual(response["vehicle"]["entity"]["id"], canonical)
         self.assertEqual(len(response["vehicle"]["evidenceTrace"]), 2)
 
+    def test_vehicle_without_candidate_evidence_fails_closed(self) -> None:
+        unproven = self.store.create_catalog_vehicle(
+            CatalogVehicleIdentity(make="Honda", model="Civic", market="BR")
+        )
+        with self.assertRaisesRegex(ValueError, "no persisted candidate evidence"):
+            lookup_catalog_vehicle(self.store, unproven)
+
     def test_missing_evidence_fails_closed(self) -> None:
         self.store._connection.execute("PRAGMA foreign_keys = OFF")
         self.store._connection.execute(
