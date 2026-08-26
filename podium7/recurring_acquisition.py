@@ -60,15 +60,15 @@ class RecurringCheckpoint:
     retry_counts: dict[str, int]
 
     def __post_init__(self) -> None:
-        if any(
-            not isinstance(key, str)
-            or not key.strip()
-            or not isinstance(value, str)
-            or len(value) != 64
-            or any(character not in "0123456789abcdef" for character in value.casefold())
-            for key, value in self.last_sha.items()
-        ):
-            raise ValueError("checkpoint last_sha entries must contain source ids and SHA-256 hex digests")
+        normalized_last_sha: dict[str, str] = {}
+        for key, value in self.last_sha.items():
+            if not isinstance(key, str) or not key.strip() or not isinstance(value, str):
+                raise ValueError("checkpoint last_sha entries must contain source ids and SHA-256 hex digests")
+            digest = value.casefold()
+            if len(digest) != 64 or any(character not in "0123456789abcdef" for character in digest):
+                raise ValueError("checkpoint last_sha entries must contain source ids and SHA-256 hex digests")
+            normalized_last_sha[key] = digest
+        object.__setattr__(self, "last_sha", normalized_last_sha)
         if any(not isinstance(key, str) or not key.strip() or isinstance(value, bool) or not isinstance(value, int) or value < 0 for key, value in self.retry_counts.items()):
             raise ValueError("checkpoint retry_counts must contain non-negative integers")
 
