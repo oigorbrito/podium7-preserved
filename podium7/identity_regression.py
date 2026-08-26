@@ -6,12 +6,22 @@ from typing import Any, Mapping
 
 
 BASELINE_SCHEMA = "podium7.identity-safety-baseline.v1"
-_METRICS = (
-    "autoMatchPrecision",
-    "autoMatchRecall",
-    "falseMergeCount",
-    "ambiguousOvercommitCount",
-)
+_RATE_METRICS = ("autoMatchPrecision", "autoMatchRecall")
+_COUNT_METRICS = ("falseMergeCount", "ambiguousOvercommitCount")
+_METRICS = _RATE_METRICS + _COUNT_METRICS
+
+
+def _validate_metrics(metrics: Mapping[str, Any], *, label: str) -> None:
+    for metric in _METRICS:
+        if metric not in metrics:
+            raise ValueError(f"{label} metric is required: {metric}")
+        value = metrics[metric]
+        if metric in _RATE_METRICS:
+            if isinstance(value, bool) or not isinstance(value, (int, float)) or not 0.0 <= value <= 1.0:
+                raise ValueError(f"{label} metric {metric} must be a number between 0 and 1")
+        else:
+            if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+                raise ValueError(f"{label} metric {metric} must be a non-negative integer")
 
 
 def load_identity_safety_baseline(path: str | Path) -> dict[str, Any]:
@@ -29,9 +39,7 @@ def load_identity_safety_baseline(path: str | Path) -> dict[str, Any]:
     metrics = payload.get("metrics")
     if not isinstance(metrics, Mapping):
         raise ValueError("baseline metrics are required")
-    for metric in _METRICS:
-        if metric not in metrics:
-            raise ValueError(f"baseline metric is required: {metric}")
+    _validate_metrics(metrics, label="baseline")
     return payload
 
 
@@ -51,15 +59,15 @@ def compare_identity_quality_to_baseline(
     baseline_metrics = baseline.get("metrics")
     if not isinstance(metrics, Mapping) or not isinstance(baseline_metrics, Mapping):
         raise ValueError("identity quality metrics are required")
+    _validate_metrics(baseline_metrics, label="baseline")
+    _validate_metrics(metrics, label="identity quality")
 
     comparisons: dict[str, dict[str, Any]] = {}
     regressions: list[str] = []
     for metric in _METRICS:
-        current = metrics.get(metric)
-        expected = baseline_metrics.get(metric)
-        if current is None or expected is None:
-            raise ValueError(f"identity metric is missing: {metric}")
-        if metric in {"autoMatchPrecision", "autoMatchRecall"}:
+        current = metrics[metric]
+        expected = baseline_metrics[metric]
+        if metric in _RATE_METRICS:
             passed = current >= expected
             delta = current - expected
         else:
