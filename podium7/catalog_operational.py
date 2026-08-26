@@ -7,6 +7,7 @@ from typing import Any, Iterable
 
 from .catalog import CatalogStore
 from .catalog_batch import CatalogBatchReport, ingest_catalog_batch, parse_catalog_batch_payload
+from .catalog_batch_failure import CatalogBatchFailureStore
 from .catalog_quality import classify_review_reason
 from .catalog_review import CatalogReviewQueue
 
@@ -110,6 +111,7 @@ def measure_source_backed_operational_corpus(paths: Iterable[str | Path]) -> dic
             cause_counts["MULTIPLE_REVIEW_CAUSES"] += 1
 
     catalog_items = len(store.catalog_vehicle_ids_page(limit=100))
+    durable_failures = CatalogBatchFailureStore(store).count()
     return {
         "schema": "podium7.production-operational-measurement.v1",
         "summary": {
@@ -118,6 +120,7 @@ def measure_source_backed_operational_corpus(paths: Iterable[str | Path]) -> dic
             "matched": report.matched,
             "review": report.review,
             "failed": report.failed,
+            "durableFailures": durable_failures,
             "automaticRate": (report.created + report.matched) / report.total,
             "reviewRate": report.review / report.total,
             "catalogItems": catalog_items,
