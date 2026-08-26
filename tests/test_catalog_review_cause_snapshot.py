@@ -1,7 +1,7 @@
 import os
 import tempfile
 import unittest
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 from podium7.catalog import CatalogStore, CatalogVehicleIdentity
 from podium7.catalog_ingestion import CatalogIngestionAction, ingest_catalog_record
@@ -24,7 +24,7 @@ def evidence(number: int) -> RawEvidence:
         id=f"cause-evidence-{number}",
         source_id=SOURCE.id,
         locator=f"https://example.test/cause/{number}",
-        retrieved_at=datetime(2026, 8, 25, 21, number, tzinfo=timezone.utc),
+        retrieved_at=datetime(2026, 8, 25, 21, 0, tzinfo=timezone.utc) + timedelta(minutes=number),
         acquisition_method="test-fixture",
         raw_content_ref=f"sha256:cause-{number}",
     )
@@ -43,7 +43,7 @@ class CatalogReviewCauseSnapshotTests(unittest.TestCase):
         item = evidence(number)
         self.store.save_raw_evidence(item)
         vehicle_id = self.store.create_catalog_vehicle(
-            CatalogVehicleIdentity(make="Toyota", model="Corolla", variant="XEi")
+            CatalogVehicleIdentity(make="Toyota", model="Corolla", variant=f"XEi-{number}")
         )
         task = self.queue.enqueue(
             evidence_id=item.id,
@@ -103,6 +103,12 @@ class CatalogReviewCauseSnapshotTests(unittest.TestCase):
                     ("LABEL_AMBIGUITY",),
                 )
             )
+
+    def test_review_queue_does_not_truncate_above_one_hundred(self) -> None:
+        for number in range(100, 201):
+            self._seed_review(number)
+        self.assertEqual(self.queue.count_open(), 101)
+        self.assertEqual(len(self.queue.open_tasks(limit=101)), 101)
 
     def test_snapshot_persists_across_database_reopen(self) -> None:
         handle = tempfile.NamedTemporaryFile(delete=False)
