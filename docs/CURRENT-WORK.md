@@ -4,19 +4,21 @@ Status: active
 
 Parent mission: #139 — production-scale evidence-backed catalog operation.
 
-Current block: #141 — measure identity quality and review load on the expanded source-backed operating corpus.
+Current block: #148 — persist versioned review-cause snapshots required by #141's durable review-cause measurement.
 
-Dependency: #140 / Production Corpus Run V3 defines the 72-record / 36-case corpus. This block reuses the existing repository quality and operational measurement paths; it does not introduce new sources, regions, semantic rules or resolver changes.
+Dependency: #141 / PR #143 defines the production-quality measurement surface. This block closes a durability gap in that surface: raw comparison reasons were persisted, but operational cause categories were previously recomputed at measurement time.
 
 Acceptance for this block:
 
-- measure auto-match precision/recall, false merges, missed matches and ambiguous overcommit on the 36 identity cases;
-- measure CREATED/MATCHED/REVIEW/failure distribution and durable review causes on the 72 operational observations;
-- verify source/evidence locators and benchmark provenance remain complete;
-- preserve fail-closed review semantics and all evidence/fusion/publication rules regardless of measured values;
-- do not create follow-up source/region/semantic/resolver issues until executable results establish a concrete need;
-- do not invent per-dimension source contribution: the current gold schema binds `sourceIds` at case level, not field level.
+- persist immutable review-cause snapshots derived only from the task's persisted candidate comparison reasons;
+- record the classifier version used for each snapshot;
+- preserve multiple and unknown causes without choosing a silent winner;
+- write snapshots in the same ingestion transaction as review-task creation;
+- make repeated ingestion/snapshot writes idempotent only for identical content;
+- report legacy review tasks without snapshots explicitly rather than retroactively classifying them;
+- make operational measurement consume the persisted snapshots while retaining raw reason counts;
+- preserve resolver/evidence/fusion/source/publication/review-resolution semantics.
 
-Plan: `docs/exec-plans/active/PRODUCTION-QUALITY-MEASUREMENT-V2.md`.
+Plan: `docs/exec-plans/active/REVIEW-CAUSE-SNAPSHOT-V1.md`.
 
-Issue #112 remains external GitHub Actions debt. Numerical results and PASS status remain pending until code actually executes.
+Issue #112 remains external GitHub Actions debt. Implementation may be prepared, but PASS/merge still requires executable repository validation.
