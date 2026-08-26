@@ -66,6 +66,20 @@ def run_source_backed_operational_corpus(
     return ingest_catalog_batch(store, parse_catalog_batch_payload({"records": records}))
 
 
+def _catalog_vehicle_count(store: CatalogStore) -> int:
+    count = 0
+    after_id: str | None = None
+    while True:
+        page = store.catalog_vehicle_ids_page(after_id=after_id, limit=100)
+        if not page:
+            break
+        count += len(page)
+        if len(page) < 100:
+            break
+        after_id = page[-1]
+    return count
+
+
 def measure_source_backed_operational_corpus(paths: Iterable[str | Path]) -> dict[str, Any]:
     store = CatalogStore()
     report = run_source_backed_operational_corpus(store, paths)
@@ -82,7 +96,8 @@ def measure_source_backed_operational_corpus(paths: Iterable[str | Path]) -> dic
 
     review_queue = CatalogReviewQueue(store)
     cause_store = CatalogReviewCauseStore(store)
-    tasks = review_queue.open_tasks(limit=100)
+    open_review_count = review_queue.count_open()
+    tasks = review_queue.open_tasks(limit=open_review_count) if open_review_count else []
     cause_counts: Counter[str] = Counter()
     reason_counts: Counter[str] = Counter()
     classifier_versions: Counter[str] = Counter()
@@ -114,7 +129,7 @@ def measure_source_backed_operational_corpus(paths: Iterable[str | Path]) -> dic
         for cause in snapshot.causes:
             cause_counts[cause] += 1
 
-    catalog_items = len(store.catalog_vehicle_ids_page(limit=100))
+    catalog_items = _catalog_vehicle_count(store)
     return {
         "schema": "podium7.production-operational-measurement.v1",
         "summary": {
@@ -126,7 +141,7 @@ def measure_source_backed_operational_corpus(paths: Iterable[str | Path]) -> dic
             "automaticRate": (report.created + report.matched) / report.total,
             "reviewRate": report.review / report.total,
             "catalogItems": catalog_items,
-            "openReviewTasks": len(tasks),
+            "openReviewTasks": open_review_count,
             "unsnapshottedReviewTasks": unsnapshotted_tasks,
         },
         "actionsBySide": {
