@@ -101,9 +101,16 @@ class NhtsaVpicEvidenceTests(unittest.TestCase):
                     self._parse(self._raw(**{field: ""}))
 
     def test_fails_closed_on_malformed_cardinality_and_types(self):
+        valid_row = {
+            "Make": "BMW",
+            "Model": "X3",
+            "ModelYear": "2011",
+            "ErrorCode": "0",
+        }
         invalid_payloads = [
             b"not-json",
             json.dumps({"Count": 0, "Results": []}).encode(),
+            json.dumps({"Count": True, "Results": [valid_row]}).encode(),
             json.dumps(
                 {
                     "Count": 1,
