@@ -1,13 +1,22 @@
 # Current work
 
-Status: complete
+Status: active
 
-The current private technical MVP is complete. PR #119 integrated the independent-equivalent validation path, and the intended merge-candidate head passed Operational Readiness V1 and MVP Exit Gate V1 with `validation_source=independent-equivalent`.
+Parent mission: #139 — production-scale evidence-backed catalog operation.
 
-No repository implementation mission is active and no functional MVP blocker is open.
+Current block: #140 — build a larger reproducible source-backed operating corpus using only already-qualified/versioned evidence before opening any new source, region or semantic work.
 
-Issue #112, `Restore GitHub Actions hosted-runner execution`, remains open as an infrastructure/operations debt item. GitHub-hosted Actions jobs are still failing before any workflow step is created (`steps=null`, no job logs). This no longer blocks the private MVP because the accepted independent-equivalent execution path produced a passing gate without pretending official CI was green.
+First bounded increment: Production Corpus Run V3 composes the existing three V2 identity gold sets plus `catalog_identity_year_semantics_challenge_v1.json`, increasing the operational replay from 60 to 72 records without inventing cases or changing resolver/evidence/fusion semantics.
 
-Owner action for #112 remains limited to GitHub account/repository Actions settings: verify Actions usage/minutes, payment method and budget/spending limits, and repository Actions enablement. Do not change runner architecture or add infrastructure workarounds merely to bypass this condition; ADR-0001 remains in force.
+Acceptance for this block:
 
-Next work must be declared as a post-MVP mission rather than silently extending the completed MVP scope.
+- 72 source-backed records traverse batch ingestion, identity resolution, evidence persistence and consumer reads;
+- every replay record retains an HTTPS source locator and deterministic benchmark provenance;
+- manufacture year and model year remain distinct;
+- reviews/conflicts/failures remain measured outputs, not reasons to weaken policy;
+- no new source family, region, semantic field or infrastructure is introduced without a measured need;
+- #141 performs precision/recall and review-load measurement after the expanded corpus exists.
+
+Plan: `docs/exec-plans/active/PRODUCTION-CORPUS-RUN-V3.md`.
+
+Issue #112 remains external GitHub Actions debt. Do not add a runner workaround.
