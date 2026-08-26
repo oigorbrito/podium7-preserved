@@ -12,6 +12,12 @@ class SourceCandidate:
     source_id: str
     fact: CandidateFact
 
+    def __post_init__(self) -> None:
+        if not isinstance(self.source_id, str) or not self.source_id.strip():
+            raise ValueError("source_id is required")
+        if not isinstance(self.fact, CandidateFact):
+            raise ValueError("fact must be a CandidateFact")
+
 
 @dataclass(frozen=True)
 class MultiSourceCase:
@@ -25,8 +31,16 @@ class MultiSourceCase:
     def __post_init__(self) -> None:
         if self.expected_disposition not in {"CANONICAL", "CONFLICT", "REVIEW"}:
             raise ValueError("unsupported expected disposition")
-        if not self.case_id or not self.entity_id or not self.attribute or not self.rationale:
-            raise ValueError("case id, entity id, attribute, and rationale are required")
+        for field_name, value in (
+            ("case_id", self.case_id),
+            ("entity_id", self.entity_id),
+            ("attribute", self.attribute),
+            ("rationale", self.rationale),
+        ):
+            if not isinstance(value, str) or not value.strip():
+                raise ValueError(f"{field_name} is required")
+        if any(not isinstance(item, SourceCandidate) for item in self.candidates):
+            raise ValueError("candidates must contain SourceCandidate values")
         if any(item.fact.attribute != self.attribute for item in self.candidates):
             raise ValueError("all candidate facts must match the case attribute")
 
@@ -35,6 +49,11 @@ def evaluate_multisource_cases(cases: Iterable[MultiSourceCase]) -> dict:
     case_list = tuple(cases)
     if not case_list:
         raise ValueError("at least one validation case is required")
+    if any(not isinstance(case, MultiSourceCase) for case in case_list):
+        raise ValueError("validation cases must be MultiSourceCase values")
+    case_ids = [case.case_id for case in case_list]
+    if len(case_ids) != len(set(case_ids)):
+        raise ValueError("validation case ids must be unique")
 
     results = []
     source_contribution: dict[str, int] = {}
