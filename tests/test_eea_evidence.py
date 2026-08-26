@@ -93,6 +93,44 @@ class EeaEvidenceAdapterTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "absent EEA records"):
             parse_eea_evidence(raw, entity_candidate_ids={162744196: "candidate:volvo", 999: "candidate:other"}, **common)
 
+    def test_candidate_binding_rejects_boolean_record_id(self):
+        raw = json.dumps(
+            {
+                "results": [
+                    {
+                        "ID": 1,
+                        "MS": "SE",
+                        "Mk": "VOLVO",
+                        "Cn": "XC60",
+                        "Man": "VOLVO CAR CORPORATION",
+                        "TAN": "E4*2007/46*1220*25",
+                        "T": "U",
+                        "Va": "UZH4",
+                        "Ve": "UZH4VD01",
+                        "M (kg)": 2150,
+                        "Ec (cm3)": 1969,
+                        "Ep (KW)": 186,
+                        "Ft": "petrol/electric",
+                        "Fm": "P",
+                        "Year": 2025,
+                        "Ewltp (g/km)": 23,
+                        "Z (Wh/km)": 183,
+                        "Status": "P",
+                    }
+                ]
+            },
+            separators=(",", ":"),
+        ).encode()
+        digest = hashlib.sha256(raw).hexdigest()
+        with self.assertRaisesRegex(ValueError, "integer EEA record ids"):
+            parse_eea_evidence(
+                raw,
+                locator="https://discodata.eea.europa.eu/sql?query=bounded",
+                retrieved_at=datetime(2026, 8, 23, tzinfo=timezone.utc),
+                raw_content_ref=f"sha256:{digest}@fixture.json",
+                entity_candidate_ids={True: "candidate:volvo"},
+            )
+
 
 if __name__ == "__main__":
     unittest.main()
