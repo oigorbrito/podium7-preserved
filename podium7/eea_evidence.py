@@ -52,6 +52,10 @@ def parse_eea_evidence(raw_payload: bytes, *, locator: str, retrieved_at: dateti
         raise ValueError("retrieved_at must be timezone-aware")
     if not isinstance(entity_candidate_ids, dict) or not entity_candidate_ids:
         raise ValueError("entity_candidate_ids are required")
+    if any(isinstance(record_id, bool) or not isinstance(record_id, int) for record_id in entity_candidate_ids):
+        raise ValueError("entity_candidate_ids keys must be integer EEA record ids")
+    if any(not isinstance(candidate_id, str) or not candidate_id.strip() for candidate_id in entity_candidate_ids.values()):
+        raise ValueError("entity_candidate_ids values must be non-empty candidate ids")
 
     digest = _require_content_ref(raw_payload, raw_content_ref)
     evidence_id = f"eea-co2-cars:{digest}"
