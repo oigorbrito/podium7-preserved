@@ -99,6 +99,7 @@ class RecurringAcquisitionCoordinator:
             raise ValueError("checkpoint references unapproved sources: " + ", ".join(sorted(unknown)))
         self._last_sha = dict(checkpoint.last_sha)
         self._retry_counts = dict(checkpoint.retry_counts)
+        self._authorized_locators: dict[str, str] = {}
 
     def checkpoint(self) -> RecurringCheckpoint:
         return RecurringCheckpoint(dict(self._last_sha), dict(self._retry_counts))
@@ -107,7 +108,18 @@ class RecurringAcquisitionCoordinator:
         gate = self._gates.get(source_id)
         if gate is None:
             return SourceOperationDecision(False, "UNAPPROVED_SOURCE", 0.0)
-        return gate.evaluate(locator, now=now, robots_text=robots_text)
+        decision = gate.evaluate(locator, now=now, robots_text=robots_text)
+        if decision.allowed:
+            self._authorized_locators[source_id] = locator
+        return decision
+
+    def _consume_authorization(self, source_id: str, requested_url: str) -> str | None:
+        authorized_locator = self._authorized_locators.pop(source_id, None)
+        if authorized_locator is None:
+            return "AUTHORIZATION_MISSING"
+        if requested_url != authorized_locator:
+            return "AUTHORIZED_LOCATOR_MISMATCH"
+        return None
 
     def record_success(self, source_id: str, acquisition: DirectHttpAcquisition, *, schema_signature: str) -> RecurringRunResult:
         contract = self._contracts.get(source_id)
@@ -115,6 +127,9 @@ class RecurringAcquisitionCoordinator:
             raise ValueError("source is not approved for recurring acquisition")
         if not isinstance(schema_signature, str) or not schema_signature.strip():
             raise ValueError("schema_signature is required")
+        authorization_error = self._consume_authorization(source_id, acquisition.requested_url)
+        if authorization_error is not None:
+            return RecurringRunResult(source_id, RecurringRunState.DRIFT, authorization_error, acquisition.requested_url, acquisition.sha256, schema_signature, self._retry_counts.get(source_id, 0), False)
         final_host = urlparse(acquisition.final_url).hostname
         if final_host is None or final_host.casefold() != contract.operation_policy.host.casefold():
             return RecurringRunResult(source_id, RecurringRunState.DRIFT, "FINAL_HOST_DRIFT", acquisition.final_url, acquisition.sha256, schema_signature, self._retry_counts.get(source_id, 0), False)
@@ -139,6 +154,7 @@ class RecurringAcquisitionCoordinator:
             raise ValueError("source is not approved for recurring acquisition")
         if not isinstance(reason, str) or not reason.strip():
             raise ValueError("failure reason is required")
+        self._authorized_locators.pop(source_id, None)
         count = self._retry_counts.get(source_id, 0) + 1
         self._retry_counts[source_id] = count
         state = RecurringRunState.RETRYABLE if count <= contract.max_retries else RecurringRunState.DEGRADED
