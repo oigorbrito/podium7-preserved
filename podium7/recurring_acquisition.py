@@ -54,6 +54,7 @@ class RecurringCheckpoint:
             raise ValueError("checkpoint last_sha entries must contain source ids and SHA-256 hex digests")
         if any(not isinstance(key, str) or not key.strip() or isinstance(value, bool) or not isinstance(value, int) or value < 0 for key, value in self.retry_counts.items()):
             raise ValueError("checkpoint retry_counts must contain non-negative integers")
+        object.__setattr__(self, "last_sha", {key: value.casefold() for key, value in self.last_sha.items()})
 
     def to_dict(self) -> dict[str, dict[str, object]]:
         return {
