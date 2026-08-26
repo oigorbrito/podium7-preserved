@@ -1,3 +1,4 @@
+import math
 import unittest
 
 from podium7.source_policy import RecurringSourceGate, RobotsMode, SourceOperationPolicy
@@ -51,6 +52,21 @@ class SourcePolicyTests(unittest.TestCase):
         gate = RecurringSourceGate(self.policy())
         self.assertEqual(gate.evaluate("http://example.com/a", now=0, robots_text="").reason, "INVALID_LOCATOR")
         self.assertEqual(gate.evaluate("https://other.example/a", now=0, robots_text="").reason, "HOST_MISMATCH")
+
+    def test_policy_rejects_string_robots_mode_and_non_finite_or_boolean_pacing(self):
+        with self.assertRaisesRegex(ValueError, "robots_mode"):
+            self.policy(robots_mode="REQUIRED")
+        for value in (True, False, math.nan, math.inf, -math.inf, -1.0):
+            with self.subTest(value=value):
+                with self.assertRaisesRegex(ValueError, "finite non-negative"):
+                    self.policy(min_interval_seconds=value)
+
+    def test_gate_rejects_non_finite_or_boolean_clock_values(self):
+        gate = RecurringSourceGate(self.policy(robots_mode=RobotsMode.NOT_APPLICABLE))
+        for value in (True, False, math.nan, math.inf, -math.inf):
+            with self.subTest(value=value):
+                with self.assertRaisesRegex(ValueError, "now must be a finite number"):
+                    gate.evaluate("https://example.com/a", now=value)
 
 
 if __name__ == "__main__":
