@@ -304,8 +304,8 @@ class CatalogReviewQueue:
         return task
 
     def open_tasks(self, *, limit: int = 100) -> list[CatalogReviewTask]:
-        if isinstance(limit, bool) or not isinstance(limit, int) or not 1 <= limit <= 100:
-            raise ValueError("limit must be an integer between 1 and 100")
+        if isinstance(limit, bool) or not isinstance(limit, int) or limit < 1:
+            raise ValueError("limit must be a positive integer")
         rows = self.store._connection.execute(
             """
             SELECT * FROM catalog_v2_review_tasks
