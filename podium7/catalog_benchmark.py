@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from dataclasses import dataclass
+from collections.abc import Mapping
+from dataclasses import dataclass, fields as dataclass_fields
 import json
 from pathlib import Path
 from typing import Any
@@ -15,6 +16,7 @@ from .catalog import (
 
 
 CATALOG_BENCHMARK_SCHEMA = "podium7.catalog-identity-golden.v1"
+IDENTITY_FIELD_NAMES = frozenset(field.name for field in dataclass_fields(CatalogVehicleIdentity))
 
 
 @dataclass(frozen=True)
@@ -25,6 +27,8 @@ class CatalogBenchmarkCase:
     right: CatalogVehicleIdentity
     source_ids: tuple[str, ...]
     rationale: str
+    left_field_source_ids: Mapping[str, tuple[str, ...]]
+    right_field_source_ids: Mapping[str, tuple[str, ...]]
 
 
 @dataclass(frozen=True)
@@ -42,6 +46,92 @@ def _identity_from_mapping(data: dict[str, Any]) -> CatalogVehicleIdentity:
         ExternalIdentifier(**item) for item in payload.get("external_identifiers", ())
     )
     return CatalogVehicleIdentity(**payload)
+
+
+def _identity_field_is_present(identity: CatalogVehicleIdentity, field_name: str) -> bool:
+    value = getattr(identity, field_name)
+    if value is None:
+        return False
+    if isinstance(value, tuple) and not value:
+        return False
+    return True
+
+
+def _parse_side_field_source_ids(
+    raw: Any,
+    *,
+    side: str,
+    identity: CatalogVehicleIdentity,
+    case_source_ids: tuple[str, ...],
+    case_id: str,
+) -> dict[str, tuple[str, ...]]:
+    if raw is None:
+        return {}
+    if not isinstance(raw, dict):
+        raise ValueError(f"case {case_id!r} fieldSourceIds.{side} must be an object")
+
+    result: dict[str, tuple[str, ...]] = {}
+    allowed_sources = set(case_source_ids)
+    for field_name, raw_source_ids in raw.items():
+        if field_name not in IDENTITY_FIELD_NAMES:
+            raise ValueError(
+                f"case {case_id!r} fieldSourceIds.{side} has unknown identity field {field_name!r}"
+            )
+        if not _identity_field_is_present(identity, field_name):
+            raise ValueError(
+                f"case {case_id!r} fieldSourceIds.{side}.{field_name} attributes an absent field"
+            )
+        if not isinstance(raw_source_ids, list) or not raw_source_ids:
+            raise ValueError(
+                f"case {case_id!r} fieldSourceIds.{side}.{field_name} requires a non-empty source list"
+            )
+        if any(not isinstance(source_id, str) or not source_id.strip() for source_id in raw_source_ids):
+            raise ValueError(
+                f"case {case_id!r} fieldSourceIds.{side}.{field_name} source ids must be non-empty strings"
+            )
+        if len(set(raw_source_ids)) != len(raw_source_ids):
+            raise ValueError(
+                f"case {case_id!r} fieldSourceIds.{side}.{field_name} source ids must be unique"
+            )
+        if any(source_id not in allowed_sources for source_id in raw_source_ids):
+            raise ValueError(
+                f"case {case_id!r} fieldSourceIds.{side}.{field_name} references a source outside case sourceIds"
+            )
+        result[field_name] = tuple(raw_source_ids)
+    return result
+
+
+def _parse_field_source_ids(
+    raw: Any,
+    *,
+    left: CatalogVehicleIdentity,
+    right: CatalogVehicleIdentity,
+    case_source_ids: tuple[str, ...],
+    case_id: str,
+) -> tuple[dict[str, tuple[str, ...]], dict[str, tuple[str, ...]]]:
+    if raw is None:
+        return {}, {}
+    if not isinstance(raw, dict):
+        raise ValueError(f"case {case_id!r} fieldSourceIds must be an object")
+    unknown_sides = set(raw) - {"left", "right"}
+    if unknown_sides:
+        raise ValueError(f"case {case_id!r} fieldSourceIds has unknown side(s): {sorted(unknown_sides)!r}")
+    return (
+        _parse_side_field_source_ids(
+            raw.get("left"),
+            side="left",
+            identity=left,
+            case_source_ids=case_source_ids,
+            case_id=case_id,
+        ),
+        _parse_side_field_source_ids(
+            raw.get("right"),
+            side="right",
+            identity=right,
+            case_source_ids=case_source_ids,
+            case_id=case_id,
+        ),
+    )
 
 
 def load_catalog_identity_benchmark(path: str | Path) -> CatalogBenchmarkDataset:
@@ -84,18 +174,32 @@ def load_catalog_identity_benchmark(path: str | Path) -> CatalogBenchmarkDataset
         case_source_ids = tuple(raw.get("sourceIds", ()))
         if not case_source_ids or any(source_id not in known_sources for source_id in case_source_ids):
             raise ValueError(f"case {case_id!r} has missing or unknown sourceIds")
+        if len(set(case_source_ids)) != len(case_source_ids):
+            raise ValueError(f"case {case_id!r} sourceIds must be unique")
         rationale = raw.get("rationale")
         if not isinstance(rationale, str) or not rationale.strip():
             raise ValueError(f"case {case_id!r} requires a rationale")
+
+        left = _identity_from_mapping(raw["left"])
+        right = _identity_from_mapping(raw["right"])
+        left_field_source_ids, right_field_source_ids = _parse_field_source_ids(
+            raw.get("fieldSourceIds"),
+            left=left,
+            right=right,
+            case_source_ids=case_source_ids,
+            case_id=case_id,
+        )
 
         cases.append(
             CatalogBenchmarkCase(
                 id=case_id,
                 expected=expected,
-                left=_identity_from_mapping(raw["left"]),
-                right=_identity_from_mapping(raw["right"]),
+                left=left,
+                right=right,
                 source_ids=case_source_ids,
                 rationale=rationale,
+                left_field_source_ids=left_field_source_ids,
+                right_field_source_ids=right_field_source_ids,
             )
         )
 
@@ -131,6 +235,10 @@ def evaluate_catalog_identity_benchmark(
                 "predicted": decision.outcome.value,
                 "reason": decision.reason,
                 "correct": decision.outcome is case.expected,
+                "fieldSourceIds": {
+                    "left": {field: list(source_ids) for field, source_ids in case.left_field_source_ids.items()},
+                    "right": {field: list(source_ids) for field, source_ids in case.right_field_source_ids.items()},
+                },
             }
         )
 
@@ -196,6 +304,7 @@ def evaluate_catalog_identity_benchmark(
 
 __all__ = [
     "CATALOG_BENCHMARK_SCHEMA",
+    "IDENTITY_FIELD_NAMES",
     "CatalogBenchmarkCase",
     "CatalogBenchmarkDataset",
     "evaluate_catalog_identity_benchmark",
