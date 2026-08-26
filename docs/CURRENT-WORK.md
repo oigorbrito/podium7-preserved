@@ -4,19 +4,21 @@ Status: active
 
 Parent mission: #139 — production-scale evidence-backed catalog operation.
 
-Current block: #141 — measure identity quality and review load on the expanded source-backed operating corpus.
+Current block: #144 — add explicit field-level source provenance to catalog benchmarks.
 
-Dependency: #140 / Production Corpus Run V3 defines the 72-record / 36-case corpus. This block reuses the existing repository quality and operational measurement paths; it does not introduce new sources, regions, semantic rules or resolver changes.
+Documentation basis: #141 / `PRODUCTION-QUALITY-MEASUREMENT-V2.md` records that the current gold schema only binds `sourceIds` at case level, which prevents defensible source-contribution-by-dimension metrics without inventing provenance.
 
 Acceptance for this block:
 
-- measure auto-match precision/recall, false merges, missed matches and ambiguous overcommit on the 36 identity cases;
-- measure CREATED/MATCHED/REVIEW/failure distribution and durable review causes on the 72 operational observations;
-- verify source/evidence locators and benchmark provenance remain complete;
-- preserve fail-closed review semantics and all evidence/fusion/publication rules regardless of measured values;
-- do not create follow-up source/region/semantic/resolver issues until executable results establish a concrete need;
-- do not invent per-dimension source contribution: the current gold schema binds `sourceIds` at case level, not field level.
+- add optional explicit `fieldSourceIds.left/right.<field>` attribution while keeping current benchmark files valid;
+- fail closed on unknown sources/fields, absent-field attribution, duplicate IDs, malformed mappings and empty source lists;
+- expose explicit attribution in loaded benchmark/report data;
+- measure source contribution by dimension only from explicit attribution;
+- separately measure attributed versus unattributed field coverage so missing metadata stays visible;
+- do not infer provenance from case-level `sourceIds`, source prose, rationale or lexical semantics;
+- do not change resolver/evidence/fusion/publication policy;
+- do not retroactively backfill historical benchmark provenance without retained inspectable evidence.
 
-Plan: `docs/exec-plans/active/PRODUCTION-QUALITY-MEASUREMENT-V2.md`.
+Plan: `docs/exec-plans/active/FIELD-SOURCE-PROVENANCE-V1.md`.
 
-Issue #112 remains external GitHub Actions debt. Numerical results and PASS status remain pending until code actually executes.
+Dependency stack: #140 → #141 → #144. Issue #112 remains external GitHub Actions debt, so executable PASS remains pending until code actually runs.
