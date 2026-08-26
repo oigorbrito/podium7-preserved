@@ -21,6 +21,24 @@ class CatalogBatchFailureSnapshot:
     error_code: str
     error_message: str
 
+    def __post_init__(self) -> None:
+        if isinstance(self.index, bool) or not isinstance(self.index, int) or self.index < 0:
+            raise ValueError("batch failure index must be a non-negative integer")
+        if self.record_id is not None and (not isinstance(self.record_id, str) or not self.record_id.strip()):
+            raise ValueError("batch failure record_id must be non-empty text when provided")
+        for field_name in (
+            "evidence_id",
+            "source_id",
+            "source_locator",
+            "evidence_locator",
+            "raw_content_ref",
+            "error_code",
+            "error_message",
+        ):
+            value = getattr(self, field_name)
+            if not isinstance(value, str) or not value.strip():
+                raise ValueError(f"batch failure {field_name} must be non-empty text")
+
     def to_payload(self) -> dict[str, object]:
         return {
             "evidenceId": self.evidence_id,
