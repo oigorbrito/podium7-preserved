@@ -3,12 +3,71 @@ from __future__ import annotations
 from collections import Counter
 import json
 from pathlib import Path
-from typing import Any, Iterable
+from typing import Any, Iterable, Mapping
 
 from .catalog import CatalogStore
 from .catalog_batch import CatalogBatchReport, ingest_catalog_batch, parse_catalog_batch_payload
 from .catalog_quality import classify_review_reason
 from .catalog_review import CatalogReviewQueue
+
+
+def _present_vehicle_fields(vehicle: Mapping[str, Any]) -> tuple[str, ...]:
+    fields: list[str] = []
+    for field_name, value in vehicle.items():
+        if value is None:
+            continue
+        if isinstance(value, (list, tuple)) and not value:
+            continue
+        fields.append(field_name)
+    return tuple(fields)
+
+
+def _unique_source_for_record(
+    case: Mapping[str, Any],
+    *,
+    side: str,
+    known_sources: set[str],
+) -> str:
+    case_id = case.get("id")
+    vehicle = case.get(side)
+    if not isinstance(vehicle, Mapping):
+        raise ValueError(f"case {case_id!r} {side} vehicle must be an object")
+
+    raw_field_sources = case.get("fieldSourceIds")
+    if not isinstance(raw_field_sources, Mapping):
+        raise ValueError(
+            f"case {case_id!r} lacks explicit field-level source attribution for operational replay"
+        )
+    side_sources = raw_field_sources.get(side)
+    if not isinstance(side_sources, Mapping):
+        raise ValueError(
+            f"case {case_id!r} lacks explicit field-level source attribution for {side}"
+        )
+
+    common_sources: set[str] | None = None
+    for field_name in _present_vehicle_fields(vehicle):
+        source_ids = side_sources.get(field_name)
+        if (
+            not isinstance(source_ids, list)
+            or not source_ids
+            or any(not isinstance(source_id, str) or not source_id.strip() for source_id in source_ids)
+        ):
+            raise ValueError(
+                f"case {case_id!r} {side}.{field_name} lacks explicit source attribution"
+            )
+        attributed = set(source_ids)
+        unknown = attributed - known_sources
+        if unknown:
+            raise ValueError(
+                f"case {case_id!r} {side}.{field_name} references unknown source ids"
+            )
+        common_sources = attributed if common_sources is None else common_sources & attributed
+
+    if common_sources is None or len(common_sources) != 1:
+        raise ValueError(
+            f"case {case_id!r} {side} has no unique source common to every present field"
+        )
+    return next(iter(common_sources))
 
 
 def build_source_backed_operational_records(paths: Iterable[str | Path]) -> list[dict[str, Any]]:
@@ -26,13 +85,17 @@ def build_source_backed_operational_records(paths: Iterable[str | Path]) -> list
             raise ValueError(f"source-backed dataset has no sources: {path}")
         created_at = payload.get("createdAt", "2026-08-23")
         retrieved_at = f"{created_at}T00:00:00Z"
+        known_sources = set(sources)
 
         for case in payload.get("cases", ()):
             source_ids = case.get("sourceIds", ())
             if not source_ids:
                 raise ValueError(f"case {case.get('id')!r} has no sourceIds")
-            source = sources[source_ids[0]]
+            if any(source_id not in known_sources for source_id in source_ids):
+                raise ValueError(f"case {case.get('id')!r} references an unknown source")
             for side in ("left", "right"):
+                source_id = _unique_source_for_record(case, side=side, known_sources=known_sources)
+                source = sources[source_id]
                 case_id = case["id"]
                 evidence_id = f"operational:{version}:{case_id}:{side}"
                 records.append(
