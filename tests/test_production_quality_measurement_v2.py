@@ -1,4 +1,6 @@
+import json
 from pathlib import Path
+import tempfile
 import unittest
 
 from podium7.catalog_operational import (
@@ -53,6 +55,32 @@ class ProductionQualityMeasurementV2Tests(unittest.TestCase):
             "PRODUCTION_QUALITY_MEASUREMENT_V2",
             {"identityQuality": quality["metrics"], "operational": operational},
         )
+
+    def test_ambiguous_overcommit_is_not_double_counted_as_false_merge(self) -> None:
+        fixture = {
+            "schema": "podium7.catalog-identity-golden.v1",
+            "datasetVersion": "metric-separation-v1",
+            "sources": [
+                {"id": "source-a", "url": "https://example.test/source-a"},
+            ],
+            "cases": [
+                {
+                    "id": "ambiguous-overcommit",
+                    "expected": "REVIEW",
+                    "left": {"make": "Toyota", "model": "Corolla"},
+                    "right": {"make": "Toyota", "model": "Corolla"},
+                    "sourceIds": ["source-a"],
+                    "rationale": "Metric fixture: resolver may overcommit an ambiguous gold case, which is not a false merge by definition.",
+                }
+            ],
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "fixture.json"
+            path.write_text(json.dumps(fixture), encoding="utf-8")
+            metrics = evaluate_identity_quality((path,))["metrics"]
+
+        self.assertEqual(metrics["falseMergeCount"], 0)
+        self.assertEqual(metrics["ambiguousOvercommitCount"], 1)
 
 
 if __name__ == "__main__":
