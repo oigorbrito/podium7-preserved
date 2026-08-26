@@ -7,8 +7,8 @@ from typing import Any, Iterable
 
 from .catalog import CatalogStore
 from .catalog_batch import CatalogBatchReport, ingest_catalog_batch, parse_catalog_batch_payload
-from .catalog_quality import classify_review_reason
 from .catalog_review import CatalogReviewQueue
+from .catalog_review_cause import CatalogReviewCauseStore, LEGACY_UNSNAPSHOTTED_CAUSE
 
 
 def build_source_backed_operational_records(paths: Iterable[str | Path]) -> list[dict[str, Any]]:
@@ -81,10 +81,14 @@ def measure_source_backed_operational_corpus(paths: Iterable[str | Path]) -> dic
             action_by_side[side][result.action.value] += 1
 
     review_queue = CatalogReviewQueue(store)
+    cause_store = CatalogReviewCauseStore(store)
     tasks = review_queue.open_tasks(limit=100)
     cause_counts: Counter[str] = Counter()
     reason_counts: Counter[str] = Counter()
+    classifier_versions: Counter[str] = Counter()
     multiple_cause_tasks = 0
+    unsnapshotted_tasks = 0
+
     for task in tasks:
         candidates = set(task.candidate_vehicle_ids)
         reasons = sorted(
@@ -95,19 +99,20 @@ def measure_source_backed_operational_corpus(paths: Iterable[str | Path]) -> dic
                 and comparison.outcome in {"MATCH", "REVIEW"}
             }
         )
-        if not reasons:
-            cause_counts["UNKNOWN_REVIEW_CAUSE"] += 1
-            continue
-        categories = sorted({classify_review_reason(reason) for reason in reasons})
         for reason in reasons:
             reason_counts[reason] += 1
-        if "UNKNOWN_REVIEW_CAUSE" in categories:
-            cause_counts["UNKNOWN_REVIEW_CAUSE"] += 1
-        elif len(categories) == 1:
-            cause_counts[categories[0]] += 1
-        else:
+
+        snapshot = cause_store.get(task.id)
+        if snapshot is None:
+            unsnapshotted_tasks += 1
+            cause_counts[LEGACY_UNSNAPSHOTTED_CAUSE] += 1
+            continue
+
+        classifier_versions[snapshot.classifier_version] += 1
+        if len(snapshot.causes) > 1:
             multiple_cause_tasks += 1
-            cause_counts["MULTIPLE_REVIEW_CAUSES"] += 1
+        for cause in snapshot.causes:
+            cause_counts[cause] += 1
 
     catalog_items = len(store.catalog_vehicle_ids_page(limit=100))
     return {
@@ -122,6 +127,7 @@ def measure_source_backed_operational_corpus(paths: Iterable[str | Path]) -> dic
             "reviewRate": report.review / report.total,
             "catalogItems": catalog_items,
             "openReviewTasks": len(tasks),
+            "unsnapshottedReviewTasks": unsnapshotted_tasks,
         },
         "actionsBySide": {
             side: dict(sorted(counter.items()))
@@ -129,6 +135,7 @@ def measure_source_backed_operational_corpus(paths: Iterable[str | Path]) -> dic
         },
         "reviewCauses": dict(sorted(cause_counts.items())),
         "reviewReasons": dict(sorted(reason_counts.items())),
+        "reviewCauseClassifierVersions": dict(sorted(classifier_versions.items())),
         "multipleCauseTasks": multiple_cause_tasks,
     }
 
