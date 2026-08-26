@@ -28,12 +28,20 @@ def build_source_backed_operational_records(paths: Iterable[str | Path]) -> list
         retrieved_at = f"{created_at}T00:00:00Z"
 
         for case in payload.get("cases", ()):
+            case_id = case.get("id")
             source_ids = case.get("sourceIds", ())
             if not source_ids:
-                raise ValueError(f"case {case.get('id')!r} has no sourceIds")
-            source = sources[source_ids[0]]
+                raise ValueError(f"case {case_id!r} has no sourceIds")
+            if len(source_ids) != 1:
+                raise ValueError(
+                    f"case {case_id!r} has ambiguous case-level source attribution; "
+                    "operational replay requires exactly one defensible source per record side"
+                )
+            source_id = source_ids[0]
+            if source_id not in sources:
+                raise ValueError(f"case {case_id!r} references unknown source {source_id!r}")
+            source = sources[source_id]
             for side in ("left", "right"):
-                case_id = case["id"]
                 evidence_id = f"operational:{version}:{case_id}:{side}"
                 records.append(
                     {
