@@ -14,6 +14,7 @@ from .domain import CandidateFact, RawEvidence
 NHTSA_VPIC_SOURCE_ID = "nhtsa_vpic"
 NHTSA_VPIC_EXTRACTION_METHOD = "nhtsa_vpic.decode_vin_values.v1"
 _RAW_REF_PATTERN = re.compile(r"^sha256:([0-9a-f]{64})@(.+)$")
+_ALLOWED_DECODE_ERROR_CODES = frozenset({"0", "6"})
 _FIELD_MAP: dict[str, tuple[str, str]] = {
     "Make": ("make", "text"),
     "MakeID": ("nhtsa.make_id", "int"),
@@ -86,6 +87,31 @@ def _validate_raw_content_ref(raw_content_ref: str, digest: str) -> str:
     return raw_content_ref
 
 
+def _optional_source_text(value: Any, field: str) -> str | None:
+    if value is None:
+        return None
+    if not isinstance(value, str):
+        raise ValueError(f"NHTSA field {field!r} must be text when present")
+    stripped = value.strip()
+    return stripped or None
+
+
+def _validate_decode_error_code(value: Any) -> str | None:
+    error_code = _optional_source_text(value, "ErrorCode")
+    if error_code is None:
+        raise ValueError("NHTSA response requires ErrorCode")
+    codes = tuple(code.strip() for code in error_code.split(","))
+    if any(not code.isdigit() for code in codes):
+        raise ValueError("NHTSA ErrorCode must contain comma-separated numeric codes")
+    unsupported = sorted(set(codes) - _ALLOWED_DECODE_ERROR_CODES)
+    if unsupported:
+        raise ValueError(
+            "NHTSA response contains unsupported decode error code(s): "
+            + ", ".join(unsupported)
+        )
+    return error_code
+
+
 def parse_nhtsa_decode_vin_values(
     raw_payload: bytes,
     *,
@@ -117,6 +143,8 @@ def parse_nhtsa_decode_vin_values(
     if count != 1 or not isinstance(results, list) or len(results) != 1 or not isinstance(results[0], dict):
         raise ValueError("NHTSA DecodeVinValues response must contain exactly one result")
     row = results[0]
+    source_error_code = _validate_decode_error_code(row.get("ErrorCode"))
+    source_error_text = _optional_source_text(row.get("ErrorText"), "ErrorText")
 
     for required in ("Make", "Model", "ModelYear"):
         value = row.get(required)
@@ -156,18 +184,9 @@ def parse_nhtsa_decode_vin_values(
     return NhtsaVpicEvidenceResult(
         evidence=evidence,
         facts=tuple(facts),
-        source_error_code=_optional_source_text(row.get("ErrorCode"), "ErrorCode"),
-        source_error_text=_optional_source_text(row.get("ErrorText"), "ErrorText"),
+        source_error_code=source_error_code,
+        source_error_text=source_error_text,
     )
-
-
-def _optional_source_text(value: Any, field: str) -> str | None:
-    if value is None:
-        return None
-    if not isinstance(value, str):
-        raise ValueError(f"NHTSA field {field!r} must be text when present")
-    stripped = value.strip()
-    return stripped or None
 
 
 __all__ = [
