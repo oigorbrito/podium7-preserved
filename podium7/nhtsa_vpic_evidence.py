@@ -140,7 +140,14 @@ def parse_nhtsa_decode_vin_values(
 
     count = payload.get("Count")
     results = payload.get("Results")
-    if count != 1 or not isinstance(results, list) or len(results) != 1 or not isinstance(results[0], dict):
+    if (
+        isinstance(count, bool)
+        or not isinstance(count, int)
+        or count != 1
+        or not isinstance(results, list)
+        or len(results) != 1
+        or not isinstance(results[0], dict)
+    ):
         raise ValueError("NHTSA DecodeVinValues response must contain exactly one result")
     row = results[0]
     source_error_code = _validate_decode_error_code(row.get("ErrorCode"))
