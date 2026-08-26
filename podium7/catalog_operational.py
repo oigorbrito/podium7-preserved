@@ -7,6 +7,7 @@ from typing import Any, Iterable, Mapping
 
 from .catalog import CatalogStore
 from .catalog_batch import CatalogBatchReport, ingest_catalog_batch, parse_catalog_batch_payload
+from .catalog_benchmark import load_catalog_identity_benchmark
 from .catalog_quality import classify_review_reason
 from .catalog_review import CatalogReviewQueue
 
@@ -74,25 +75,15 @@ def build_source_backed_operational_records(paths: Iterable[str | Path]) -> list
     records: list[dict[str, Any]] = []
     for raw_path in paths:
         path = Path(raw_path)
+        load_catalog_identity_benchmark(path)
         payload = json.loads(path.read_text(encoding="utf-8"))
-        if payload.get("schema") != "podium7.catalog-identity-golden.v1":
-            raise ValueError(f"unsupported operational corpus source: {path}")
-        version = payload.get("datasetVersion")
-        if not isinstance(version, str) or not version.strip():
-            raise ValueError(f"datasetVersion is required: {path}")
-        sources = {source["id"]: source for source in payload.get("sources", ())}
-        if not sources:
-            raise ValueError(f"source-backed dataset has no sources: {path}")
+        version = payload["datasetVersion"]
+        sources = {source["id"]: source for source in payload["sources"]}
         created_at = payload.get("createdAt", "2026-08-23")
         retrieved_at = f"{created_at}T00:00:00Z"
         known_sources = set(sources)
 
-        for case in payload.get("cases", ()):
-            source_ids = case.get("sourceIds", ())
-            if not source_ids:
-                raise ValueError(f"case {case.get('id')!r} has no sourceIds")
-            if any(source_id not in known_sources for source_id in source_ids):
-                raise ValueError(f"case {case.get('id')!r} references an unknown source")
+        for case in payload["cases"]:
             for side in ("left", "right"):
                 source_id = _unique_source_for_record(case, side=side, known_sources=known_sources)
                 source = sources[source_id]
