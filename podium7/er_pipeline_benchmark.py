@@ -43,6 +43,24 @@ class ERPipelineCost:
                 raise ValueError(f"{name} must be a non-negative integer when provided")
 
 
+@dataclass(frozen=True)
+class ERPipelineScale:
+    candidate_universe_size: int
+    retained_candidate_count: int
+
+    def __post_init__(self) -> None:
+        for name, value in (
+            ("candidate_universe_size", self.candidate_universe_size),
+            ("retained_candidate_count", self.retained_candidate_count),
+        ):
+            if isinstance(value, bool) or not isinstance(value, int) or value < 0:
+                raise ValueError(f"{name} must be a non-negative integer")
+        if self.candidate_universe_size < 1:
+            raise ValueError("candidate_universe_size must be positive")
+        if self.retained_candidate_count > self.candidate_universe_size:
+            raise ValueError("retained_candidate_count cannot exceed candidate_universe_size")
+
+
 def _rate(numerator: int, denominator: int) -> float | None:
     return None if denominator == 0 else numerator / denominator
 
@@ -51,18 +69,21 @@ def evaluate_er_pipeline(
     cases: Iterable[ERPipelineCase],
     *,
     cost: ERPipelineCost = ERPipelineCost(),
+    scale: ERPipelineScale | None = None,
 ) -> dict[str, Any]:
     case_list = tuple(cases)
     if not case_list:
         raise ValueError("at least one ER pipeline case is required")
     if any(not isinstance(case, ERPipelineCase) for case in case_list):
         raise ValueError("all items must be ERPipelineCase instances")
+    if scale is not None and not isinstance(scale, ERPipelineScale):
+        raise ValueError("scale must be ERPipelineScale when provided")
     ids = [case.case_id for case in case_list]
     if len(ids) != len(set(ids)):
         raise ValueError("case_id values must be unique")
 
     total = len(case_list)
-    retained = sum(case.candidate_retained for case in case_list)
+    retained_labeled = sum(case.candidate_retained for case in case_list)
     expected_match = sum(case.expected is CatalogMatchOutcome.MATCH for case in case_list)
     retained_true_match = sum(
         case.expected is CatalogMatchOutcome.MATCH and case.candidate_retained
@@ -116,13 +137,21 @@ def evaluate_er_pipeline(
         item["endToEndOutcome"] == CatalogMatchOutcome.MATCH.value
         for item in observations
     )
+    candidate_reduction_ratio = (
+        None
+        if scale is None
+        else 1 - (scale.retained_candidate_count / scale.candidate_universe_size)
+    )
 
     return {
         "schema": REPORT_SCHEMA,
         "metrics": {
             "caseCount": total,
-            "retainedCandidateCount": retained,
-            "candidateReductionRatio": 1 - (retained / total),
+            "retainedLabeledPairCount": retained_labeled,
+            "labeledPairReductionRatio": 1 - (retained_labeled / total),
+            "candidateUniverseSize": None if scale is None else scale.candidate_universe_size,
+            "retainedCandidateCount": None if scale is None else scale.retained_candidate_count,
+            "candidateReductionRatio": candidate_reduction_ratio,
             "blockingRecall": _rate(retained_true_match, expected_match),
             "verificationPrecision": _rate(verifier_true_match, verifier_predicted_match),
             "verificationRecall": _rate(verifier_true_match, verifier_expected_match),
@@ -139,4 +168,10 @@ def evaluate_er_pipeline(
     }
 
 
-__all__ = ["ERPipelineCase", "ERPipelineCost", "REPORT_SCHEMA", "evaluate_er_pipeline"]
+__all__ = [
+    "ERPipelineCase",
+    "ERPipelineCost",
+    "ERPipelineScale",
+    "REPORT_SCHEMA",
+    "evaluate_er_pipeline",
+]
