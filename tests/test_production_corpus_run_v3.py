@@ -36,7 +36,7 @@ class ProductionCorpusRunV3Tests(unittest.TestCase):
         self.assertGreater(report.matched, 0)
         self.assertGreater(report.review, 0)
 
-        consumer = list_catalog_vehicles(store, limit=200)
+        consumer = list_catalog_vehicles(store, limit=100)
         self.assertTrue(consumer["ok"])
         self.assertGreater(len(consumer["items"]), 0)
 
