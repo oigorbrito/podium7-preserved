@@ -7,8 +7,8 @@ from .catalog import (
     CATALOG_CONTRACT_DEFAULT_VERSION,
     CATALOG_CONTRACT_SUPPORTED_VERSIONS,
     CatalogStore,
+    export_catalog_vehicle_payload,
 )
-from .catalog_export_trace import export_catalog_vehicle_with_evidence_trace
 
 
 CATALOG_API_DEFAULT_PAGE_SIZE = 50
@@ -76,7 +76,7 @@ def lookup_catalog_vehicle(
         "requestedId": vehicle_id,
         "canonicalId": canonical,
         "redirected": canonical != vehicle_id,
-        "vehicle": export_catalog_vehicle_with_evidence_trace(
+        "vehicle": export_catalog_vehicle_payload(
             store,
             vehicle_id,
             contract_version=contract_version,
@@ -127,7 +127,7 @@ def list_catalog_vehicles(
     return {
         "ok": True,
         "items": [
-            export_catalog_vehicle_with_evidence_trace(
+            export_catalog_vehicle_payload(
                 store,
                 vehicle_id,
                 contract_version=contract_version,
