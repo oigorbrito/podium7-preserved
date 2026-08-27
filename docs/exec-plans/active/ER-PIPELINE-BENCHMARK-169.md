@@ -1,6 +1,6 @@
 # ER pipeline benchmark — issue #169
 
-Status: active
+Status: benchmark contract prepared; comparative execution pending
 
 ## Goal
 
@@ -20,9 +20,23 @@ Podium already measures final resolver outcomes including match precision/recall
 6. Compare current Podium behavior with candidates inspired by SMBench/MaDI-Bench or targeted research.
 7. Record `CURRENT_BETTER`, `NEW_BETTER`, `COMPLEMENTARY`, or `NO_MATERIAL_GAIN`; replacement requires explicit owner consent.
 
-## Current block
+## Benchmark-contract utility disposition
 
-`podium7/er_pipeline_benchmark.py` and focused regressions implement stage-level measurement only. No blocker, matcher, threshold, resolver rule or identity policy has changed.
+`ER_PIPELINE_BENCHMARK_UTILITY = INTEGRATE_AFTER_REPOSITORY_VALIDATION`
+
+The stage-separated contract closes a real measurement gap: final precision/recall alone cannot tell whether a pipeline lost a true pair during blocking or whether the verifier itself failed. `blockingRecall`, verifier metrics and end-to-end safety metrics therefore answer distinct questions and should remain separate.
+
+`candidateReductionRatio` is reported only when a real full candidate-universe size and retained count are supplied. Reduction measured only inside labeled gold pairs remains explicitly named `labeledPairReductionRatio`; it is not promoted to an SMBench-style full-universe reduction claim.
+
+Cost inputs are optional typed observations and malformed cost/scale containers fail closed.
+
+## Candidate-comparison disposition
+
+`ER_BLOCKER_MATCHER_COMPARISON = PENDING_EXECUTION`
+
+The current `retain-all-current-verifier`, `same-make`, and `same-make-model` blockers are bounded probes used to exercise the measurement contract while holding the current verifier constant. They are not declared production candidates or winners.
+
+A blocker/matcher combination can only be proposed as better if comparative execution shows material gain while preserving blocking recall and without increasing false merges or ambiguous overcommit. Replacement still requires explicit owner consent.
 
 ## Safety
 
