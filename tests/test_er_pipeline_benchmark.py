@@ -65,6 +65,13 @@ class ERPipelineBenchmarkTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "latency_ms"):
             ERPipelineCost(latency_ms=True)
 
+    def test_wrong_cost_container_fails_closed(self):
+        with self.assertRaisesRegex(ValueError, "cost must be ERPipelineCost"):
+            evaluate_er_pipeline(
+                [ERPipelineCase("match", CatalogMatchOutcome.MATCH, True, CatalogMatchOutcome.MATCH)],
+                cost={"latency_ms": 1},  # type: ignore[arg-type]
+            )
+
     def test_invalid_scale_fails_closed(self):
         with self.assertRaisesRegex(ValueError, "cannot exceed"):
             ERPipelineScale(candidate_universe_size=10, retained_candidate_count=11)
