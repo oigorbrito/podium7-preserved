@@ -5,7 +5,12 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch
 
-from podium7.http_acquisition import DirectHttpAcquisition, DirectHttpPolicy, HttpAcquisitionErrorCode
+from podium7.http_acquisition import (
+    DirectHttpAcquisition,
+    DirectHttpPolicy,
+    HttpAcquisitionError,
+    HttpAcquisitionErrorCode,
+)
 from podium7.pdf_acquisition import (
     PDF_MEDIA_TYPE,
     PdfAcquisitionContract,
@@ -41,6 +46,8 @@ class PdfAcquisitionTests(unittest.TestCase):
         policy = pdf_http_policy(self.contract())
         self.assertEqual((PDF_MEDIA_TYPE,), policy.allowed_content_types)
         self.assertEqual(0, policy.max_redirects)
+        self.assertEqual(("https",), policy.allowed_schemes)
+        self.assertFalse(policy.allow_private_network)
         self.assertNotIn(PDF_MEDIA_TYPE, DirectHttpPolicy().allowed_content_types)
 
     def test_exact_pdf_acquisition_preserves_existing_http_result(self):
@@ -50,18 +57,25 @@ class PdfAcquisitionTests(unittest.TestCase):
         self.assertEqual(item, result)
         mocked.assert_called_once()
         self.assertEqual((PDF_MEDIA_TYPE,), mocked.call_args.args[1].allowed_content_types)
+        self.assertEqual(0, mocked.call_args.args[1].max_redirects)
 
     def test_redirected_final_locator_fails_closed(self):
         item = self.acquisition(final_url="https://www.gov.br/inmetro/other.pdf")
         with patch("podium7.pdf_acquisition.acquire_http", return_value=item):
-            with self.assertRaisesRegex(Exception, "exact requested and final locator identity") as caught:
+            with self.assertRaisesRegex(
+                HttpAcquisitionError,
+                "exact requested and final locator identity",
+            ) as caught:
                 acquire_pdf(self.contract())
         self.assertEqual(HttpAcquisitionErrorCode.INVALID_URL, caught.exception.code)
 
     def test_non_pdf_response_fails_closed_even_if_transport_is_stubbed(self):
         item = self.acquisition(content_type="text/html")
         with patch("podium7.pdf_acquisition.acquire_http", return_value=item):
-            with self.assertRaisesRegex(Exception, "expected 'application/pdf'") as caught:
+            with self.assertRaisesRegex(
+                HttpAcquisitionError,
+                "expected 'application/pdf'",
+            ) as caught:
                 acquire_pdf(self.contract())
         self.assertEqual(HttpAcquisitionErrorCode.UNSUPPORTED_CONTENT_TYPE, caught.exception.code)
 
@@ -85,13 +99,12 @@ class PdfAcquisitionTests(unittest.TestCase):
             PdfAcquisitionContract(source_id="x", locator="https://example.com/a.pdf", max_bytes=True)
         for value in (math.nan, math.inf, -math.inf, 0):
             with self.subTest(value=value):
-                contract = PdfAcquisitionContract(
-                    source_id="x",
-                    locator="https://example.com/a.pdf",
-                    timeout_seconds=value,
-                )
-                with self.assertRaises(ValueError):
-                    pdf_http_policy(contract)
+                with self.assertRaisesRegex(ValueError, "finite positive"):
+                    PdfAcquisitionContract(
+                        source_id="x",
+                        locator="https://example.com/a.pdf",
+                        timeout_seconds=value,
+                    )
 
 
 if __name__ == "__main__":
