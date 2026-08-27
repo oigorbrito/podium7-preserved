@@ -27,11 +27,15 @@ class RecurringSourceContract:
     max_retries: int = 2
 
     def __post_init__(self) -> None:
+        if not isinstance(self.source_id, str) or not self.source_id.strip():
+            raise ValueError("source_id is required")
+        if not isinstance(self.operation_policy, SourceOperationPolicy):
+            raise ValueError("operation_policy must be SourceOperationPolicy")
         if self.source_id != self.operation_policy.source_id:
             raise ValueError("source contract and operation policy source_id must match")
-        if not self.expected_content_type or "/" not in self.expected_content_type:
+        if not isinstance(self.expected_content_type, str) or "/" not in self.expected_content_type:
             raise ValueError("expected_content_type is required")
-        if not self.expected_schema_signature.strip():
+        if not isinstance(self.expected_schema_signature, str) or not self.expected_schema_signature.strip():
             raise ValueError("expected_schema_signature is required")
         if isinstance(self.max_retries, bool) or not isinstance(self.max_retries, int) or self.max_retries < 0:
             raise ValueError("max_retries must be a non-negative integer")
@@ -43,6 +47,8 @@ class RecurringCheckpoint:
     retry_counts: dict[str, int]
 
     def __post_init__(self) -> None:
+        if not isinstance(self.last_sha, dict) or not isinstance(self.retry_counts, dict):
+            raise ValueError("checkpoint last_sha and retry_counts must be objects")
         if any(
             not isinstance(key, str)
             or not key.strip()
@@ -55,6 +61,7 @@ class RecurringCheckpoint:
         if any(not isinstance(key, str) or not key.strip() or isinstance(value, bool) or not isinstance(value, int) or value < 0 for key, value in self.retry_counts.items()):
             raise ValueError("checkpoint retry_counts must contain non-negative integers")
         object.__setattr__(self, "last_sha", {key: value.casefold() for key, value in self.last_sha.items()})
+        object.__setattr__(self, "retry_counts", dict(self.retry_counts))
 
     def to_dict(self) -> dict[str, dict[str, object]]:
         return {
@@ -87,13 +94,18 @@ class RecurringRunResult:
 
 class RecurringAcquisitionCoordinator:
     def __init__(self, contracts: Mapping[str, RecurringSourceContract], *, checkpoint: RecurringCheckpoint | None = None) -> None:
-        if not contracts:
+        if not isinstance(contracts, Mapping) or not contracts:
             raise ValueError("at least one recurring source contract is required")
+        if any(not isinstance(contract, RecurringSourceContract) for contract in contracts.values()):
+            raise ValueError("contracts must contain RecurringSourceContract values")
         self._contracts = dict(contracts)
         if set(self._contracts) != {contract.source_id for contract in self._contracts.values()}:
             raise ValueError("contract mapping keys must match source ids")
         self._gates = {source_id: RecurringSourceGate(contract.operation_policy) for source_id, contract in self._contracts.items()}
-        checkpoint = checkpoint or RecurringCheckpoint({}, {})
+        if checkpoint is None:
+            checkpoint = RecurringCheckpoint({}, {})
+        elif not isinstance(checkpoint, RecurringCheckpoint):
+            raise ValueError("checkpoint must be RecurringCheckpoint when provided")
         unknown = (set(checkpoint.last_sha) | set(checkpoint.retry_counts)) - set(self._contracts)
         if unknown:
             raise ValueError("checkpoint references unapproved sources: " + ", ".join(sorted(unknown)))
@@ -108,6 +120,9 @@ class RecurringAcquisitionCoordinator:
         gate = self._gates.get(source_id)
         if gate is None:
             return SourceOperationDecision(False, "UNAPPROVED_SOURCE", 0.0)
+        # Every authorization attempt supersedes any previous one-shot token for this source.
+        # A later denied attempt must never leave an earlier allowed locator reusable.
+        self._authorized_locators.pop(source_id, None)
         decision = gate.evaluate(locator, now=now, robots_text=robots_text)
         if decision.allowed:
             self._authorized_locators[source_id] = locator
@@ -125,6 +140,8 @@ class RecurringAcquisitionCoordinator:
         contract = self._contracts.get(source_id)
         if contract is None:
             raise ValueError("source is not approved for recurring acquisition")
+        if not isinstance(acquisition, DirectHttpAcquisition):
+            raise ValueError("acquisition must be DirectHttpAcquisition")
         if not isinstance(schema_signature, str) or not schema_signature.strip():
             raise ValueError("schema_signature is required")
         authorization_error = self._consume_authorization(source_id, acquisition.requested_url)
@@ -152,6 +169,8 @@ class RecurringAcquisitionCoordinator:
         contract = self._contracts.get(source_id)
         if contract is None:
             raise ValueError("source is not approved for recurring acquisition")
+        if not isinstance(locator, str) or not locator.strip():
+            raise ValueError("failure locator is required")
         if not isinstance(reason, str) or not reason.strip():
             raise ValueError("failure reason is required")
         self._authorized_locators.pop(source_id, None)
