@@ -1,3 +1,4 @@
+import math
 import unittest
 
 from podium7.heterogeneity_benchmark import evaluate_heterogeneity_slices
@@ -52,6 +53,14 @@ class HeterogeneityBenchmarkTests(unittest.TestCase):
         metrics["reviewRate"] = 1.1
         with self.assertRaisesRegex(ValueError, "reviewRate must be between 0 and 1"):
             evaluate_heterogeneity_slices(self.baseline(), {"invalid": metrics})
+
+    def test_non_finite_rate_fails_closed(self):
+        for value in (math.nan, math.inf, -math.inf):
+            metrics = self.baseline()
+            metrics["autoMatchRecall"] = value
+            with self.subTest(value=value):
+                with self.assertRaisesRegex(ValueError, "autoMatchRecall must be finite"):
+                    evaluate_heterogeneity_slices(self.baseline(), {"invalid": metrics})
 
     def test_bool_count_fails_closed(self):
         metrics = self.baseline()
