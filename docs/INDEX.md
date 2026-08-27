@@ -45,6 +45,7 @@
 - [`PRODUCTION-CORPUS-RUN-V2.md`](PRODUCTION-CORPUS-RUN-V2.md) — expanded source-backed replay through batch ingestion, identity resolution, evidence persistence and consumer reads.
 - [`PRODUCTION-CORPUS-RUN-V3.md`](PRODUCTION-CORPUS-RUN-V3.md) — 72-record operating replay composed only from retained versioned source-backed gold sets, adding the selected year-semantics challenge without new source or policy scope.
 - [`PRODUCTION-QUALITY-MEASUREMENT-V2.md`](PRODUCTION-QUALITY-MEASUREMENT-V2.md) — identity-safety, review-load and provenance measurement contract for the 72-record / 36-case V3 corpus; executable values remain pending while #112 blocks workflow steps.
+- [`MEASUREMENT-ARTIFACT-V1.md`](MEASUREMENT-ARTIFACT-V1.md) — immutable measurement artifact contract for capture-only operational evidence.
 - [`PRODUCTION-OPERATIONAL-MEASUREMENT-V1.md`](PRODUCTION-OPERATIONAL-MEASUREMENT-V1.md) — measured action distribution, review load and durable review causes for the expanded source-backed replay.
 - [`PRODUCTION-OPERATIONAL-GAP-PRIORITY-V1.md`](PRODUCTION-OPERATIONAL-GAP-PRIORITY-V1.md) — fail-closed prioritization of measured ingestion and review gaps, selecting evidence enrichment before resolver changes.
 - [`MEASURED-OPERATIONAL-DISPOSITION-V1.md`](MEASURED-OPERATIONAL-DISPOSITION-V1.md) — assigns measured review gaps to evidence enrichment or durable human review without resolver-policy changes.
