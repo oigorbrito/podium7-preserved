@@ -5,6 +5,9 @@ from typing import Any
 from .catalog import CatalogStore, export_catalog_vehicle_payload
 
 
+TRACE_BUNDLE_SCHEMA = "podium7.catalog-evidence-trace-bundle.v1"
+
+
 def catalog_evidence_trace(store: CatalogStore, vehicle_id: str) -> list[dict[str, Any]]:
     """Return deterministic persisted candidate -> evidence -> source trace entries."""
     canonical = store.resolve_catalog_id(vehicle_id)
@@ -51,24 +54,26 @@ def catalog_evidence_trace(store: CatalogStore, vehicle_id: str) -> list[dict[st
     )
 
 
-def export_catalog_vehicle_with_evidence_trace(
+def export_catalog_vehicle_evidence_bundle(
     store: CatalogStore,
     vehicle_id: str,
     *,
     contract_version: str,
 ) -> dict[str, Any]:
-    payload = export_catalog_vehicle_payload(
-        store,
-        vehicle_id,
-        contract_version=contract_version,
-    )
+    """Return an opt-in provenance bundle without changing the frozen vehicle wire contract."""
     return {
-        **payload,
+        "schema": TRACE_BUNDLE_SCHEMA,
+        "vehicle": export_catalog_vehicle_payload(
+            store,
+            vehicle_id,
+            contract_version=contract_version,
+        ),
         "evidenceTrace": catalog_evidence_trace(store, vehicle_id),
     }
 
 
 __all__ = [
+    "TRACE_BUNDLE_SCHEMA",
     "catalog_evidence_trace",
-    "export_catalog_vehicle_with_evidence_trace",
+    "export_catalog_vehicle_evidence_bundle",
 ]
