@@ -43,6 +43,17 @@ class CatalogProvenanceAuditTests(unittest.TestCase):
         finally:
             store.close()
 
+    def test_empty_store_does_not_pass_by_vacuity(self) -> None:
+        store = CatalogStore()
+        try:
+            audit = audit_catalog_provenance(store)
+            self.assertFalse(audit["summary"]["pass"])
+            self.assertEqual(0, audit["summary"]["checkedLinks"])
+            self.assertEqual(0.0, audit["summary"]["completeness"])
+            self.assertEqual([{"kind": "EMPTY_AUDIT_SCOPE"}], audit["incomplete"])
+        finally:
+            store.close()
+
     def test_audit_does_not_truncate_catalog_after_first_hundred_vehicles(self) -> None:
         store = CatalogStore()
         try:
