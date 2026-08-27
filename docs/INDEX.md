@@ -42,6 +42,7 @@
 - [`DIRECT-HTTP-ACQUISITION-V1.md`](DIRECT-HTTP-ACQUISITION-V1.md) — bounded fail-closed direct HTTP transport and snapshot contract.
 - [`NETWORK-TARGET-BINDING-V1.md`](NETWORK-TARGET-BINDING-V1.md) — DNS-rebinding-resistant acquisition path that binds validated resolution to the actual socket connection while preserving hostname TLS verification.
 - [`INMETRO-PBEV-DOCUMENT-PATH-V1.md`](INMETRO-PBEV-DOCUMENT-PATH-V1.md) — source-specific current PBEV PDF acquisition and ruled-table extraction path without widening global HTTP media policy.
+- [`PROVENANCE-ELIGIBILITY-V3.md`](PROVENANCE-ELIGIBILITY-V3.md) — corpus V3 provenance eligibility contract and replayable vs blocked record measurement.
 - [`PRODUCTION-SOURCE-DISTRIBUTION-V1.md`](PRODUCTION-SOURCE-DISTRIBUTION-V1.md) — bounded regression gate for independently inspected source-family and regional diversity without a production-completeness claim.
 - [`PRODUCTION-CORPUS-RUN-V2.md`](PRODUCTION-CORPUS-RUN-V2.md) — expanded source-backed replay through batch ingestion, identity resolution, evidence persistence and consumer reads.
 - [`PRODUCTION-CORPUS-RUN-V3.md`](PRODUCTION-CORPUS-RUN-V3.md) — 72-record operating replay composed only from retained versioned source-backed gold sets, adding the selected year-semantics challenge without new source or policy scope.
