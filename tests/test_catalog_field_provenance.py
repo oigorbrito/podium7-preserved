@@ -177,6 +177,18 @@ class CatalogFieldProvenanceTests(unittest.TestCase):
         payload["cases"][0]["left"] = "not-an-object"
         self._assert_invalid(payload, "left and right identities must be objects")
 
+    def test_missing_aliases_default_to_empty_arrays_without_rejecting_valid_benchmarks(self) -> None:
+        payload = _payload()
+        self.assertNotIn("aliases", payload["cases"][0]["left"])
+        self.assertNotIn("aliases", payload["cases"][0]["right"])
+        path = _write_payload(payload)
+        self.addCleanup(path.unlink, missing_ok=True)
+
+        dataset = load_catalog_identity_benchmark(path)
+        case = dataset.cases[0]
+        self.assertEqual(case.left.aliases, ())
+        self.assertEqual(case.right.aliases, ())
+
     def _assert_invalid(self, payload: object, message: str) -> None:
         path = _write_payload(payload)
         self.addCleanup(path.unlink, missing_ok=True)
