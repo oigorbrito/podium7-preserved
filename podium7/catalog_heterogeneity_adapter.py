@@ -31,6 +31,10 @@ def podium_safety_metrics_from_catalog_report(report: Mapping[str, Any]) -> dict
     }
 
 
+def _gold_signature(dataset: CatalogBenchmarkDataset) -> tuple[tuple[str, str], ...]:
+    return tuple(sorted((case.id, case.expected.value) for case in dataset.cases))
+
+
 def compare_catalog_heterogeneity(
     clean: CatalogBenchmarkDataset,
     slices: Mapping[str, CatalogBenchmarkDataset],
@@ -39,6 +43,7 @@ def compare_catalog_heterogeneity(
         raise ValueError("clean must be CatalogBenchmarkDataset")
     if not isinstance(slices, Mapping) or not slices:
         raise ValueError("at least one catalog heterogeneity slice is required")
+    clean_signature = _gold_signature(clean)
     clean_report = evaluate_catalog_identity_benchmark(clean)
     slice_metrics: dict[str, dict[str, int | float | None]] = {}
     for name, dataset in slices.items():
@@ -46,6 +51,10 @@ def compare_catalog_heterogeneity(
             raise ValueError("slice names must be non-empty text")
         if not isinstance(dataset, CatalogBenchmarkDataset):
             raise ValueError("slice datasets must be CatalogBenchmarkDataset")
+        if _gold_signature(dataset) != clean_signature:
+            raise ValueError(
+                f"heterogeneity slice {name!r} must preserve the clean case ids and expected labels"
+            )
         slice_report = evaluate_catalog_identity_benchmark(dataset)
         slice_metrics[name] = podium_safety_metrics_from_catalog_report(slice_report)
     report = evaluate_heterogeneity_slices(
