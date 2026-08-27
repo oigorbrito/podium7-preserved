@@ -24,6 +24,14 @@ class CatalogIdentityFieldCoverageTests(unittest.TestCase):
         self.assertEqual(report["operational"]["failed"], 0)
         self.assertGreater(report["publishedVehicles"], 0)
         self.assertEqual(set(report["fields"]), set(MEASURED_FIELDS))
+        self.assertEqual(set(report["byDataset"]), {path.name for path in DATASETS})
+        self.assertIsInstance(report["contractVersion"], str)
+        self.assertTrue(report["contractVersion"])
+        self.assertEqual(
+            report["reviewEvidence"]["count"],
+            report["operational"]["review"],
+        )
+        self.assertFalse(report["reviewEvidence"]["fieldAttributionAvailable"])
 
         for field in MEASURED_FIELDS:
             field_report = report["fields"][field]
@@ -36,6 +44,16 @@ class CatalogIdentityFieldCoverageTests(unittest.TestCase):
             self.assertLessEqual(
                 field_report["normalizedDistinct"], field_report["rawDistinct"]
             )
+
+        for dataset_report in report["byDataset"].values():
+            self.assertTrue(dataset_report["operational"]["ok"])
+            self.assertEqual(dataset_report["operational"]["failed"], 0)
+            for field in MEASURED_FIELDS:
+                field_report = dataset_report["fields"][field]
+                self.assertEqual(
+                    field_report["present"] + field_report["missing"],
+                    dataset_report["total"],
+                )
 
         print("CATALOG_IDENTITY_FIELD_COVERAGE", report)
 
