@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from collections import Counter
 from dataclasses import dataclass
 from typing import Iterable
 
@@ -31,12 +32,7 @@ class MultiSourceCase:
     def __post_init__(self) -> None:
         if self.expected_disposition not in {"CANONICAL", "CONFLICT", "REVIEW"}:
             raise ValueError("unsupported expected disposition")
-        for field_name, value in (
-            ("case_id", self.case_id),
-            ("entity_id", self.entity_id),
-            ("attribute", self.attribute),
-            ("rationale", self.rationale),
-        ):
+        for field_name, value in (("case_id", self.case_id), ("entity_id", self.entity_id), ("attribute", self.attribute), ("rationale", self.rationale)):
             if not isinstance(value, str) or not value.strip():
                 raise ValueError(f"{field_name} is required")
         if not isinstance(self.candidates, tuple):
@@ -62,6 +58,7 @@ def evaluate_multisource_cases(cases: Iterable[MultiSourceCase]) -> dict:
 
     results = []
     source_contribution: dict[str, int] = {}
+    conflict_states: Counter[str] = Counter()
     corroborated = conflicts = reviews = canonical = provenance_complete = incorrect = 0
     provenance_applicable = 0
 
@@ -70,6 +67,7 @@ def evaluate_multisource_cases(cases: Iterable[MultiSourceCase]) -> dict:
         for source_id in sources:
             source_contribution[source_id] = source_contribution.get(source_id, 0) + 1
 
+        conflict_state: str | None = None
         if not case.candidates:
             disposition = "REVIEW"
             candidate_refs: tuple[str, ...] = ()
@@ -81,18 +79,15 @@ def evaluate_multisource_cases(cases: Iterable[MultiSourceCase]) -> dict:
             if fusion.conflict is not None:
                 disposition = "CONFLICT"
                 candidate_refs = fusion.conflict.candidate_references
+                conflict_state = fusion.conflict.resolution_state.value
+                conflict_states[conflict_state] += 1
                 provenance_ok = set(candidate_refs) == expected_refs
                 conflicts += 1
             else:
                 assert fusion.canonical_fact is not None
                 disposition = "CANONICAL"
                 candidate_refs = fusion.canonical_fact.candidate_references
-                provenance_ok = (
-                    set(candidate_refs) == expected_refs
-                    and set(candidate_refs).issubset(
-                        set(fusion.canonical_fact.provenance.was_derived_from)
-                    )
-                )
+                provenance_ok = set(candidate_refs) == expected_refs and set(candidate_refs).issubset(set(fusion.canonical_fact.provenance.was_derived_from))
                 canonical += 1
                 if len(sources) > 1:
                     corroborated += 1
@@ -103,19 +98,7 @@ def evaluate_multisource_cases(cases: Iterable[MultiSourceCase]) -> dict:
         correct = disposition == case.expected_disposition
         if not correct:
             incorrect += 1
-        results.append(
-            {
-                "caseId": case.case_id,
-                "attribute": case.attribute,
-                "sources": sources,
-                "candidateReferences": candidate_refs,
-                "disposition": disposition,
-                "expectedDisposition": case.expected_disposition,
-                "correct": correct,
-                "provenanceComplete": provenance_ok,
-                "rationale": case.rationale,
-            }
-        )
+        results.append({"caseId": case.case_id, "attribute": case.attribute, "sources": sources, "candidateReferences": candidate_refs, "disposition": disposition, "conflictState": conflict_state, "expectedDisposition": case.expected_disposition, "correct": correct, "provenanceComplete": provenance_ok, "rationale": case.rationale})
 
     total = len(case_list)
     return {
@@ -125,15 +108,12 @@ def evaluate_multisource_cases(cases: Iterable[MultiSourceCase]) -> dict:
             "canonicalCases": canonical,
             "corroboratedCases": corroborated,
             "conflictCases": conflicts,
+            "conflictsByState": dict(sorted(conflict_states.items())),
             "reviewCases": reviews,
             "incorrectCases": incorrect,
             "provenanceApplicableCases": provenance_applicable,
             "provenanceCompleteCases": provenance_complete,
-            "provenanceCompleteness": (
-                None
-                if provenance_applicable == 0
-                else provenance_complete / provenance_applicable
-            ),
+            "provenanceCompleteness": None if provenance_applicable == 0 else provenance_complete / provenance_applicable,
             "corroborationRate": corroborated / total,
             "conflictRate": conflicts / total,
             "reviewRate": reviews / total,
