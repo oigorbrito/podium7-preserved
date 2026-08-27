@@ -2,7 +2,7 @@ from pathlib import Path
 import tempfile
 import unittest
 
-from podium7.catalog import CatalogStore
+from podium7.catalog import CatalogStore, CatalogVehicleIdentity
 from podium7.catalog_batch import ingest_catalog_batch, parse_catalog_batch_payload
 from podium7.catalog_batch_failure import CatalogBatchFailureSnapshot, CatalogBatchFailureStore
 
@@ -105,6 +105,44 @@ class CatalogBatchFailureRetentionTests(unittest.TestCase):
             with self.subTest(field=field, value=value):
                 with self.assertRaises(ValueError):
                     CatalogBatchFailureSnapshot(**{**valid, field: value})
+
+    def test_store_rejects_corrupted_persisted_payloads(self) -> None:
+        store = CatalogStore()
+        try:
+            failure_store = CatalogBatchFailureStore(store)
+            corruptions = (
+                ("bad-json", "not-json", "valid JSON"),
+                ("array", "[]", "JSON object"),
+                ("bad-error", '{"evidenceId":"e","index":0,"recordId":null,"sourceId":"s","sourceLocator":"l","evidenceLocator":"l","rawContentRef":"r","error":"bad"}', "error must be a JSON object"),
+                ("missing-field", '{"index":0,"recordId":null,"sourceId":"s","sourceLocator":"l","evidenceLocator":"l","rawContentRef":"r","error":{"code":"c","message":"m"}}', "missing field evidenceId"),
+            )
+            for evidence_id, payload, pattern in corruptions:
+                with self.subTest(evidence_id=evidence_id):
+                    store._connection.execute(
+                        "INSERT INTO catalog_batch_failures(evidence_id, payload_json) VALUES (?, ?)",
+                        (evidence_id, payload),
+                    )
+                    store._connection.commit()
+                    with self.assertRaisesRegex(ValueError, pattern):
+                        failure_store.get(evidence_id)
+        finally:
+            store.close()
+
+    def test_store_initialization_does_not_commit_outer_transaction(self) -> None:
+        store = CatalogStore()
+        try:
+            vehicle_id = None
+            with self.assertRaisesRegex(RuntimeError, "rollback marker"):
+                with store.transaction():
+                    vehicle_id = store.create_catalog_vehicle(
+                        CatalogVehicleIdentity(make="Test", model="Transactional")
+                    )
+                    CatalogBatchFailureStore(store)
+                    raise RuntimeError("rollback marker")
+            self.assertIsNotNone(vehicle_id)
+            self.assertIsNone(store.get_catalog_vehicle(vehicle_id))
+        finally:
+            store.close()
 
 
 if __name__ == "__main__":
