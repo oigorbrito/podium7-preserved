@@ -44,6 +44,7 @@
 - [`PRODUCTION-SOURCE-DISTRIBUTION-V1.md`](PRODUCTION-SOURCE-DISTRIBUTION-V1.md) — bounded regression gate for independently inspected source-family and regional diversity without a production-completeness claim.
 - [`PRODUCTION-CORPUS-RUN-V2.md`](PRODUCTION-CORPUS-RUN-V2.md) — expanded source-backed replay through batch ingestion, identity resolution, evidence persistence and consumer reads.
 - [`PRODUCTION-CORPUS-RUN-V3.md`](PRODUCTION-CORPUS-RUN-V3.md) — 72-record operating replay composed only from retained versioned source-backed gold sets, adding the selected year-semantics challenge without new source or policy scope.
+- [`REVIEW-CAUSE-SNAPSHOT-V1.md`](REVIEW-CAUSE-SNAPSHOT-V1.md) — immutable versioned review-cause classifications persisted from raw comparison reasons so historical operational metrics do not silently change with classifier evolution.
 - [`PRODUCTION-QUALITY-MEASUREMENT-V2.md`](PRODUCTION-QUALITY-MEASUREMENT-V2.md) — identity-safety, review-load and provenance measurement contract for the 72-record / 36-case V3 corpus; executable values remain pending while #112 blocks workflow steps.
 - [`REVIEW-CAUSE-SNAPSHOT-V1.md`](REVIEW-CAUSE-SNAPSHOT-V1.md) — immutable versioned review-cause classifications persisted from raw comparison reasons so historical operational metrics do not silently change with classifier evolution.
 - [`PRODUCTION-OPERATIONAL-MEASUREMENT-V1.md`](PRODUCTION-OPERATIONAL-MEASUREMENT-V1.md) — measured action distribution, review load and durable review causes for the expanded source-backed replay.
