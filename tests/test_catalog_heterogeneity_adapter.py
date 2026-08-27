@@ -1,3 +1,4 @@
+import math
 import unittest
 from unittest.mock import patch
 
@@ -69,6 +70,20 @@ class CatalogHeterogeneityAdapterTests(unittest.TestCase):
     def test_missing_catalog_metric_fails_closed(self):
         with self.assertRaisesRegex(ValueError, "missing metrics"):
             podium_safety_metrics_from_catalog_report({"metrics": {}})
+
+    def test_malformed_catalog_metric_fails_at_adapter_boundary(self):
+        for field, value, pattern in (
+            ("recall", math.nan, "autoMatchRecall must be finite"),
+            ("review", 1.1, "reviewRate must be between 0 and 1"),
+            ("false_merges", True, "falseMergeCount must be a non-negative integer"),
+        ):
+            with self.subTest(field=field, value=value):
+                with self.assertRaisesRegex(ValueError, pattern):
+                    podium_safety_metrics_from_catalog_report(self.report(**{field: value}))
+
+    def test_non_mapping_catalog_report_fails_closed(self):
+        with self.assertRaisesRegex(ValueError, "report must be an object"):
+            podium_safety_metrics_from_catalog_report([])  # type: ignore[arg-type]
 
 
 if __name__ == "__main__":
