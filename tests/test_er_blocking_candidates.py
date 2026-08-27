@@ -38,12 +38,13 @@ class ERBlockingCandidateTests(unittest.TestCase):
             ),
         )
 
-    def test_same_make_model_reduces_candidates_without_dropping_gold_match(self):
+    def test_same_make_model_reduces_labeled_pairs_without_dropping_gold_match(self):
         report = compare_bounded_blockers(self.dataset())
         baseline = report["candidates"]["retain-all-current-verifier"]["metrics"]
         strict = report["candidates"]["same-make-model"]["metrics"]
-        self.assertEqual(0.0, baseline["candidateReductionRatio"])
-        self.assertGreater(strict["candidateReductionRatio"], 0.0)
+        self.assertEqual(0.0, baseline["labeledPairReductionRatio"])
+        self.assertGreater(strict["labeledPairReductionRatio"], 0.0)
+        self.assertIsNone(strict["candidateReductionRatio"])
         self.assertEqual(1.0, strict["blockingRecall"])
         self.assertEqual(0, strict["falseMergeCount"])
         self.assertEqual(0, strict["ambiguousOvercommitCount"])
