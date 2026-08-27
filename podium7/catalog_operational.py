@@ -92,6 +92,86 @@ def _unique_source_for_record(
     return next(iter(common_sources))
 
 
+def measure_operational_provenance_eligibility(
+    paths: Iterable[str | Path],
+) -> dict[str, Any]:
+    records: list[dict[str, Any]] = []
+    dataset_versions: list[str] = []
+    case_ids: set[str] = set()
+
+    for raw_path in paths:
+        path = Path(raw_path)
+        load_catalog_identity_benchmark(path)
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        version = payload["datasetVersion"]
+        dataset_versions.append(version)
+        known_sources = {source["id"] for source in payload["sources"]}
+
+        for case in payload["cases"]:
+            case_id = case["id"]
+            case_ids.add(f"{version}:{case_id}")
+            raw_field_sources = case.get("fieldSourceIds")
+            source_ids = case["sourceIds"]
+            for side in ("left", "right"):
+                method = (
+                    "SOLE_CASE_SOURCE"
+                    if raw_field_sources is None and len(source_ids) == 1
+                    else "EXPLICIT_FIELD_ATTRIBUTION"
+                )
+                try:
+                    source_id = _unique_source_for_record(
+                        case,
+                        side=side,
+                        known_sources=known_sources,
+                    )
+                except ValueError as exc:
+                    records.append(
+                        {
+                            "datasetVersion": version,
+                            "caseId": case_id,
+                            "side": side,
+                            "replayable": False,
+                            "method": None,
+                            "sourceId": None,
+                            "reason": str(exc),
+                        }
+                    )
+                else:
+                    records.append(
+                        {
+                            "datasetVersion": version,
+                            "caseId": case_id,
+                            "side": side,
+                            "replayable": True,
+                            "method": method,
+                            "sourceId": source_id,
+                            "reason": None,
+                        }
+                    )
+
+    if not records:
+        raise ValueError("operational provenance eligibility requires at least one record")
+
+    replayable = [record for record in records if record["replayable"]]
+    blocked = [record for record in records if not record["replayable"]]
+    by_method = Counter(record["method"] for record in replayable)
+    blocked_reasons = Counter(record["reason"] for record in blocked)
+    return {
+        "schema": "podium7.operational-provenance-eligibility.v1",
+        "datasets": dataset_versions,
+        "summary": {
+            "cases": len(case_ids),
+            "records": len(records),
+            "replayableRecords": len(replayable),
+            "blockedRecords": len(blocked),
+            "replayableRate": len(replayable) / len(records),
+            "replayableByMethod": dict(sorted(by_method.items())),
+            "blockedByReason": dict(sorted(blocked_reasons.items())),
+        },
+        "records": records,
+    }
+
+
 def build_source_backed_operational_records(paths: Iterable[str | Path]) -> list[dict[str, Any]]:
     records: list[dict[str, Any]] = []
     for raw_path in paths:
@@ -210,6 +290,7 @@ def measure_source_backed_operational_corpus(paths: Iterable[str | Path]) -> dic
 
 __all__ = [
     "build_source_backed_operational_records",
+    "measure_operational_provenance_eligibility",
     "measure_source_backed_operational_corpus",
     "run_source_backed_operational_corpus",
 ]
