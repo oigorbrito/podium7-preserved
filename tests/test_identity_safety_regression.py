@@ -1,4 +1,5 @@
 import json
+import math
 from pathlib import Path
 import tempfile
 import unittest
@@ -68,11 +69,13 @@ class IdentitySafetyRegressionTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "case-count contract mismatch"):
             compare_identity_quality_to_baseline(quality, baseline)
 
-    def test_boolean_or_out_of_range_metrics_fail_closed(self) -> None:
+    def test_boolean_out_of_range_or_non_finite_metrics_fail_closed(self) -> None:
         baseline = load_identity_safety_baseline(BASELINE)
         for metric, value in (
             ("autoMatchPrecision", True),
             ("autoMatchRecall", 1.01),
+            ("autoMatchPrecision", math.nan),
+            ("autoMatchRecall", math.inf),
             ("falseMergeCount", False),
             ("ambiguousOvercommitCount", -1),
         ):
@@ -85,6 +88,23 @@ class IdentitySafetyRegressionTests(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, metric):
                     compare_identity_quality_to_baseline(quality, baseline)
 
+    def test_quality_dataset_and_case_contract_types_fail_closed(self) -> None:
+        baseline = load_identity_safety_baseline(BASELINE)
+        for datasets, total_cases, pattern in (
+            ("1.0", baseline["totalCases"], "datasets"),
+            (["1.0", "1.0"], baseline["totalCases"], "unique"),
+            (list(baseline["datasets"]), 30.0, "positive integer"),
+            (list(baseline["datasets"]), True, "positive integer"),
+        ):
+            with self.subTest(datasets=datasets, total_cases=total_cases):
+                quality = {
+                    "datasets": datasets,
+                    "totalCases": total_cases,
+                    "metrics": dict(baseline["metrics"]),
+                }
+                with self.assertRaisesRegex(ValueError, pattern):
+                    compare_identity_quality_to_baseline(quality, baseline)
+
     def test_malformed_baseline_metric_fails_closed_on_load(self) -> None:
         payload = json.loads(BASELINE.read_text(encoding="utf-8"))
         payload["metrics"]["autoMatchPrecision"] = True
@@ -93,6 +113,24 @@ class IdentitySafetyRegressionTests(unittest.TestCase):
             path.write_text(json.dumps(payload), encoding="utf-8")
             with self.assertRaisesRegex(ValueError, "autoMatchPrecision"):
                 load_identity_safety_baseline(path)
+
+    def test_baseline_requires_version_source_document_and_valid_dataset_contract(self) -> None:
+        base = json.loads(BASELINE.read_text(encoding="utf-8"))
+        mutations = (
+            ("baselineVersion", "", "baselineVersion"),
+            ("sourceDocument", None, "sourceDocument"),
+            ("datasets", ["1.0", "1.0"], "unique"),
+            ("totalCases", 30.0, "positive integer"),
+        )
+        with tempfile.TemporaryDirectory() as directory:
+            for field, value, pattern in mutations:
+                with self.subTest(field=field, value=value):
+                    payload = dict(base)
+                    payload[field] = value
+                    path = Path(directory) / f"bad-{field}.json"
+                    path.write_text(json.dumps(payload), encoding="utf-8")
+                    with self.assertRaisesRegex(ValueError, pattern):
+                        load_identity_safety_baseline(path)
 
 
 if __name__ == "__main__":
