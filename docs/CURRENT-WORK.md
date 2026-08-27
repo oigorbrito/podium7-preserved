@@ -1,13 +1,13 @@
 # Current work
 
-Status: complete
+Status: active post-MVP measurement
 
-The current private technical MVP is complete. PR #119 integrated the independent-equivalent validation path, and the intended merge-candidate head passed Operational Readiness V1 and MVP Exit Gate V1 with `validation_source=independent-equivalent`.
+Outcome: measure consumer-visible coverage of `powertrain`, `transmission`, and `body_style` through the existing Production Corpus V2 ingestion/resolution/consumer path before any downstream BPT2 field or filter decision.
 
-No repository implementation mission is active and no functional MVP blocker is open.
+Boundaries: measurement only. No resolver policy change, new source family, BPT2 schema/filter change, or arbitrary readiness threshold.
 
-Issue #112, `Restore GitHub Actions hosted-runner execution`, remains open as an infrastructure/operations debt item. GitHub-hosted Actions jobs are still failing before any workflow step is created (`steps=null`, no job logs). This no longer blocks the private MVP because the accepted independent-equivalent execution path produced a passing gate without pretending official CI was green.
+Acceptance: report present/missing counts, coverage ratio, raw/normalized cardinality and market breakdown on canonical vehicles returned by the consumer API; keep the result explicitly bounded to the retained source-backed corpus; validate focused behavior and repository harness.
 
-Owner action for #112 remains limited to GitHub account/repository Actions settings: verify Actions usage/minutes, payment method and budget/spending limits, and repository Actions enablement. Do not change runner architecture or add infrastructure workarounds merely to bypass this condition; ADR-0001 remains in force.
+Active plan: [`exec-plans/active/CATALOG-IDENTITY-FIELD-COVERAGE-V1.md`](exec-plans/active/CATALOG-IDENTITY-FIELD-COVERAGE-V1.md)
 
-Next work must be declared as a post-MVP mission rather than silently extending the completed MVP scope.
+Issue #112, `Restore GitHub Actions hosted-runner execution`, remains infrastructure/operations debt. If hosted CI is still unable to create workflow steps, do not misreport it as product-test failure or add runner workarounds.
