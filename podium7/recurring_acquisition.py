@@ -25,9 +25,15 @@ class SourceTermsPin:
     expected_sha256: str
 
     def __post_init__(self) -> None:
+        if not isinstance(self.locator, str) or not self.locator.strip() or self.locator != self.locator.strip():
+            raise ValueError("terms locator must be a non-empty HTTPS URL without surrounding whitespace")
         parsed = urlparse(self.locator)
         if parsed.scheme.casefold() != "https" or not parsed.hostname:
             raise ValueError("terms locator must be an HTTPS URL")
+        if parsed.username is not None or parsed.password is not None or parsed.fragment:
+            raise ValueError("terms locator cannot contain credentials or fragments")
+        if not isinstance(self.expected_sha256, str):
+            raise ValueError("expected_sha256 must be a SHA-256 hex digest")
         digest = self.expected_sha256.casefold()
         if len(digest) != 64 or any(character not in "0123456789abcdef" for character in digest):
             raise ValueError("expected_sha256 must be a SHA-256 hex digest")
@@ -44,14 +50,20 @@ class RecurringSourceContract:
     terms_pin: SourceTermsPin | None = None
 
     def __post_init__(self) -> None:
+        if not isinstance(self.operation_policy, SourceOperationPolicy):
+            raise ValueError("operation_policy must be a SourceOperationPolicy")
+        if not isinstance(self.source_id, str) or not self.source_id.strip():
+            raise ValueError("source_id is required")
         if self.source_id != self.operation_policy.source_id:
             raise ValueError("source contract and operation policy source_id must match")
-        if not self.expected_content_type or "/" not in self.expected_content_type:
+        if not isinstance(self.expected_content_type, str) or not self.expected_content_type.strip() or "/" not in self.expected_content_type:
             raise ValueError("expected_content_type is required")
-        if not self.expected_schema_signature.strip():
+        if not isinstance(self.expected_schema_signature, str) or not self.expected_schema_signature.strip():
             raise ValueError("expected_schema_signature is required")
         if isinstance(self.max_retries, bool) or not isinstance(self.max_retries, int) or self.max_retries < 0:
             raise ValueError("max_retries must be a non-negative integer")
+        if self.terms_pin is not None and not isinstance(self.terms_pin, SourceTermsPin):
+            raise ValueError("terms_pin must be SourceTermsPin when provided")
 
 
 @dataclass(frozen=True)
@@ -60,6 +72,8 @@ class RecurringCheckpoint:
     retry_counts: dict[str, int]
 
     def __post_init__(self) -> None:
+        if not isinstance(self.last_sha, dict) or not isinstance(self.retry_counts, dict):
+            raise ValueError("checkpoint maps are required")
         normalized_last_sha: dict[str, str] = {}
         for key, value in self.last_sha.items():
             if not isinstance(key, str) or not key.strip() or not isinstance(value, str):
@@ -69,7 +83,14 @@ class RecurringCheckpoint:
                 raise ValueError("checkpoint last_sha entries must contain source ids and SHA-256 hex digests")
             normalized_last_sha[key] = digest
         object.__setattr__(self, "last_sha", normalized_last_sha)
-        if any(not isinstance(key, str) or not key.strip() or isinstance(value, bool) or not isinstance(value, int) or value < 0 for key, value in self.retry_counts.items()):
+        if any(
+            not isinstance(key, str)
+            or not key.strip()
+            or isinstance(value, bool)
+            or not isinstance(value, int)
+            or value < 0
+            for key, value in self.retry_counts.items()
+        ):
             raise ValueError("checkpoint retry_counts must contain non-negative integers")
 
     def to_dict(self) -> dict[str, dict[str, object]]:
@@ -105,13 +126,20 @@ class RecurringRunResult:
 
 class RecurringAcquisitionCoordinator:
     def __init__(self, contracts: Mapping[str, RecurringSourceContract], *, checkpoint: RecurringCheckpoint | None = None) -> None:
-        if not contracts:
+        if not isinstance(contracts, Mapping) or not contracts:
             raise ValueError("at least one recurring source contract is required")
+        if any(not isinstance(contract, RecurringSourceContract) for contract in contracts.values()):
+            raise ValueError("contracts must contain RecurringSourceContract values")
         self._contracts = dict(contracts)
         if set(self._contracts) != {contract.source_id for contract in self._contracts.values()}:
             raise ValueError("contract mapping keys must match source ids")
-        self._gates = {source_id: RecurringSourceGate(contract.operation_policy) for source_id, contract in self._contracts.items()}
+        self._gates = {
+            source_id: RecurringSourceGate(contract.operation_policy)
+            for source_id, contract in self._contracts.items()
+        }
         checkpoint = checkpoint or RecurringCheckpoint({}, {})
+        if not isinstance(checkpoint, RecurringCheckpoint):
+            raise ValueError("checkpoint must be RecurringCheckpoint when provided")
         unknown = (set(checkpoint.last_sha) | set(checkpoint.retry_counts)) - set(self._contracts)
         if unknown:
             raise ValueError("checkpoint references unapproved sources: " + ", ".join(sorted(unknown)))
@@ -123,6 +151,7 @@ class RecurringAcquisitionCoordinator:
         return RecurringCheckpoint(dict(self._last_sha), dict(self._retry_counts))
 
     def authorize(self, source_id: str, locator: str, *, now: float, robots_text: str | None = None) -> SourceOperationDecision:
+        self._authorized_locators.pop(source_id, None)
         gate = self._gates.get(source_id)
         if gate is None:
             return SourceOperationDecision(False, "UNAPPROVED_SOURCE", 0.0)
@@ -150,8 +179,12 @@ class RecurringAcquisitionCoordinator:
         contract = self._contracts.get(source_id)
         if contract is None:
             raise ValueError("source is not approved for recurring acquisition")
+        if not isinstance(acquisition, DirectHttpAcquisition):
+            raise ValueError("acquisition must be DirectHttpAcquisition")
         if not isinstance(schema_signature, str) or not schema_signature.strip():
             raise ValueError("schema_signature is required")
+        if terms_acquisition is not None and not isinstance(terms_acquisition, DirectHttpAcquisition):
+            raise ValueError("terms_acquisition must be DirectHttpAcquisition when provided")
         authorization_error = self._consume_authorization(source_id, acquisition.requested_url)
         if authorization_error is not None:
             return RecurringRunResult(source_id, RecurringRunState.DRIFT, authorization_error, acquisition.requested_url, acquisition.sha256, schema_signature, self._retry_counts.get(source_id, 0), False)
@@ -195,6 +228,8 @@ class RecurringAcquisitionCoordinator:
         contract = self._contracts.get(source_id)
         if contract is None:
             raise ValueError("source is not approved for recurring acquisition")
+        if not isinstance(locator, str) or not locator.strip():
+            raise ValueError("failure locator is required")
         if not isinstance(reason, str) or not reason.strip():
             raise ValueError("failure reason is required")
         self._authorized_locators.pop(source_id, None)
