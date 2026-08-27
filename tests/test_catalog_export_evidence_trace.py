@@ -3,6 +3,10 @@ from datetime import datetime, timezone
 
 from podium7.catalog import CatalogStore, CatalogVehicleIdentity
 from podium7.catalog_api import list_catalog_vehicles, lookup_catalog_vehicle
+from podium7.catalog_export_trace import (
+    TRACE_BUNDLE_SCHEMA,
+    export_catalog_vehicle_evidence_bundle,
+)
 from podium7.domain import CandidateFact, RawEvidence, Source
 
 
@@ -59,10 +63,34 @@ class CatalogExportEvidenceTraceTests(unittest.TestCase):
     def tearDown(self) -> None:
         self.store.close()
 
-    def test_lookup_exposes_deterministic_persisted_evidence_trace(self) -> None:
-        response = lookup_catalog_vehicle(self.store, self.vehicle_id)
-        self.assertTrue(response["ok"])
-        trace = response["vehicle"]["evidenceTrace"]
+    def test_standard_catalog_v2_lookup_and_list_remain_wire_compatible(self) -> None:
+        lookup = lookup_catalog_vehicle(self.store, self.vehicle_id)
+        listed = list_catalog_vehicles(self.store, limit=10)
+        self.assertTrue(lookup["ok"])
+        self.assertTrue(listed["ok"])
+        self.assertEqual(
+            {"contractVersion", "entity", "redirectsFrom"},
+            set(lookup["vehicle"]),
+        )
+        self.assertEqual(
+            {"contractVersion", "entity", "redirectsFrom"},
+            set(listed["items"][0]),
+        )
+        self.assertNotIn("evidenceTrace", lookup["vehicle"])
+        self.assertNotIn("evidenceTrace", listed["items"][0])
+
+    def test_opt_in_bundle_exposes_deterministic_persisted_evidence_trace(self) -> None:
+        bundle = export_catalog_vehicle_evidence_bundle(
+            self.store,
+            self.vehicle_id,
+            contract_version="2.0",
+        )
+        self.assertEqual(TRACE_BUNDLE_SCHEMA, bundle["schema"])
+        self.assertEqual(
+            {"contractVersion", "entity", "redirectsFrom"},
+            set(bundle["vehicle"]),
+        )
+        trace = bundle["evidenceTrace"]
         self.assertEqual(
             [entry["candidateFactId"] for entry in trace],
             ["candidate-make", "candidate-model"],
@@ -77,46 +105,49 @@ class CatalogExportEvidenceTraceTests(unittest.TestCase):
         self.assertNotIn("rawValue", trace[0])
         self.assertNotIn("normalizedValue", trace[0])
 
-    def test_list_exposes_same_trace(self) -> None:
-        lookup = lookup_catalog_vehicle(self.store, self.vehicle_id)
-        listed = list_catalog_vehicles(self.store, limit=10)
-        self.assertTrue(listed["ok"])
-        self.assertEqual(len(listed["items"]), 1)
-        self.assertEqual(
-            listed["items"][0]["evidenceTrace"],
-            lookup["vehicle"]["evidenceTrace"],
-        )
-
-    def test_redirect_resolves_to_canonical_trace(self) -> None:
+    def test_redirect_bundle_resolves_to_canonical_trace(self) -> None:
         duplicate = self.store.create_catalog_vehicle(
             CatalogVehicleIdentity(make="Toyota", model="Corolla", market="BR")
         )
         canonical = self.store.merge_catalog_vehicle_ids(self.vehicle_id, duplicate)
-        response = lookup_catalog_vehicle(self.store, duplicate)
-        self.assertTrue(response["ok"])
-        self.assertTrue(response["redirected"])
-        self.assertEqual(response["canonicalId"], canonical)
-        self.assertEqual(response["vehicle"]["entity"]["id"], canonical)
-        self.assertEqual(len(response["vehicle"]["evidenceTrace"]), 2)
+        bundle = export_catalog_vehicle_evidence_bundle(
+            self.store,
+            duplicate,
+            contract_version="2.0",
+        )
+        self.assertEqual(bundle["vehicle"]["entity"]["id"], canonical)
+        self.assertEqual(len(bundle["evidenceTrace"]), 2)
 
-    def test_vehicle_without_candidate_evidence_fails_closed(self) -> None:
+    def test_vehicle_without_candidate_evidence_only_blocks_trace_bundle(self) -> None:
         unproven = self.store.create_catalog_vehicle(
             CatalogVehicleIdentity(make="Honda", model="Civic", market="BR")
         )
+        standard = lookup_catalog_vehicle(self.store, unproven)
+        self.assertTrue(standard["ok"])
         with self.assertRaisesRegex(ValueError, "no persisted candidate evidence"):
-            lookup_catalog_vehicle(self.store, unproven)
+            export_catalog_vehicle_evidence_bundle(
+                self.store,
+                unproven,
+                contract_version="2.0",
+            )
 
-    def test_missing_evidence_fails_closed(self) -> None:
+    def test_missing_evidence_fails_closed_in_trace_bundle_without_breaking_v2_shape(self) -> None:
         self.store._connection.execute("PRAGMA foreign_keys = OFF")
         self.store._connection.execute(
             "DELETE FROM raw_evidence WHERE id = ?",
             (self.evidence.id,),
         )
         self.store._connection.commit()
+        standard = lookup_catalog_vehicle(self.store, self.vehicle_id)
+        self.assertTrue(standard["ok"])
         with self.assertRaisesRegex(ValueError, "missing evidence"):
-            lookup_catalog_vehicle(self.store, self.vehicle_id)
+            export_catalog_vehicle_evidence_bundle(
+                self.store,
+                self.vehicle_id,
+                contract_version="2.0",
+            )
 
-    def test_missing_source_fails_closed(self) -> None:
+    def test_missing_source_fails_closed_in_trace_bundle(self) -> None:
         self.store._connection.execute("PRAGMA foreign_keys = OFF")
         self.store._connection.execute(
             "DELETE FROM sources WHERE id = ?",
@@ -124,7 +155,11 @@ class CatalogExportEvidenceTraceTests(unittest.TestCase):
         )
         self.store._connection.commit()
         with self.assertRaisesRegex(ValueError, "missing source"):
-            list_catalog_vehicles(self.store, limit=10)
+            export_catalog_vehicle_evidence_bundle(
+                self.store,
+                self.vehicle_id,
+                contract_version="2.0",
+            )
 
 
 if __name__ == "__main__":
