@@ -3,7 +3,10 @@ from pathlib import Path
 import tempfile
 import unittest
 
-from podium7.catalog_operational import build_source_backed_operational_records
+from podium7.catalog_operational import (
+    build_source_backed_operational_records,
+    measure_operational_provenance_eligibility,
+)
 
 
 def _payload() -> dict:
@@ -65,6 +68,43 @@ class CatalogOperationalFieldProvenanceTests(unittest.TestCase):
         records = build_source_backed_operational_records((path,))
         self.assertEqual(2, len(records))
         self.assertEqual(["source-a", "source-a"], [record["source"]["id"] for record in records])
+
+    def test_eligibility_measurement_separates_safe_records_without_replaying_blocked_ones(self) -> None:
+        payload = _payload()
+        explicit_case = payload["cases"][0]
+        single_case = {
+            "id": "single-source",
+            "expected": "MATCH",
+            "left": {"make": "Example", "model": "Solo"},
+            "right": {"make": "Example", "model": "Solo"},
+            "sourceIds": ["source-a"],
+            "rationale": "sole source has no source-selection ambiguity",
+        }
+        blocked_case = {
+            "id": "blocked-multisource",
+            "expected": "REVIEW",
+            "left": {"make": "Example", "model": "Blocked"},
+            "right": {"make": "Example", "model": "Blocked"},
+            "sourceIds": ["source-a", "source-b"],
+            "rationale": "multiple sources without field attribution remain blocked",
+        }
+        payload["cases"] = [explicit_case, single_case, blocked_case]
+        path = _write(payload)
+        self.addCleanup(path.unlink, missing_ok=True)
+
+        report = measure_operational_provenance_eligibility((path,))
+        summary = report["summary"]
+        self.assertEqual(3, summary["cases"])
+        self.assertEqual(6, summary["records"])
+        self.assertEqual(4, summary["replayableRecords"])
+        self.assertEqual(2, summary["blockedRecords"])
+        self.assertEqual(
+            {"EXPLICIT_FIELD_ATTRIBUTION": 2, "SOLE_CASE_SOURCE": 2},
+            summary["replayableByMethod"],
+        )
+        blocked = [item for item in report["records"] if not item["replayable"]]
+        self.assertEqual({"blocked-multisource"}, {item["caseId"] for item in blocked})
+        self.assertTrue(all("multiple sourceIds" in item["reason"] for item in blocked))
 
     def test_multisource_case_without_field_attribution_fails_closed(self) -> None:
         payload = _payload()
