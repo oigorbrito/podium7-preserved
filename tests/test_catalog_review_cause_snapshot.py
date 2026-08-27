@@ -104,6 +104,42 @@ class CatalogReviewCauseSnapshotTests(unittest.TestCase):
                 )
             )
 
+    def test_snapshot_contract_rejects_wrong_runtime_types_fail_closed(self) -> None:
+        with self.assertRaisesRegex(ValueError, "review_id is required"):
+            CatalogReviewCauseSnapshot(None, REVIEW_CAUSE_CLASSIFIER_VERSION, ("LABEL_AMBIGUITY",))  # type: ignore[arg-type]
+        with self.assertRaisesRegex(ValueError, "classifier_version is required"):
+            CatalogReviewCauseSnapshot("review-1", None, ("LABEL_AMBIGUITY",))  # type: ignore[arg-type]
+        with self.assertRaisesRegex(ValueError, "at least one review cause"):
+            CatalogReviewCauseSnapshot("review-1", REVIEW_CAUSE_CLASSIFIER_VERSION, ["LABEL_AMBIGUITY"])  # type: ignore[arg-type]
+
+    def test_store_rejects_structurally_invalid_persisted_cause_json(self) -> None:
+        task = self._seed_review(6)
+        store = CatalogReviewCauseStore(self.store)
+        self.store._connection.execute(
+            """
+            INSERT INTO catalog_v2_review_cause_snapshots(review_id, classifier_version, causes_json)
+            VALUES (?, ?, ?)
+            """,
+            (task.id, REVIEW_CAUSE_CLASSIFIER_VERSION, '"LABEL_AMBIGUITY"'),
+        )
+        self.store._connection.commit()
+        with self.assertRaisesRegex(ValueError, "JSON array"):
+            store.get(task.id)
+
+    def test_store_rejects_malformed_persisted_cause_json(self) -> None:
+        task = self._seed_review(7)
+        store = CatalogReviewCauseStore(self.store)
+        self.store._connection.execute(
+            """
+            INSERT INTO catalog_v2_review_cause_snapshots(review_id, classifier_version, causes_json)
+            VALUES (?, ?, ?)
+            """,
+            (task.id, REVIEW_CAUSE_CLASSIFIER_VERSION, "not-json"),
+        )
+        self.store._connection.commit()
+        with self.assertRaisesRegex(ValueError, "valid JSON"):
+            store.get(task.id)
+
     def test_review_queue_does_not_truncate_above_one_hundred(self) -> None:
         for number in range(100, 201):
             self._seed_review(number)
