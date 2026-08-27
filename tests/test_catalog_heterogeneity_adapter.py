@@ -1,7 +1,8 @@
 import unittest
 from unittest.mock import patch
 
-from podium7.catalog_benchmark import CatalogBenchmarkDataset
+from podium7.catalog import CatalogMatchOutcome, CatalogVehicleIdentity
+from podium7.catalog_benchmark import CatalogBenchmarkCase, CatalogBenchmarkDataset
 from podium7.catalog_heterogeneity_adapter import (
     compare_catalog_heterogeneity,
     podium_safety_metrics_from_catalog_report,
@@ -21,6 +22,16 @@ class CatalogHeterogeneityAdapterTests(unittest.TestCase):
             }
         }
 
+    def case(self, case_id="same", expected=CatalogMatchOutcome.MATCH):
+        return CatalogBenchmarkCase(
+            id=case_id,
+            expected=expected,
+            left=CatalogVehicleIdentity(make="Ford", model="Mustang"),
+            right=CatalogVehicleIdentity(make="Ford", model="Mustang"),
+            source_ids=("s",),
+            rationale="test",
+        )
+
     def test_maps_existing_catalog_metrics_without_redefinition(self):
         metrics = podium_safety_metrics_from_catalog_report(self.report(recall=0.8, missed=2))
         self.assertEqual(0.8, metrics["autoMatchRecall"])
@@ -28,8 +39,8 @@ class CatalogHeterogeneityAdapterTests(unittest.TestCase):
         self.assertEqual(0, metrics["falseMergeCount"])
 
     def test_compare_wires_clean_and_heterogeneous_reports_into_delta_contract(self):
-        clean = CatalogBenchmarkDataset(version="clean", source_ids=("s",), cases=())
-        heterogeneous = CatalogBenchmarkDataset(version="heterogeneous", source_ids=("s",), cases=())
+        clean = CatalogBenchmarkDataset(version="clean", source_ids=("s",), cases=(self.case(),))
+        heterogeneous = CatalogBenchmarkDataset(version="heterogeneous", source_ids=("s",), cases=(self.case(),))
         with patch(
             "podium7.catalog_heterogeneity_adapter.evaluate_catalog_identity_benchmark",
             side_effect=[
@@ -44,6 +55,16 @@ class CatalogHeterogeneityAdapterTests(unittest.TestCase):
         self.assertFalse(item["safetyRegression"])
         self.assertEqual("clean", report["cleanDatasetVersion"])
         self.assertEqual("heterogeneous", report["sliceDatasetVersions"]["schema-mismatch"])
+
+    def test_slice_must_preserve_case_ids_and_gold_labels(self):
+        clean = CatalogBenchmarkDataset(version="clean", source_ids=("s",), cases=(self.case(),))
+        changed = CatalogBenchmarkDataset(
+            version="changed",
+            source_ids=("s",),
+            cases=(self.case(case_id="different", expected=CatalogMatchOutcome.NO_MATCH),),
+        )
+        with self.assertRaisesRegex(ValueError, "preserve the clean case ids and expected labels"):
+            compare_catalog_heterogeneity(clean, {"invalid": changed})
 
     def test_missing_catalog_metric_fails_closed(self):
         with self.assertRaisesRegex(ValueError, "missing metrics"):
