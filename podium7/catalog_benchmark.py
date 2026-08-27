@@ -38,12 +38,23 @@ class CatalogBenchmarkDataset:
     cases: tuple[CatalogBenchmarkCase, ...]
 
 
-def _identity_from_mapping(data: dict[str, Any]) -> CatalogVehicleIdentity:
+def _identity_from_mapping(data: Mapping[str, Any]) -> CatalogVehicleIdentity:
+    if not isinstance(data, Mapping):
+        raise ValueError("catalog benchmark identity must be an object")
     payload = dict(data)
-    payload["aliases"] = tuple(payload.get("aliases", ()))
-    payload["engine_identifiers"] = tuple(payload.get("engine_identifiers", ()))
+    raw_aliases = payload.get("aliases", ())
+    raw_engines = payload.get("engine_identifiers", ())
+    raw_external = payload.get("external_identifiers", ())
+    if not isinstance(raw_aliases, list):
+        raise ValueError("catalog benchmark aliases must be an array")
+    if not isinstance(raw_engines, list):
+        raise ValueError("catalog benchmark engine_identifiers must be an array")
+    if not isinstance(raw_external, list) or any(not isinstance(item, Mapping) for item in raw_external):
+        raise ValueError("catalog benchmark external_identifiers must be an array of objects")
+    payload["aliases"] = tuple(raw_aliases)
+    payload["engine_identifiers"] = tuple(raw_engines)
     payload["external_identifiers"] = tuple(
-        ExternalIdentifier(**item) for item in payload.get("external_identifiers", ())
+        ExternalIdentifier(**dict(item)) for item in raw_external
     )
     return CatalogVehicleIdentity(**payload)
 
@@ -136,6 +147,8 @@ def _parse_field_source_ids(
 
 def load_catalog_identity_benchmark(path: str | Path) -> CatalogBenchmarkDataset:
     payload = json.loads(Path(path).read_text(encoding="utf-8"))
+    if not isinstance(payload, Mapping):
+        raise ValueError("catalog benchmark payload must be an object")
     if payload.get("schema") != CATALOG_BENCHMARK_SCHEMA:
         raise ValueError("unsupported catalog benchmark schema")
 
@@ -144,8 +157,8 @@ def load_catalog_identity_benchmark(path: str | Path) -> CatalogBenchmarkDataset
         raise ValueError("catalog benchmark datasetVersion is required")
 
     sources = payload.get("sources")
-    if not isinstance(sources, list) or not sources:
-        raise ValueError("catalog benchmark sources are required")
+    if not isinstance(sources, list) or not sources or any(not isinstance(source, Mapping) for source in sources):
+        raise ValueError("catalog benchmark sources must be a non-empty array of objects")
     source_ids = tuple(source.get("id") for source in sources)
     if any(not isinstance(source_id, str) or not source_id.strip() for source_id in source_ids):
         raise ValueError("catalog benchmark source ids must be non-empty strings")
@@ -156,8 +169,8 @@ def load_catalog_identity_benchmark(path: str | Path) -> CatalogBenchmarkDataset
             raise ValueError("catalog benchmark sources require https URLs")
 
     raw_cases = payload.get("cases")
-    if not isinstance(raw_cases, list) or not raw_cases:
-        raise ValueError("catalog benchmark cases are required")
+    if not isinstance(raw_cases, list) or not raw_cases or any(not isinstance(raw, Mapping) for raw in raw_cases):
+        raise ValueError("catalog benchmark cases must be a non-empty array of objects")
 
     cases: list[CatalogBenchmarkCase] = []
     seen_case_ids: set[str] = set()
@@ -170,15 +183,27 @@ def load_catalog_identity_benchmark(path: str | Path) -> CatalogBenchmarkDataset
             raise ValueError(f"duplicate catalog benchmark case id {case_id!r}")
         seen_case_ids.add(case_id)
 
-        expected = CatalogMatchOutcome(raw.get("expected"))
-        case_source_ids = tuple(raw.get("sourceIds", ()))
-        if not case_source_ids or any(source_id not in known_sources for source_id in case_source_ids):
+        try:
+            expected = CatalogMatchOutcome(raw.get("expected"))
+        except (TypeError, ValueError) as exc:
+            raise ValueError(f"case {case_id!r} has unsupported expected outcome") from exc
+        raw_case_source_ids = raw.get("sourceIds")
+        if (
+            not isinstance(raw_case_source_ids, list)
+            or not raw_case_source_ids
+            or any(not isinstance(source_id, str) or not source_id.strip() for source_id in raw_case_source_ids)
+        ):
+            raise ValueError(f"case {case_id!r} sourceIds must be a non-empty array of source ids")
+        case_source_ids = tuple(raw_case_source_ids)
+        if any(source_id not in known_sources for source_id in case_source_ids):
             raise ValueError(f"case {case_id!r} has missing or unknown sourceIds")
         if len(set(case_source_ids)) != len(case_source_ids):
             raise ValueError(f"case {case_id!r} sourceIds must be unique")
         rationale = raw.get("rationale")
         if not isinstance(rationale, str) or not rationale.strip():
             raise ValueError(f"case {case_id!r} requires a rationale")
+        if not isinstance(raw.get("left"), Mapping) or not isinstance(raw.get("right"), Mapping):
+            raise ValueError(f"case {case_id!r} left and right identities must be objects")
 
         left = _identity_from_mapping(raw["left"])
         right = _identity_from_mapping(raw["right"])
