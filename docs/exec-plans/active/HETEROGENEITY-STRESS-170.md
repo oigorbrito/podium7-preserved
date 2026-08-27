@@ -1,6 +1,6 @@
 # Heterogeneity stress benchmark — issue #170
 
-Status: active
+Status: benchmark contract and controlled stress fixtures prepared; comparative execution pending
 
 ## Goal
 
@@ -19,9 +19,21 @@ Podium already measures auto-match precision/recall, false merges, missed matche
 5. Evaluate candidate normalization/schema-mapping/blocking/matching approaches only after baseline results exist.
 6. Record `CURRENT_BETTER`, `NEW_BETTER`, `COMPLEMENTARY`, or `NO_MATERIAL_GAIN`; material replacement requires explicit owner consent.
 
-## Current block
+## Benchmark-contract utility disposition
 
-`podium7/heterogeneity_benchmark.py` computes deltas from the existing Podium metric family and focused regressions cover safety-regression detection. No resolver, normalization or semantic policy changed.
+`HETEROGENEITY_STRESS_BENCHMARK_UTILITY = INTEGRATE_AFTER_REPOSITORY_VALIDATION`
+
+The contract is complementary to existing identity-quality metrics. Existing metrics describe aggregate resolver quality; this block holds case IDs and gold labels constant and measures the delta caused by controlled heterogeneity. That makes naming/schema/representation/unit/granularity/semantic robustness observable without inventing a second safety metric family.
+
+The adapter now validates mapped catalog metrics at its public boundary, including non-finite rates, out-of-range rates and malformed count types. Clean and heterogeneous slices must preserve the same case IDs and expected labels so dataset composition cannot masquerade as a heterogeneity effect.
+
+## Candidate-comparison disposition
+
+`HETEROGENEITY_MITIGATION_COMPARISON = PENDING_EXECUTION`
+
+Current fixtures deliberately exercise existing behavior, including representation variation and a deliberately wrong regulatory→retail projection used as a safety tripwire. They do not propose that projection or any normalization rule.
+
+No normalization, schema mapping, blocker or matcher is declared better yet. A candidate may be proposed only after paired-slice measurements show material robustness improvement without increasing false merges or ambiguous overcommit; replacement remains explicit-owner-consent gated.
 
 ## Safety
 
