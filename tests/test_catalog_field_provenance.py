@@ -58,7 +58,7 @@ def _payload() -> dict:
     }
 
 
-def _write_payload(payload: dict) -> Path:
+def _write_payload(payload: object) -> Path:
     handle = tempfile.NamedTemporaryFile(mode="w", suffix=".json", encoding="utf-8", delete=False)
     with handle:
         json.dump(payload, handle)
@@ -159,7 +159,25 @@ class CatalogFieldProvenanceTests(unittest.TestCase):
         payload["cases"][0]["fieldSourceIds"]["canonical"] = {"make": ["source-a"]}
         self._assert_invalid(payload, "unknown side")
 
-    def _assert_invalid(self, payload: dict, message: str) -> None:
+    def test_malformed_source_and_case_containers_fail_closed(self) -> None:
+        payload = _payload()
+        payload["sources"][0] = "not-an-object"
+        self._assert_invalid(payload, "sources must be a non-empty array of objects")
+
+        payload = _payload()
+        payload["cases"][0] = "not-an-object"
+        self._assert_invalid(payload, "cases must be a non-empty array of objects")
+
+    def test_source_ids_and_identity_containers_fail_closed(self) -> None:
+        payload = _payload()
+        payload["cases"][0]["sourceIds"] = "source-a"
+        self._assert_invalid(payload, "sourceIds must be a non-empty array")
+
+        payload = _payload()
+        payload["cases"][0]["left"] = "not-an-object"
+        self._assert_invalid(payload, "left and right identities must be objects")
+
+    def _assert_invalid(self, payload: object, message: str) -> None:
         path = _write_payload(payload)
         self.addCleanup(path.unlink, missing_ok=True)
         with self.assertRaisesRegex(ValueError, message):
