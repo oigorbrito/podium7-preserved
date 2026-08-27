@@ -1,6 +1,6 @@
 # ExtractBench-style extraction evaluation — issue #168
 
-Status: active
+Status: benchmark contract prepared; real-PDF comparison pending
 
 ## Goal
 
@@ -19,9 +19,21 @@ Podium already preserves source/raw evidence and routes unsupported/ambiguous id
 5. Record `CURRENT_BETTER`, `NEW_BETTER`, `COMPLEMENTARY`, or `NO_MATERIAL_GAIN`.
 6. Any material replacement remains owner-consent gated after reproducible measurements.
 
-## Current block
+## Benchmark-contract utility disposition
 
-The measurement contract is implemented in `podium7/extraction_quality_benchmark.py` with focused tests. No extractor has been adopted or replaced. No real-PDF superiority result is claimed yet.
+`EXTRACTION_BENCHMARK_CONTRACT_UTILITY = INTEGRATE_AFTER_REPOSITORY_VALIDATION`
+
+The measurement contract closes a real observability gap independent of which extractor eventually wins. Existing Podium identity-quality metrics cannot tell whether a document extractor produced schema-invalid output, omitted required fields, hallucinated fields, degraded on wider schemas, misaligned arrays, or emitted canonical writes without field-level evidence.
+
+The evaluator is therefore useful as a durable acceptance harness even if the later extractor comparison concludes `NO_MATERIAL_GAIN`.
+
+Audit hardening requires benchmark fixtures to use explicit container types, strict JSON-compatible values, unique evidence references, and finite numeric values; malformed fixtures fail closed rather than contaminating rates.
+
+## Candidate-comparison disposition
+
+`EXTRACTOR_COMPARISON = PENDING_RAW_SNAPSHOT_AND_EXECUTION`
+
+No extractor is currently declared better. The official Inmetro PBEV page-1 gold remains `PENDING_RAW_SNAPSHOT` until #174/#175 is executable and the exact PDF bytes/SHA are retained. After that, the same evidence-bound gold must be used for current/candidate extraction comparison. A replacement can only be proposed after reproducible material gain and still requires explicit owner consent.
 
 ## Safety
 
@@ -29,7 +41,7 @@ The measurement contract is implemented in `podium7/extraction_quality_benchmark
 - Missing/ambiguous fields remain absent or reviewable.
 - No direct LLM/extractor canonical writes.
 - No evidence/publication weakening.
-- Targeted horizontal research is allowed only when a measured gap justifies it.
+- Targeted horizontal research is allowed when a measured gap justifies it.
 - No material replacement without explicit owner consent.
 
 ## Validation
