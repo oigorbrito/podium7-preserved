@@ -37,6 +37,20 @@ Existing host/content/media/schema drift continues to produce `DRIFT`.
 - The gate does not fetch terms itself or add a crawler/scheduler.
 - Software repository licenses, source-data reuse terms and statutory/public-sector access bases remain distinct concepts.
 
+## Incremental utility decision
+
+`SOURCE_TERMS_DRIFT_GATE_UTILITY = INTEGRATE_AFTER_SYNC_AND_VALIDATION`
+
+The decision-relevant incremental capability is limited to:
+
+- `SourceTermsPin` exact-locator + exact-digest contract;
+- `REVIEW_REQUIRED` as a non-mutation state for unavailable, redirected, hash-mismatched or changed terms evidence; and
+- terms locator/digest observability on recurring-run results.
+
+The current PR branch also contains authorization/checkpoint/source-policy hardening that is already present in the latest #132 base. Those upstream controls are not evidence of additional value for #164 and must not be counted as part of this capability. Before integration, synchronize/reconstruct #165 so its final diff contains only the genuinely incremental terms-drift behavior plus its focused tests/documentation.
+
+Utility rationale: source terms/reuse evidence can drift independently of source schema/content and existing #132 controls do not pin or compare the governing terms artifact. This closes a distinct governance gap while remaining fail-closed and without legal-text interpretation.
+
 ## Deterministic validation
 
 Focused offline tests cover:
