@@ -122,7 +122,7 @@ class EeaEvidenceAdapterTests(unittest.TestCase):
             separators=(",", ":"),
         ).encode()
         digest = hashlib.sha256(raw).hexdigest()
-        with self.assertRaisesRegex(ValueError, "duplicate EEA source record id"):
+        with self.assertRaisesRegex(ValueError, r"duplicate EEA source record ID \d+"):
             parse_eea_evidence(
                 raw,
                 locator="https://discodata.eea.europa.eu/sql?query=bounded",
