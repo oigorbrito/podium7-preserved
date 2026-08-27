@@ -56,7 +56,7 @@ def audit_catalog_provenance(store: CatalogStore) -> dict[str, Any]:
         else:
             complete_links += 1
 
-    review_queue = CatalogReviewQueue(store)
+    CatalogReviewQueue(store)
     open_review_rows = store._connection.execute(
         """
         SELECT id, evidence_id
@@ -83,6 +83,9 @@ def audit_catalog_provenance(store: CatalogStore) -> dict[str, Any]:
         else:
             complete_links += 1
 
+    if checked_links == 0:
+        incomplete.append({"kind": "EMPTY_AUDIT_SCOPE"})
+
     return {
         "schema": "podium7.catalog-provenance-audit.v1",
         "summary": {
@@ -91,7 +94,7 @@ def audit_catalog_provenance(store: CatalogStore) -> dict[str, Any]:
             "checkedLinks": checked_links,
             "completeLinks": complete_links,
             "incompleteLinks": len(incomplete),
-            "completeness": 1.0 if checked_links == 0 else complete_links / checked_links,
+            "completeness": 0.0 if checked_links == 0 else complete_links / checked_links,
             "pass": not incomplete,
         },
         "incomplete": incomplete,
