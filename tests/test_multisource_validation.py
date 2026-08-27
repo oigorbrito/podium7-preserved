@@ -82,26 +82,55 @@ class MultiSourceValidationTests(unittest.TestCase):
         self.assertEqual(1, summary["conflictCases"])
         self.assertEqual(2, summary["reviewCases"])
         self.assertEqual(0, summary["incorrectCases"])
-        self.assertEqual(6, summary["provenanceCompleteCases"])
+        self.assertEqual(4, summary["provenanceApplicableCases"])
+        self.assertEqual(4, summary["provenanceCompleteCases"])
         self.assertEqual(1.0, summary["provenanceCompleteness"])
         self.assertEqual(0, summary["resolverPolicyChanges"])
         self.assertEqual({"eea_co2_cars": 4, "nhtsa_vpic": 2}, summary["sourceContribution"])
 
-    def test_conflict_is_not_silently_collapsed(self):
+    def test_conflict_is_not_silently_collapsed_and_references_all_inputs(self):
         report = evaluate_multisource_cases(self.corpus())
         conflict = next(item for item in report["results"] if item["caseId"] == "conflicting-power")
         self.assertEqual("CONFLICT", conflict["disposition"])
         self.assertEqual(2, len(conflict["candidateReferences"]))
+        self.assertTrue(conflict["provenanceComplete"])
 
-    def test_unsupported_dimensions_remain_review(self):
+    def test_unsupported_dimensions_remain_review_and_provenance_is_not_applicable(self):
         report = evaluate_multisource_cases(self.corpus())
-        review_ids = {item["caseId"] for item in report["results"] if item["disposition"] == "REVIEW"}
-        self.assertEqual({"unsupported-retail-trim", "unsupported-manufacture-year"}, review_ids)
+        reviews = [item for item in report["results"] if item["disposition"] == "REVIEW"]
+        self.assertEqual(
+            {"unsupported-retail-trim", "unsupported-manufacture-year"},
+            {item["caseId"] for item in reviews},
+        )
+        self.assertTrue(all(item["provenanceComplete"] is None for item in reviews))
 
     def test_duplicate_case_ids_are_rejected_before_measurement(self):
         case = self.corpus()[0]
         with self.assertRaisesRegex(ValueError, "case ids must be unique"):
             evaluate_multisource_cases((case, case))
+
+    def test_duplicate_candidate_fact_ids_fail_closed(self):
+        candidate = fact("nhtsa_vpic", "duplicate", "make", "VOLVO")
+        with self.assertRaisesRegex(ValueError, "candidate fact ids must be unique"):
+            MultiSourceCase(
+                "duplicate-fact",
+                "vehicle:duplicate",
+                "make",
+                (candidate, SourceCandidate("eea_co2_cars", candidate.fact)),
+                "CANONICAL",
+                "same fact cannot count as two source candidates",
+            )
+
+    def test_candidate_container_must_be_tuple(self):
+        with self.assertRaisesRegex(ValueError, "candidates must be a tuple"):
+            MultiSourceCase(
+                "wrong-container",
+                "vehicle:test",
+                "make",
+                [],  # type: ignore[arg-type]
+                "REVIEW",
+                "malformed fixture",
+            )
 
     def test_required_text_and_source_id_cannot_be_whitespace(self):
         with self.assertRaisesRegex(ValueError, "source_id is required"):
