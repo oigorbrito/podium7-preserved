@@ -51,6 +51,16 @@ class RecurringAcquisitionTests(unittest.TestCase):
         self.assertFalse(second.allowed)
         self.assertEqual("HOST_PACING", second.reason)
 
+    def test_denied_authorization_invalidates_prior_allowed_token(self):
+        coordinator = self.coordinator()
+        locator = "https://vpic.nhtsa.dot.gov/api/x"
+        self.authorize(coordinator, locator, now=10.0)
+        denied = coordinator.authorize("nhtsa_vpic", "https://vpic.nhtsa.dot.gov/api/y", now=15.0)
+        self.assertFalse(denied.allowed)
+        result = coordinator.record_success("nhtsa_vpic", acquisition(locator), schema_signature="decode-vin-values:v1")
+        self.assertEqual(RecurringRunState.DRIFT, result.state)
+        self.assertEqual("AUTHORIZATION_MISSING", result.reason)
+
     def test_success_requires_matching_one_shot_authorization(self):
         coordinator = self.coordinator()
         locator = "https://vpic.nhtsa.dot.gov/api/x"
@@ -166,7 +176,6 @@ class RecurringAcquisitionTests(unittest.TestCase):
         pin = self.terms_pin(terms_body)
         coordinator = self.coordinator(terms_pin=pin)
         locator = "https://vpic.nhtsa.dot.gov/api/x"
-
         self.authorize(coordinator, locator, now=10.0)
         locator_mismatch = coordinator.record_success(
             "nhtsa_vpic",
@@ -176,23 +185,16 @@ class RecurringAcquisitionTests(unittest.TestCase):
         )
         self.assertEqual(RecurringRunState.REVIEW_REQUIRED, locator_mismatch.state)
         self.assertEqual("TERMS_LOCATOR_MISMATCH", locator_mismatch.reason)
-
         self.authorize(coordinator, locator, now=20.0)
         final_locator_drift = coordinator.record_success(
             "nhtsa_vpic",
             acquisition(locator),
             schema_signature="decode-vin-values:v1",
-            terms_acquisition=acquisition(
-                pin.locator,
-                body=terms_body,
-                content_type="text/plain",
-                final_url="https://vpic.nhtsa.dot.gov/terms-v2",
-            ),
+            terms_acquisition=acquisition(pin.locator, body=terms_body, content_type="text/plain", final_url="https://vpic.nhtsa.dot.gov/terms-v2"),
         )
         self.assertEqual(RecurringRunState.REVIEW_REQUIRED, final_locator_drift.state)
         self.assertEqual("TERMS_FINAL_LOCATOR_DRIFT", final_locator_drift.reason)
         self.assertFalse(final_locator_drift.mutation_required)
-
         self.authorize(coordinator, locator, now=30.0)
         hash_mismatch = coordinator.record_success(
             "nhtsa_vpic",
@@ -208,11 +210,7 @@ class RecurringAcquisitionTests(unittest.TestCase):
         coordinator = self.coordinator()
         locator = "https://vpic.nhtsa.dot.gov/api/x"
         self.authorize(coordinator, locator, now=10.0)
-        result = coordinator.record_success(
-            "nhtsa_vpic",
-            acquisition(locator),
-            schema_signature="decode-vin-values:v1",
-        )
+        result = coordinator.record_success("nhtsa_vpic", acquisition(locator), schema_signature="decode-vin-values:v1")
         self.assertEqual(RecurringRunState.ACCEPTED, result.state)
         self.assertTrue(result.mutation_required)
         self.assertIsNone(result.terms_locator)
@@ -223,6 +221,14 @@ class RecurringAcquisitionTests(unittest.TestCase):
             SourceTermsPin(locator="http://example.com/terms", expected_sha256="0" * 64)
         with self.assertRaises(ValueError):
             SourceTermsPin(locator="https://example.com/terms", expected_sha256="not-a-digest")
+        with self.assertRaises(ValueError):
+            SourceTermsPin(locator=123, expected_sha256="0" * 64)  # type: ignore[arg-type]
+        with self.assertRaises(ValueError):
+            SourceTermsPin(locator="https://example.com/terms", expected_sha256=None)  # type: ignore[arg-type]
+        with self.assertRaises(ValueError):
+            SourceTermsPin(locator="https://user:pass@example.com/terms", expected_sha256="0" * 64)
+        with self.assertRaises(ValueError):
+            SourceTermsPin(locator="https://example.com/terms#fragment", expected_sha256="0" * 64)
 
     def test_failures_have_bounded_retry_then_degraded_state(self):
         coordinator = self.coordinator()
