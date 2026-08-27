@@ -23,8 +23,12 @@ class EeaEvidenceRecord:
 
 def _require_content_ref(raw_payload: bytes, raw_content_ref: str) -> str:
     digest = hashlib.sha256(raw_payload).hexdigest()
-    if not isinstance(raw_content_ref, str) or not raw_content_ref.startswith(f"sha256:{digest}@"):
+    prefix = f"sha256:{digest}@"
+    if not isinstance(raw_content_ref, str) or not raw_content_ref.startswith(prefix):
         raise ValueError("raw_content_ref must address the exact EEA response bytes")
+    retained_location = raw_content_ref[len(prefix):]
+    if not retained_location.strip():
+        raise ValueError("raw_content_ref must retain a snapshot location")
     return digest
 
 
@@ -67,6 +71,8 @@ def parse_eea_evidence(raw_payload: bytes, *, locator: str, retrieved_at: dateti
     for report in reports:
         identity = report.identity
         record_id = identity.source_record_id
+        if record_id in observed_ids:
+            raise ValueError(f"duplicate EEA source record id: {record_id}")
         if report.issues:
             codes = ", ".join(issue.code for issue in report.issues)
             raise ValueError(f"EEA record {record_id} has incomplete or unsupported evidence: {codes}")
