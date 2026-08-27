@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import math
 from pathlib import Path
 from urllib.parse import urlsplit
 
@@ -39,6 +40,8 @@ class PdfAcquisitionContract:
         if isinstance(self.max_bytes, bool) or not isinstance(self.max_bytes, int) or self.max_bytes < 1:
             raise ValueError("max_bytes must be a positive integer")
         if isinstance(self.timeout_seconds, bool) or not isinstance(self.timeout_seconds, (int, float)):
+            raise ValueError("timeout_seconds must be a finite positive number")
+        if not math.isfinite(float(self.timeout_seconds)) or self.timeout_seconds <= 0:
             raise ValueError("timeout_seconds must be a finite positive number")
         if not isinstance(self.user_agent, str) or not self.user_agent.strip():
             raise ValueError("user_agent must be non-empty text")
