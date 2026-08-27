@@ -3,10 +3,15 @@ from __future__ import annotations
 from typing import Any, Mapping
 
 from .catalog_benchmark import CatalogBenchmarkDataset, evaluate_catalog_identity_benchmark
-from .heterogeneity_benchmark import evaluate_heterogeneity_slices
+from .heterogeneity_benchmark import (
+    evaluate_heterogeneity_slices,
+    validate_heterogeneity_metrics,
+)
 
 
 def podium_safety_metrics_from_catalog_report(report: Mapping[str, Any]) -> dict[str, int | float | None]:
+    if not isinstance(report, Mapping):
+        raise ValueError("catalog benchmark report must be an object")
     metrics = report.get("metrics")
     if not isinstance(metrics, Mapping):
         raise ValueError("catalog benchmark report metrics are required")
@@ -21,7 +26,7 @@ def podium_safety_metrics_from_catalog_report(report: Mapping[str, Any]) -> dict
     missing = [key for key in required if key not in metrics]
     if missing:
         raise ValueError("catalog benchmark report is missing metrics: " + ", ".join(missing))
-    return {
+    mapped = {
         "autoMatchPrecision": metrics["matchPrecision"],
         "autoMatchRecall": metrics["matchRecall"],
         "falseMergeCount": metrics["falseMergeCount"],
@@ -29,6 +34,7 @@ def podium_safety_metrics_from_catalog_report(report: Mapping[str, Any]) -> dict
         "ambiguousOvercommitCount": metrics["ambiguousOvercommitCount"],
         "reviewRate": metrics["reviewRate"],
     }
+    return validate_heterogeneity_metrics(mapped)
 
 
 def _gold_signature(dataset: CatalogBenchmarkDataset) -> tuple[tuple[str, str], ...]:
