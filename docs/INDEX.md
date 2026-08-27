@@ -38,8 +38,10 @@
 ## Acquisition, extraction, review, export, and operational readiness
 
 - [`FIRST-REAL-STRUCTURED-INGESTION.md`](FIRST-REAL-STRUCTURED-INGESTION.md)
+- [`POST-MVP-SOURCE-ACQUISITION-OUTCOME-V1.md`](POST-MVP-SOURCE-ACQUISITION-OUTCOME-V1.md) — synthesized post-MVP source-acquisition outcome record and execution boundary.
 - [`SOURCE-EVIDENCE-GAP-MATRIX-V1.md`](SOURCE-EVIDENCE-GAP-MATRIX-V1.md) — reconstructed qualified-source coverage and decision-critical evidence gaps for the post-MVP acquisition mission.
 - [`SOURCE-QUALIFICATION-V1.md`](SOURCE-QUALIFICATION-V1.md) — targeted primary-source qualification against measured post-MVP identity/evidence gaps.
+- [`SOURCE-TERMS-DRIFT-GATE-V1.md`](SOURCE-TERMS-DRIFT-GATE-V1.md) — fail-closed source-terms drift gate for acquisition-time contract changes.
 - [`NHTSA-VPIC-EVIDENCE-CONTRACT-V1.md`](NHTSA-VPIC-EVIDENCE-CONTRACT-V1.md) — source-specific discovery/VIN-backed evidence, provenance, nonclaims and fail-closed boundaries.
 - [`EEA-EVIDENCE-CONTRACT-V2.md`](EEA-EVIDENCE-CONTRACT-V2.md) — regulatory identity/support evidence and provenance refinement without retail-trim/year semantic widening.
 - [`DIRECT-HTTP-ACQUISITION-V1.md`](DIRECT-HTTP-ACQUISITION-V1.md) — bounded fail-closed direct HTTP transport and snapshot contract.
