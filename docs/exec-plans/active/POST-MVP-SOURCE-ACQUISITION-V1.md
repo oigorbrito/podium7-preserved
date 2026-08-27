@@ -1,8 +1,8 @@
 # Post-MVP source acquisition execution plan V1
 
-Status: implementation prepared through #128; integration/executable validation pending
+Status: utility/design review complete through #128; stacked synchronization + executable validation pending
 Parent mission: #122
-Current block: #128 complete on branch; mission pending repository validation
+Current block: review hardening completed on #130/#131/#132; descendants must be synchronized before validation
 
 ## Outcome
 
@@ -40,14 +40,33 @@ Expand Podium 7's evidence-backed automotive acquisition/enrichment layer using 
 - `docs/EEA-EVIDENCE-CONTRACT-V2.md`
 - source/acquisition/provenance contracts indexed by `docs/INDEX.md`
 
+## Utility dispositions
+
+- #129 / #123–#125: `INTEGRATE_AFTER_REPOSITORY_VALIDATION` — establishes measured gaps, qualifies sources, and freezes NHTSA/EEA semantics before executable adapters. This is the decision basis for later code, not a coverage claim.
+- #130 / #126: `INTEGRATE_AFTER_SYNC_AND_VALIDATION` — converts qualified NHTSA/EEA source evidence into `RawEvidence`/`CandidateFact` without semantic promotion. Utility review additionally requires EEA content refs to retain a real snapshot location and rejects duplicate source record IDs.
+- #131 / #127: `INTEGRATE_AFTER_SYNC_AND_VALIDATION` — measures corroboration/conflict/abstention and candidate-to-fusion provenance on the unchanged fusion model. REVIEW cases without candidates are provenance `N/A`, not vacuously complete.
+- #132 / #128: `INTEGRATE_AFTER_SYNC_AND_VALIDATION` — provides bounded recurring-source authorization, drift/idempotency/retry/degraded behavior. A later denied authorization now invalidates any earlier one-shot token for the source.
+
+These utility dispositions establish purpose only. They are not executable PASS and do not authorize out-of-order integration.
+
 ## Execution sequence
 
-1. #123 — reconstruct current source baseline and produce `SOURCE-EVIDENCE-GAP-MATRIX-V1.md`. **Prepared on branch; integration pending repository validation availability.**
-2. #124 — qualify only the smallest current source set needed to address measured gaps. **Prepared.**
-3. #125 — define source-specific semantic/provenance contracts before coding adapters. **Prepared for NHTSA vPIC and EEA; restricted WSDenatran intentionally deferred.**
-4. #126 — implement bounded approved adapters with deterministic fail-closed behavior. **Prepared; focused contracts hardened against malformed boolean/int coercion.**
-5. #127 — validate multi-source fusion, corroboration, conflicts, review load and provenance. **Prepared; validation fixtures reject duplicate/malformed cases.**
-6. #128 — operationalize recurring acquisition safely, including drift/outage handling. **Prepared; integration/executable validation pending.**
+1. #123 — reconstruct current source baseline and produce `SOURCE-EVIDENCE-GAP-MATRIX-V1.md`. Prepared; validation/integration pending.
+2. #124 — qualify only the smallest source set needed for measured gaps. Prepared.
+3. #125 — define source-specific semantic/provenance contracts before coding adapters. Prepared for NHTSA vPIC and EEA; restricted WSDenatran intentionally deferred.
+4. #126 — bounded source adapters. Prepared and review-hardened on PR #130.
+5. #127 — bounded multi-source validation. Prepared and review-hardened on PR #131.
+6. #128 — recurring acquisition. Prepared and review-hardened on PR #132.
+
+## Synchronization state
+
+The stack is currently **not a single validated ancestry**. During the 2026-08-27 utility review:
+
+- #130 advanced with stricter EEA raw-snapshot and duplicate-record validation;
+- #131 advanced with non-vacuous provenance-completeness semantics and duplicate-candidate protection;
+- #132 advanced with stale-authorization invalidation and runtime contract hardening.
+
+Because #131/#132 were originally branched from earlier upstream heads, downstream PRs must be synchronized/reconstructed in dependency order before final validation. Do not claim that the latest #132 head already contains the new #130/#131 fixes merely because the logical stack order is documented.
 
 ## #123 evidence reconstruction
 
@@ -75,15 +94,17 @@ No contract promotes a new `STRONG` namespace, changes year semantics, weakens `
 
 ## #126 implementation
 
-The bounded NHTSA and EEA adapters are prepared on the stacked branch. They preserve raw/source-native semantics, use exact content-addressed evidence, fail closed on malformed/unsupported responses, and do not promote regulatory/source-scoped fields into stronger retail identity semantics.
+The bounded NHTSA and EEA adapters preserve raw/source-native semantics, exact content-addressed evidence, and fail-closed source semantics. Utility review tightened EEA provenance so a matching digest without a retained snapshot location is insufficient, and duplicate EEA source record IDs fail before duplicate facts can be emitted.
 
 ## #127 validation
 
-The bounded multi-source harness is prepared. It retains explicit conflicts and REVIEW outcomes, measures source contribution/corroboration/provenance, and now rejects duplicate case IDs or malformed fixture identifiers before measurement so corpus counts cannot be inflated silently.
+The bounded multi-source harness retains explicit conflicts and REVIEW outcomes and measures source contribution/corroboration/provenance. Provenance completeness is now scoped only to cases with actual candidate facts. Empty-evidence REVIEW cases remain reviewable but are `N/A` for candidate-to-fusion provenance completeness.
 
 ## #128 recurring acquisition
 
-The recurring coordinator is prepared with contracted-source-only operation, existing host/HTTPS/robots/pacing authority, expected media/schema checks, content hash verification, idempotent unchanged checkpoints, bounded retry/degraded behavior, and fail-closed drift states. Source terms/license drift is extended separately by #164/#165 without changing evidence or resolver policy.
+The recurring coordinator uses contracted-source-only operation, existing host/HTTPS/robots/pacing authority, expected media/schema checks, content-hash verification, idempotent unchanged checkpoints, bounded retry/degraded behavior and fail-closed drift states. One-shot authorization is consumed by success/failure and every new authorization attempt invalidates any prior pending token before evaluation, so a denied later attempt cannot leave stale permission reusable.
+
+Source terms/license drift remains a separate incremental follow-up in #164/#165.
 
 ## Decisions
 
@@ -95,4 +116,6 @@ The recurring coordinator is prepared with contracted-source-only operation, exi
 
 ## Validation / blockers
 
-Issue #112 still prevents normal GitHub-hosted execution evidence from being assumed: observed hosted jobs terminate before executing workflow steps (`steps=null`). Therefore implementation through #128 is reviewable/prepared but cannot be called repository-executable PASS or integrated by bypassing CI. No repeated rerun is justified while #112 is unchanged.
+Issue #112 still prevents normal GitHub-hosted execution evidence from being assumed: observed hosted jobs terminate before executing workflow steps (`steps=null`). Therefore the reviewed implementation cannot be called repository-executable PASS or integrated by bypassing CI. No repeated rerun is justified while #112 is unchanged.
+
+After synchronization, validate and integrate strictly in dependency order #129 → #130 → #131 → #132 using the repository-required harness/focused/sequential/CI path and squash merge.
