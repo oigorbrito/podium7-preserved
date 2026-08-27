@@ -1,0 +1,63 @@
+{
+  "schema": "podium7.extraction-gold.v1",
+  "datasetVersion": "inmetro-pbev-2026-page1-gold-1.0",
+  "status": "PENDING_RAW_SNAPSHOT",
+  "source": {
+    "publisher": "Instituto Nacional de Metrologia, Qualidade e Tecnologia (Inmetro)",
+    "landingPage": "https://www.gov.br/inmetro/pt-br/assuntos/regulamentacao/avaliacao-da-conformidade/programa-brasileiro-de-etiquetagem/tabelas-de-eficiencia-energetica/veiculos-automotivos-pbe-veicular/",
+    "documentLocator": "https://www.gov.br/inmetro/pt-br/assuntos/regulamentacao/avaliacao-da-conformidade/programa-brasileiro-de-etiquetagem/tabelas-de-eficiencia-energetica/veiculos-automotivos-pbe-veicular/mascara-pbev-2026_19_jan-rev01.pdf/@@download/file",
+    "documentPage": 1,
+    "rawContentSha256": null,
+    "reasonRawHashPending": "The qualified source exposes the table as application/pdf, which the current default Podium acquisition policy deliberately rejects. Do not use this measurement gold as canonical publication evidence until exact document bytes are retained and hashed through an approved PDF acquisition path."
+  },
+  "fields": [
+    "category",
+    "make",
+    "model",
+    "variant",
+    "motor",
+    "propulsion_type",
+    "transmission"
+  ],
+  "cases": [
+    {
+      "id": "pbev-2026-p1-byd-dolphin-mini-gs-ev",
+      "evidenceLocator": "documentPage=1; table row beginning 'Sub Compacto BYD DOLPHIN MINI GS EV'",
+      "expected": {
+        "category": "Sub Compacto",
+        "make": "BYD",
+        "model": "DOLPHIN MINI",
+        "variant": "GS EV",
+        "motor": "Elétrico",
+        "propulsion_type": "Elétrico",
+        "transmission": "N.A."
+      }
+    },
+    {
+      "id": "pbev-2026-p1-byd-dolphin-mini-gl-5-ev",
+      "evidenceLocator": "documentPage=1; table row beginning 'Sub Compacto BYD DOLPHIN MINI GL 5 EV'",
+      "expected": {
+        "category": "Sub Compacto",
+        "make": "BYD",
+        "model": "DOLPHIN MINI",
+        "variant": "GL 5 EV",
+        "motor": "Elétrico",
+        "propulsion_type": "Elétrico",
+        "transmission": "A-1"
+      }
+    },
+    {
+      "id": "pbev-2026-p1-fiat-mobi-trekking",
+      "evidenceLocator": "documentPage=1; table row beginning 'Sub Compacto FIAT MOBI TREKKING 1.0-6V'",
+      "expected": {
+        "category": "Sub Compacto",
+        "make": "FIAT",
+        "model": "MOBI",
+        "variant": "TREKKING",
+        "motor": "1.0-6V",
+        "propulsion_type": "Combustão",
+        "transmission": "M-5"
+      }
+    }
+  ]
+}
