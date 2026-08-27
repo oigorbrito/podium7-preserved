@@ -47,6 +47,25 @@ class RecurringAcquisitionTests(unittest.TestCase):
         self.assertFalse(second.allowed)
         self.assertEqual("HOST_PACING", second.reason)
 
+    def test_denied_authorization_invalidates_prior_one_shot_token(self):
+        coordinator = self.coordinator()
+        allowed_locator = "https://vpic.nhtsa.dot.gov/api/x"
+        self.authorize(coordinator, allowed_locator, now=10.0)
+        denied = coordinator.authorize(
+            "nhtsa_vpic",
+            "https://vpic.nhtsa.dot.gov/api/y",
+            now=15.0,
+        )
+        self.assertFalse(denied.allowed)
+        result = coordinator.record_success(
+            "nhtsa_vpic",
+            acquisition(allowed_locator),
+            schema_signature="decode-vin-values:v1",
+        )
+        self.assertEqual(RecurringRunState.DRIFT, result.state)
+        self.assertEqual("AUTHORIZATION_MISSING", result.reason)
+        self.assertFalse(result.mutation_required)
+
     def test_success_requires_matching_one_shot_authorization(self):
         coordinator = self.coordinator()
         locator = "https://vpic.nhtsa.dot.gov/api/x"
@@ -86,6 +105,29 @@ class RecurringAcquisitionTests(unittest.TestCase):
     def test_checkpoint_rejects_non_hex_sha256_value(self):
         with self.assertRaisesRegex(ValueError, "SHA-256 hex digests"):
             RecurringCheckpoint({"nhtsa_vpic": "z" * 64}, {})
+
+    def test_contract_and_checkpoint_runtime_types_fail_closed(self):
+        with self.assertRaisesRegex(ValueError, "operation_policy must be SourceOperationPolicy"):
+            RecurringSourceContract(
+                source_id="nhtsa_vpic",
+                operation_policy=object(),  # type: ignore[arg-type]
+                expected_content_type="application/json",
+                expected_schema_signature="v1",
+            )
+        with self.assertRaisesRegex(ValueError, "expected_content_type is required"):
+            RecurringSourceContract(
+                source_id="nhtsa_vpic",
+                operation_policy=self.contract().operation_policy,
+                expected_content_type=1,  # type: ignore[arg-type]
+                expected_schema_signature="v1",
+            )
+        with self.assertRaisesRegex(ValueError, "checkpoint last_sha and retry_counts must be objects"):
+            RecurringCheckpoint([], {})  # type: ignore[arg-type]
+        with self.assertRaisesRegex(ValueError, "checkpoint must be RecurringCheckpoint"):
+            RecurringAcquisitionCoordinator(
+                {"nhtsa_vpic": self.contract()},
+                checkpoint={},  # type: ignore[arg-type]
+            )
 
     def test_schema_content_host_and_hash_drift_fail_closed(self):
         coordinator = self.coordinator()
@@ -142,6 +184,17 @@ class RecurringAcquisitionTests(unittest.TestCase):
         self.assertEqual(0, result.retry_count)
         after = coordinator.record_failure("nhtsa_vpic", locator, reason="NETWORK_ERROR")
         self.assertEqual(1, after.retry_count)
+
+    def test_record_success_and_failure_validate_runtime_inputs(self):
+        coordinator = self.coordinator()
+        with self.assertRaisesRegex(ValueError, "acquisition must be DirectHttpAcquisition"):
+            coordinator.record_success(
+                "nhtsa_vpic",
+                object(),  # type: ignore[arg-type]
+                schema_signature="decode-vin-values:v1",
+            )
+        with self.assertRaisesRegex(ValueError, "failure locator is required"):
+            coordinator.record_failure("nhtsa_vpic", "", reason="TIMEOUT")
 
 
 if __name__ == "__main__":
