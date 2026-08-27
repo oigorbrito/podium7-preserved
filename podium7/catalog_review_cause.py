@@ -20,11 +20,11 @@ class CatalogReviewCauseSnapshot:
     causes: tuple[str, ...]
 
     def __post_init__(self) -> None:
-        if not self.review_id.strip():
+        if not isinstance(self.review_id, str) or not self.review_id.strip():
             raise ValueError("review_id is required")
-        if not self.classifier_version.strip():
+        if not isinstance(self.classifier_version, str) or not self.classifier_version.strip():
             raise ValueError("classifier_version is required")
-        if not self.causes:
+        if not isinstance(self.causes, tuple) or not self.causes:
             raise ValueError("at least one review cause is required")
         if any(not isinstance(value, str) or not value.strip() for value in self.causes):
             raise ValueError("review causes must be non-empty text")
@@ -49,6 +49,8 @@ class CatalogReviewCauseStore:
             )
 
     def get(self, review_id: str) -> CatalogReviewCauseSnapshot | None:
+        if not isinstance(review_id, str) or not review_id.strip():
+            raise ValueError("review_id is required")
         row = self.store._connection.execute(
             """
             SELECT review_id, classifier_version, causes_json
@@ -59,14 +61,21 @@ class CatalogReviewCauseStore:
         ).fetchone()
         if row is None:
             return None
-        causes = tuple(json.loads(row["causes_json"]))
+        try:
+            raw_causes = json.loads(row["causes_json"])
+        except (TypeError, ValueError) as exc:
+            raise ValueError("stored review causes must be valid JSON") from exc
+        if not isinstance(raw_causes, list):
+            raise ValueError("stored review causes must be a JSON array")
         return CatalogReviewCauseSnapshot(
             review_id=row["review_id"],
             classifier_version=row["classifier_version"],
-            causes=causes,
+            causes=tuple(raw_causes),
         )
 
     def save(self, snapshot: CatalogReviewCauseSnapshot) -> CatalogReviewCauseSnapshot:
+        if not isinstance(snapshot, CatalogReviewCauseSnapshot):
+            raise ValueError("snapshot must be a CatalogReviewCauseSnapshot")
         existing = self.get(snapshot.review_id)
         if existing is not None:
             if existing == snapshot:
