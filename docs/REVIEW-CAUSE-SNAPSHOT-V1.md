@@ -29,6 +29,8 @@ Raw comparison reasons remain the underlying evidence and are not replaced by th
 - Unknown reason text remains `UNKNOWN_REVIEW_CAUSE`.
 - A legacy review task without a persisted snapshot is reported as `UNSNAPSHOTTED_LEGACY_REVIEW`; it is not retroactively classified.
 - Re-saving an identical snapshot is idempotent. Different content for the same review ID is rejected.
+- Snapshot runtime types are validated explicitly rather than relying on incidental attribute errors.
+- Persisted `causes_json` must decode to a JSON array and malformed/corrupt stored JSON fails closed instead of being coerced into a plausible snapshot.
 
 ## Transaction boundary
 
@@ -37,6 +39,14 @@ Snapshot creation occurs inside the same outer ingestion transaction as review-t
 ## Measurement behavior
 
 `measure_source_backed_operational_corpus` reads persisted snapshots for review-cause counts and reports the classifier versions observed. It still reports the raw persisted review reasons independently.
+
+## Utility disposition
+
+`REVIEW_CAUSE_SNAPSHOT_UTILITY = INTEGRATE_AFTER_SYNC_AND_VALIDATION`
+
+The capability is not redundant with persisted raw review reasons. Raw reasons preserve the underlying evidence, while the immutable versioned snapshot preserves the exact **classification used at the time of the operational decision/measurement**. Without the snapshot, later classifier evolution can silently rewrite historical cause distributions even though the raw task has not changed.
+
+The incremental value is therefore reproducibility and historical auditability, not a new review policy. If a synchronized base later provides an equivalent versioned immutable classification artifact, this block should be reclassified `REDUNDANT`; otherwise current evidence supports integration after executable validation.
 
 ## Nonchanges
 
@@ -51,4 +61,4 @@ This block does not change:
 
 ## Validation
 
-Focused tests cover ingestion-created snapshots, classifier-version retention, multi-cause preservation, idempotency, database reopen persistence, and explicit legacy-unsnapshotted behavior. Repository-required execution remains mandatory before integration and is currently subject to #112.
+Focused tests cover ingestion-created snapshots, classifier-version retention, multi-cause preservation, idempotency, database reopen persistence, explicit legacy-unsnapshotted behavior, malformed runtime types, and corrupted stored JSON. Repository-required execution remains mandatory before integration and is currently subject to #112.
