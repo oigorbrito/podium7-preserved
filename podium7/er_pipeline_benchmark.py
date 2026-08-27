@@ -76,6 +76,8 @@ def evaluate_er_pipeline(
         raise ValueError("at least one ER pipeline case is required")
     if any(not isinstance(case, ERPipelineCase) for case in case_list):
         raise ValueError("all items must be ERPipelineCase instances")
+    if not isinstance(cost, ERPipelineCost):
+        raise ValueError("cost must be ERPipelineCost")
     if scale is not None and not isinstance(scale, ERPipelineScale):
         raise ValueError("scale must be ERPipelineScale when provided")
     ids = [case.case_id for case in case_list]
