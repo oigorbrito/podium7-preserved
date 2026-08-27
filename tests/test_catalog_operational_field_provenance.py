@@ -9,6 +9,15 @@ from podium7.catalog_operational import (
 )
 
 
+ROOT = Path(__file__).resolve().parents[1]
+V3_DATASETS = (
+    ROOT / "benchmarks" / "catalog_identity_golden_v1.json",
+    ROOT / "benchmarks" / "catalog_identity_golden_br_v1.json",
+    ROOT / "benchmarks" / "catalog_identity_br_adjacent_incomplete_v1.json",
+    ROOT / "benchmarks" / "catalog_identity_year_semantics_challenge_v1.json",
+)
+
+
 def _payload() -> dict:
     return {
         "schema": "podium7.catalog-identity-golden.v1",
@@ -105,6 +114,31 @@ class CatalogOperationalFieldProvenanceTests(unittest.TestCase):
         blocked = [item for item in report["records"] if not item["replayable"]]
         self.assertEqual({"blocked-multisource"}, {item["caseId"] for item in blocked})
         self.assertTrue(all("multiple sourceIds" in item["reason"] for item in blocked))
+
+    def test_retained_v3_has_only_six_sole_source_cases_before_provenance_reconstruction(self) -> None:
+        report = measure_operational_provenance_eligibility(V3_DATASETS)
+        summary = report["summary"]
+        self.assertEqual(36, summary["cases"])
+        self.assertEqual(72, summary["records"])
+        self.assertEqual(12, summary["replayableRecords"])
+        self.assertEqual(60, summary["blockedRecords"])
+        self.assertEqual(12 / 72, summary["replayableRate"])
+        self.assertEqual({"SOLE_CASE_SOURCE": 12}, summary["replayableByMethod"])
+        self.assertEqual({}, summary.get("explicitFieldAttributionBySource", {}))
+        self.assertTrue(
+            all(
+                item["method"] == "SOLE_CASE_SOURCE"
+                for item in report["records"]
+                if item["replayable"]
+            )
+        )
+        self.assertTrue(
+            all(
+                "multiple sourceIds" in item["reason"]
+                for item in report["records"]
+                if not item["replayable"]
+            )
+        )
 
     def test_multisource_case_without_field_attribution_fails_closed(self) -> None:
         payload = _payload()
