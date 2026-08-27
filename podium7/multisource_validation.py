@@ -39,10 +39,15 @@ class MultiSourceCase:
         ):
             if not isinstance(value, str) or not value.strip():
                 raise ValueError(f"{field_name} is required")
+        if not isinstance(self.candidates, tuple):
+            raise ValueError("candidates must be a tuple of SourceCandidate values")
         if any(not isinstance(item, SourceCandidate) for item in self.candidates):
             raise ValueError("candidates must contain SourceCandidate values")
         if any(item.fact.attribute != self.attribute for item in self.candidates):
             raise ValueError("all candidate facts must match the case attribute")
+        fact_ids = [item.fact.id for item in self.candidates]
+        if len(fact_ids) != len(set(fact_ids)):
+            raise ValueError("candidate fact ids must be unique within a validation case")
 
 
 def evaluate_multisource_cases(cases: Iterable[MultiSourceCase]) -> dict:
@@ -58,6 +63,7 @@ def evaluate_multisource_cases(cases: Iterable[MultiSourceCase]) -> dict:
     results = []
     source_contribution: dict[str, int] = {}
     corroborated = conflicts = reviews = canonical = provenance_complete = incorrect = 0
+    provenance_applicable = 0
 
     for case in case_list:
         sources = tuple(sorted({item.source_id for item in case.candidates}))
@@ -67,25 +73,32 @@ def evaluate_multisource_cases(cases: Iterable[MultiSourceCase]) -> dict:
         if not case.candidates:
             disposition = "REVIEW"
             candidate_refs: tuple[str, ...] = ()
-            provenance_ok = True
+            provenance_ok: bool | None = None
         else:
+            provenance_applicable += 1
+            expected_refs = {item.fact.id for item in case.candidates}
             fusion = fuse_candidates(case.entity_id, [item.fact for item in case.candidates])
             if fusion.conflict is not None:
                 disposition = "CONFLICT"
                 candidate_refs = fusion.conflict.candidate_references
-                provenance_ok = True
+                provenance_ok = set(candidate_refs) == expected_refs
                 conflicts += 1
             else:
                 assert fusion.canonical_fact is not None
                 disposition = "CANONICAL"
                 candidate_refs = fusion.canonical_fact.candidate_references
-                provenance_ok = set(candidate_refs).issubset(set(fusion.canonical_fact.provenance.was_derived_from))
+                provenance_ok = (
+                    set(candidate_refs) == expected_refs
+                    and set(candidate_refs).issubset(
+                        set(fusion.canonical_fact.provenance.was_derived_from)
+                    )
+                )
                 canonical += 1
                 if len(sources) > 1:
                     corroborated += 1
         if disposition == "REVIEW":
             reviews += 1
-        if provenance_ok:
+        if provenance_ok is True:
             provenance_complete += 1
         correct = disposition == case.expected_disposition
         if not correct:
@@ -114,8 +127,13 @@ def evaluate_multisource_cases(cases: Iterable[MultiSourceCase]) -> dict:
             "conflictCases": conflicts,
             "reviewCases": reviews,
             "incorrectCases": incorrect,
+            "provenanceApplicableCases": provenance_applicable,
             "provenanceCompleteCases": provenance_complete,
-            "provenanceCompleteness": provenance_complete / total,
+            "provenanceCompleteness": (
+                None
+                if provenance_applicable == 0
+                else provenance_complete / provenance_applicable
+            ),
             "corroborationRate": corroborated / total,
             "conflictRate": conflicts / total,
             "reviewRate": reviews / total,
