@@ -1,7 +1,12 @@
 import unittest
 
 from podium7.catalog import CatalogMatchOutcome
-from podium7.er_pipeline_benchmark import ERPipelineCase, ERPipelineCost, evaluate_er_pipeline
+from podium7.er_pipeline_benchmark import (
+    ERPipelineCase,
+    ERPipelineCost,
+    ERPipelineScale,
+    evaluate_er_pipeline,
+)
 
 
 class ERPipelineBenchmarkTests(unittest.TestCase):
@@ -14,9 +19,13 @@ class ERPipelineBenchmarkTests(unittest.TestCase):
                 ERPipelineCase("review-kept", CatalogMatchOutcome.REVIEW, True, CatalogMatchOutcome.REVIEW),
             ],
             cost=ERPipelineCost(latency_ms=25, peak_memory_bytes=4096),
+            scale=ERPipelineScale(candidate_universe_size=100, retained_candidate_count=20),
         )
         metrics = report["metrics"]
-        self.assertEqual(0.25, metrics["candidateReductionRatio"])
+        self.assertEqual(0.25, metrics["labeledPairReductionRatio"])
+        self.assertEqual(0.8, metrics["candidateReductionRatio"])
+        self.assertEqual(100, metrics["candidateUniverseSize"])
+        self.assertEqual(20, metrics["retainedCandidateCount"])
         self.assertEqual(0.5, metrics["blockingRecall"])
         self.assertEqual(1.0, metrics["verificationPrecision"])
         self.assertEqual(1.0, metrics["verificationRecall"])
@@ -28,6 +37,13 @@ class ERPipelineBenchmarkTests(unittest.TestCase):
         self.assertEqual(0.25, metrics["reviewRate"])
         self.assertEqual(25, metrics["latencyMs"])
         self.assertEqual(4096, metrics["peakMemoryBytes"])
+
+    def test_candidate_reduction_is_unknown_without_full_pair_universe(self):
+        report = evaluate_er_pipeline(
+            [ERPipelineCase("match", CatalogMatchOutcome.MATCH, True, CatalogMatchOutcome.MATCH)]
+        )
+        self.assertIsNone(report["metrics"]["candidateReductionRatio"])
+        self.assertEqual(0.0, report["metrics"]["labeledPairReductionRatio"])
 
     def test_filtered_review_is_counted_as_ambiguous_overcommit(self):
         report = evaluate_er_pipeline(
@@ -48,6 +64,10 @@ class ERPipelineBenchmarkTests(unittest.TestCase):
     def test_bool_cost_values_fail_closed(self):
         with self.assertRaisesRegex(ValueError, "latency_ms"):
             ERPipelineCost(latency_ms=True)
+
+    def test_invalid_scale_fails_closed(self):
+        with self.assertRaisesRegex(ValueError, "cannot exceed"):
+            ERPipelineScale(candidate_universe_size=10, retained_candidate_count=11)
 
 
 if __name__ == "__main__":
