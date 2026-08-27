@@ -56,12 +56,38 @@ class CatalogOperationalFieldProvenanceTests(unittest.TestCase):
         self.assertEqual("source-a", records[0]["source"]["id"])
         self.assertEqual("source-b", records[1]["source"]["id"])
 
+    def test_single_case_source_is_unambiguous_without_field_attribution(self) -> None:
+        payload = _payload()
+        payload["cases"][0]["sourceIds"] = ["source-a"]
+        del payload["cases"][0]["fieldSourceIds"]
+        path = _write(payload)
+        self.addCleanup(path.unlink, missing_ok=True)
+        records = build_source_backed_operational_records((path,))
+        self.assertEqual(2, len(records))
+        self.assertEqual(["source-a", "source-a"], [record["source"]["id"] for record in records])
+
+    def test_multisource_case_without_field_attribution_fails_closed(self) -> None:
+        payload = _payload()
+        del payload["cases"][0]["fieldSourceIds"]
+        path = _write(payload)
+        self.addCleanup(path.unlink, missing_ok=True)
+        with self.assertRaisesRegex(ValueError, "multiple sourceIds"):
+            build_source_backed_operational_records((path,))
+
     def test_missing_field_attribution_fails_closed(self) -> None:
         payload = _payload()
         del payload["cases"][0]["fieldSourceIds"]["left"]["generation"]
         path = _write(payload)
         self.addCleanup(path.unlink, missing_ok=True)
         with self.assertRaisesRegex(ValueError, "lacks explicit source attribution"):
+            build_source_backed_operational_records((path,))
+
+    def test_duplicate_field_source_ids_fail_closed(self) -> None:
+        payload = _payload()
+        payload["cases"][0]["fieldSourceIds"]["left"]["make"] = ["source-a", "source-a"]
+        path = _write(payload)
+        self.addCleanup(path.unlink, missing_ok=True)
+        with self.assertRaisesRegex(ValueError, "contains duplicates"):
             build_source_backed_operational_records((path,))
 
     def test_no_single_source_covering_full_record_fails_closed(self) -> None:
