@@ -19,10 +19,12 @@ class HeterogeneitySlice:
     def __post_init__(self) -> None:
         if not isinstance(self.name, str) or not self.name.strip():
             raise ValueError("slice name must be non-empty text")
-        _validated_metrics(self.metrics)
+        validate_heterogeneity_metrics(self.metrics)
 
 
-def _validated_metrics(metrics: Mapping[str, int | float | None]) -> dict[str, int | float | None]:
+def validate_heterogeneity_metrics(
+    metrics: Mapping[str, int | float | None],
+) -> dict[str, int | float | None]:
     if not isinstance(metrics, Mapping):
         raise ValueError("metrics must be a mapping")
     missing = [key for key in _REQUIRED_RATE_KEYS + _REQUIRED_COUNT_KEYS if key not in metrics]
@@ -60,7 +62,7 @@ def evaluate_heterogeneity_slices(
     clean_metrics: Mapping[str, int | float | None],
     slices: Mapping[str, Mapping[str, int | float | None]],
 ) -> dict[str, Any]:
-    baseline = _validated_metrics(clean_metrics)
+    baseline = validate_heterogeneity_metrics(clean_metrics)
     if not isinstance(slices, Mapping) or not slices:
         raise ValueError("at least one heterogeneity slice is required")
     if any(not isinstance(name, str) or not name.strip() for name in slices):
@@ -68,7 +70,7 @@ def evaluate_heterogeneity_slices(
 
     results: list[dict[str, Any]] = []
     for name, raw_metrics in sorted(slices.items()):
-        current = _validated_metrics(raw_metrics)
+        current = validate_heterogeneity_metrics(raw_metrics)
         result = {
             "slice": name,
             "metrics": current,
@@ -97,4 +99,9 @@ def evaluate_heterogeneity_slices(
     }
 
 
-__all__ = ["HeterogeneitySlice", "REPORT_SCHEMA", "evaluate_heterogeneity_slices"]
+__all__ = [
+    "HeterogeneitySlice",
+    "REPORT_SCHEMA",
+    "evaluate_heterogeneity_slices",
+    "validate_heterogeneity_metrics",
+]
