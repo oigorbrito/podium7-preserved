@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import dataclass
+import math
 from typing import Any
 
 
@@ -36,6 +37,8 @@ def _validated_metrics(metrics: Mapping[str, int | float | None]) -> dict[str, i
         if isinstance(value, bool) or not isinstance(value, (int, float)):
             raise ValueError(f"{key} must be numeric or null")
         numeric = float(value)
+        if not math.isfinite(numeric):
+            raise ValueError(f"{key} must be finite")
         if numeric < 0 or numeric > 1:
             raise ValueError(f"{key} must be between 0 and 1")
         normalized[key] = numeric
