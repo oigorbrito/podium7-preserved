@@ -35,9 +35,26 @@ def _unique_source_for_record(
         raise ValueError(f"case {case_id!r} {side} vehicle must be an object")
 
     raw_field_sources = case.get("fieldSourceIds")
+    if raw_field_sources is None:
+        case_sources = case.get("sourceIds")
+        if (
+            not isinstance(case_sources, list)
+            or not case_sources
+            or any(not isinstance(source_id, str) or not source_id.strip() for source_id in case_sources)
+            or len(set(case_sources)) != len(case_sources)
+        ):
+            raise ValueError(f"case {case_id!r} has invalid case-level source attribution")
+        unknown = set(case_sources) - known_sources
+        if unknown:
+            raise ValueError(f"case {case_id!r} references unknown source ids")
+        if len(case_sources) == 1:
+            return case_sources[0]
+        raise ValueError(
+            f"case {case_id!r} has multiple sourceIds and lacks explicit field-level source attribution for operational replay"
+        )
     if not isinstance(raw_field_sources, Mapping):
         raise ValueError(
-            f"case {case_id!r} lacks explicit field-level source attribution for operational replay"
+            f"case {case_id!r} fieldSourceIds must be an object when provided"
         )
     side_sources = raw_field_sources.get(side)
     if not isinstance(side_sources, Mapping):
@@ -55,6 +72,10 @@ def _unique_source_for_record(
         ):
             raise ValueError(
                 f"case {case_id!r} {side}.{field_name} lacks explicit source attribution"
+            )
+        if len(set(source_ids)) != len(source_ids):
+            raise ValueError(
+                f"case {case_id!r} {side}.{field_name} source attribution contains duplicates"
             )
         attributed = set(source_ids)
         unknown = attributed - known_sources
