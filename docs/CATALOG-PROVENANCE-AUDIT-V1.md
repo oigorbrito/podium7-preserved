@@ -17,6 +17,16 @@ This audit verifies the persisted links that can be proven from the current Cata
 
 The report is `podium7.catalog-provenance-audit.v1` and includes checked-link count, complete-link count, incomplete-link count, completeness ratio, pass/fail and explicit incomplete-link records.
 
+## Utility disposition
+
+`CATALOG_PROVENANCE_AUDIT_UTILITY = INTEGRATE_AFTER_SYNC_AND_VALIDATION`
+
+This is not redundant with input-locator or benchmark-provenance checks. Those checks establish that incoming records name defensible sources; this audit verifies that the **persisted catalog graph after ingestion** still resolves canonical vehicle → candidate → raw evidence → source and that open review evidence remains reachable.
+
+The audit therefore catches storage/link corruption and consumer/persistence divergence that source-shape validation cannot detect. It is complementary to #154/#155: this block verifies internal persisted completeness, while evidence traceability exposes a consumer-facing projection.
+
+An empty store now fails explicitly with `EMPTY_AUDIT_SCOPE` rather than passing by vacuity. If synchronization reveals an equivalent full persisted-link audit upstream, classify this block `REDUNDANT`; otherwise current evidence supports integration after executable validation.
+
 The audit does not reconstruct missing provenance, infer evidence from labels, or alter identity/fusion/publication rules. A missing persisted link is reported as incomplete.
 
 This is a bounded operating-corpus audit, not a universal completeness claim. Repository-required executable validation remains pending while #112 prevents hosted workflow steps from executing.
