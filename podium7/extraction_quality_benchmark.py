@@ -3,10 +3,18 @@ from __future__ import annotations
 from collections import Counter
 from collections.abc import Iterable, Mapping, Sequence
 from dataclasses import dataclass
+import json
 from typing import Any
 
 
 REPORT_SCHEMA = "podium7.extraction-quality-benchmark.v1"
+
+
+def _require_strict_json(value: Any, *, label: str) -> None:
+    try:
+        json.dumps(value, ensure_ascii=False, allow_nan=False)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f"{label} must be strict JSON-compatible") from exc
 
 
 @dataclass(frozen=True)
@@ -24,21 +32,40 @@ class ExtractionBenchmarkCase:
             raise ValueError("case_id must be non-empty text")
         if not isinstance(self.schema_valid, bool):
             raise ValueError("schema_valid must be boolean")
-        if not self.expected_fields:
-            raise ValueError("expected_fields cannot be empty")
+        if not isinstance(self.expected_fields, Mapping) or not self.expected_fields:
+            raise ValueError("expected_fields must be a non-empty object")
+        if not isinstance(self.observed_fields, Mapping):
+            raise ValueError("observed_fields must be an object")
         if any(not isinstance(key, str) or not key.strip() for key in self.expected_fields):
             raise ValueError("expected field names must be non-empty text")
         if any(not isinstance(key, str) or not key.strip() for key in self.observed_fields):
             raise ValueError("observed field names must be non-empty text")
+        _require_strict_json(dict(self.expected_fields), label="expected_fields")
+        _require_strict_json(dict(self.observed_fields), label="observed_fields")
+
+        if not isinstance(self.required_fields, frozenset):
+            raise ValueError("required_fields must be a frozenset")
+        if any(not isinstance(field_name, str) or not field_name.strip() for field_name in self.required_fields):
+            raise ValueError("required_fields must contain non-empty field names")
         if not self.required_fields <= set(self.expected_fields):
             raise ValueError("required_fields must be a subset of expected_fields")
+
+        if not isinstance(self.evidence_by_field, Mapping):
+            raise ValueError("evidence_by_field must be an object")
         for field_name, evidence_ids in self.evidence_by_field.items():
+            if not isinstance(field_name, str) or not field_name.strip():
+                raise ValueError("evidence field names must be non-empty text")
             if field_name not in self.observed_fields:
                 raise ValueError("evidence may only reference observed fields")
             if isinstance(evidence_ids, (str, bytes)) or not isinstance(evidence_ids, Sequence):
                 raise ValueError("field evidence must be an array of evidence ids")
             if any(not isinstance(item, str) or not item.strip() for item in evidence_ids):
                 raise ValueError("field evidence ids must be non-empty text")
+            if len(set(evidence_ids)) != len(evidence_ids):
+                raise ValueError("field evidence ids must be unique")
+
+        if not isinstance(self.canonical_written_fields, frozenset):
+            raise ValueError("canonical_written_fields must be a frozenset")
         if any(not isinstance(field_name, str) or not field_name.strip() for field_name in self.canonical_written_fields):
             raise ValueError("canonical_written_fields must contain non-empty field names")
 
