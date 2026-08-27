@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 import json
+from typing import Any, Mapping
 
 from .catalog import CatalogStore
 
@@ -58,38 +59,77 @@ class CatalogBatchFailureStore:
         self._initialize()
 
     def _initialize(self) -> None:
-        self.store._connection.executescript(
-            """
-            CREATE TABLE IF NOT EXISTS catalog_batch_failure_metadata (
-                component TEXT PRIMARY KEY,
-                version INTEGER NOT NULL
-            );
-            CREATE TABLE IF NOT EXISTS catalog_batch_failures (
-                evidence_id TEXT PRIMARY KEY,
-                payload_json TEXT NOT NULL
-            );
-            """
-        )
-        row = self.store._connection.execute(
-            "SELECT version FROM catalog_batch_failure_metadata WHERE component = 'catalog-batch-failure'"
-        ).fetchone()
-        if row is None:
+        with self.store.transaction():
             self.store._connection.execute(
-                "INSERT INTO catalog_batch_failure_metadata(component, version) VALUES ('catalog-batch-failure', ?)",
-                (BATCH_FAILURE_SCHEMA_VERSION,),
+                """
+                CREATE TABLE IF NOT EXISTS catalog_batch_failure_metadata (
+                    component TEXT PRIMARY KEY,
+                    version INTEGER NOT NULL
+                )
+                """
             )
-        elif int(row[0]) > BATCH_FAILURE_SCHEMA_VERSION:
-            raise ValueError(f"unsupported catalog batch failure schema version {row[0]}")
-        self.store._connection.commit()
+            self.store._connection.execute(
+                """
+                CREATE TABLE IF NOT EXISTS catalog_batch_failures (
+                    evidence_id TEXT PRIMARY KEY,
+                    payload_json TEXT NOT NULL
+                )
+                """
+            )
+            row = self.store._connection.execute(
+                "SELECT version FROM catalog_batch_failure_metadata WHERE component = 'catalog-batch-failure'"
+            ).fetchone()
+            if row is None:
+                self.store._connection.execute(
+                    "INSERT INTO catalog_batch_failure_metadata(component, version) VALUES ('catalog-batch-failure', ?)",
+                    (BATCH_FAILURE_SCHEMA_VERSION,),
+                )
+            else:
+                try:
+                    version = int(row[0])
+                except (TypeError, ValueError) as exc:
+                    raise ValueError("invalid catalog batch failure schema version") from exc
+                if version != BATCH_FAILURE_SCHEMA_VERSION:
+                    raise ValueError(f"unsupported catalog batch failure schema version {row[0]}")
 
     @staticmethod
     def _payload(snapshot: CatalogBatchFailureSnapshot) -> str:
+        if not isinstance(snapshot, CatalogBatchFailureSnapshot):
+            raise ValueError("snapshot must be a CatalogBatchFailureSnapshot")
         return json.dumps(
             snapshot.to_payload(),
             ensure_ascii=False,
             sort_keys=True,
             separators=(",", ":"),
         )
+
+    @staticmethod
+    def _decode_payload(raw: Any) -> CatalogBatchFailureSnapshot:
+        if not isinstance(raw, str):
+            raise ValueError("stored batch failure payload must be JSON text")
+        try:
+            payload = json.loads(raw)
+        except (TypeError, ValueError) as exc:
+            raise ValueError("stored batch failure payload must be valid JSON") from exc
+        if not isinstance(payload, Mapping):
+            raise ValueError("stored batch failure payload must be a JSON object")
+        error = payload.get("error")
+        if not isinstance(error, Mapping):
+            raise ValueError("stored batch failure error must be a JSON object")
+        try:
+            return CatalogBatchFailureSnapshot(
+                evidence_id=payload["evidenceId"],
+                index=payload["index"],
+                record_id=payload["recordId"],
+                source_id=payload["sourceId"],
+                source_locator=payload["sourceLocator"],
+                evidence_locator=payload["evidenceLocator"],
+                raw_content_ref=payload["rawContentRef"],
+                error_code=error["code"],
+                error_message=error["message"],
+            )
+        except KeyError as exc:
+            raise ValueError(f"stored batch failure payload is missing field {exc.args[0]}") from exc
 
     def save(self, snapshot: CatalogBatchFailureSnapshot) -> None:
         payload = self._payload(snapshot)
@@ -109,48 +149,21 @@ class CatalogBatchFailureStore:
             )
 
     def get(self, evidence_id: str) -> CatalogBatchFailureSnapshot | None:
+        if not isinstance(evidence_id, str) or not evidence_id.strip():
+            raise ValueError("evidence_id is required")
         row = self.store._connection.execute(
             "SELECT payload_json FROM catalog_batch_failures WHERE evidence_id = ?",
             (evidence_id,),
         ).fetchone()
         if row is None:
             return None
-        payload = json.loads(row[0])
-        error = payload["error"]
-        return CatalogBatchFailureSnapshot(
-            evidence_id=payload["evidenceId"],
-            index=payload["index"],
-            record_id=payload["recordId"],
-            source_id=payload["sourceId"],
-            source_locator=payload["sourceLocator"],
-            evidence_locator=payload["evidenceLocator"],
-            raw_content_ref=payload["rawContentRef"],
-            error_code=error["code"],
-            error_message=error["message"],
-        )
+        return self._decode_payload(row[0])
 
     def all(self) -> tuple[CatalogBatchFailureSnapshot, ...]:
         rows = self.store._connection.execute(
             "SELECT payload_json FROM catalog_batch_failures ORDER BY evidence_id"
         ).fetchall()
-        snapshots: list[CatalogBatchFailureSnapshot] = []
-        for row in rows:
-            payload = json.loads(row[0])
-            error = payload["error"]
-            snapshots.append(
-                CatalogBatchFailureSnapshot(
-                    evidence_id=payload["evidenceId"],
-                    index=payload["index"],
-                    record_id=payload["recordId"],
-                    source_id=payload["sourceId"],
-                    source_locator=payload["sourceLocator"],
-                    evidence_locator=payload["evidenceLocator"],
-                    raw_content_ref=payload["rawContentRef"],
-                    error_code=error["code"],
-                    error_message=error["message"],
-                )
-            )
-        return tuple(snapshots)
+        return tuple(self._decode_payload(row[0]) for row in rows)
 
     def count(self) -> int:
         row = self.store._connection.execute(
