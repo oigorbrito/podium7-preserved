@@ -80,6 +80,7 @@ class MultiSourceValidationTests(unittest.TestCase):
         self.assertEqual(3, summary["canonicalCases"])
         self.assertEqual(1, summary["corroboratedCases"])
         self.assertEqual(1, summary["conflictCases"])
+        self.assertEqual({"UNRESOLVED": 1}, summary["conflictsByState"])
         self.assertEqual(2, summary["reviewCases"])
         self.assertEqual(0, summary["incorrectCases"])
         self.assertEqual(4, summary["provenanceApplicableCases"])
@@ -88,21 +89,29 @@ class MultiSourceValidationTests(unittest.TestCase):
         self.assertEqual(0, summary["resolverPolicyChanges"])
         self.assertEqual({"eea_co2_cars": 4, "nhtsa_vpic": 2}, summary["sourceContribution"])
 
-    def test_conflict_is_not_silently_collapsed_and_references_all_inputs(self):
+    def test_conflict_is_explicitly_unresolved_and_references_all_inputs(self):
         report = evaluate_multisource_cases(self.corpus())
         conflict = next(item for item in report["results"] if item["caseId"] == "conflicting-power")
         self.assertEqual("CONFLICT", conflict["disposition"])
+        self.assertEqual("UNRESOLVED", conflict["conflictState"])
         self.assertEqual(2, len(conflict["candidateReferences"]))
         self.assertTrue(conflict["provenanceComplete"])
 
-    def test_unsupported_dimensions_remain_review_and_provenance_is_not_applicable(self):
+    def test_review_disposition_is_distinct_from_conflict_state_review(self):
         report = evaluate_multisource_cases(self.corpus())
         reviews = [item for item in report["results"] if item["disposition"] == "REVIEW"]
         self.assertEqual(
             {"unsupported-retail-trim", "unsupported-manufacture-year"},
             {item["caseId"] for item in reviews},
         )
+        self.assertTrue(all(item["conflictState"] is None for item in reviews))
         self.assertTrue(all(item["provenanceComplete"] is None for item in reviews))
+        self.assertEqual({"UNRESOLVED": 1}, report["summary"]["conflictsByState"])
+
+    def test_non_conflict_results_have_no_conflict_state(self):
+        report = evaluate_multisource_cases(self.corpus())
+        non_conflicts = [item for item in report["results"] if item["disposition"] != "CONFLICT"]
+        self.assertTrue(all(item["conflictState"] is None for item in non_conflicts))
 
     def test_duplicate_case_ids_are_rejected_before_measurement(self):
         case = self.corpus()[0]
