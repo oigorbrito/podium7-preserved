@@ -1,6 +1,6 @@
 # Current work
 
-Status: active post-MVP measurement
+Status: active
 
 Outcome: measure consumer-visible coverage of `powertrain`, `transmission`, and `body_style` through the existing Production Corpus V2 ingestion/resolution/consumer path before any downstream BPT2 field or filter decision.
 
@@ -10,4 +10,4 @@ Acceptance: report present/missing counts, coverage ratio, raw/normalized cardin
 
 Active plan: [`exec-plans/active/CATALOG-IDENTITY-FIELD-COVERAGE-V1.md`](exec-plans/active/CATALOG-IDENTITY-FIELD-COVERAGE-V1.md)
 
-Issue #112, `Restore GitHub Actions hosted-runner execution`, remains infrastructure/operations debt. If hosted CI is still unable to create workflow steps, do not misreport it as product-test failure or add runner workarounds.
+Issue #112, `Restore GitHub Actions hosted-runner execution`, is resolved after the repository ownership transfer restored real GitHub-hosted runner steps/logs and successful `minimum-python`/`tests` execution. Repository validation can now rely on normal hosted execution again; do not reinterpret historical pre-step failures as test-suite failures.
