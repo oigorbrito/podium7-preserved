@@ -1,6 +1,6 @@
 # Source Terms Drift Gate V1
 
-Status: implementation prepared; integration pending repository validation.
+Status: LOCAL_VALIDATION_PASS; DISPOSITION=INTEGRATE_AFTER_REPOSITORY_VALIDATION.
 
 Issue: #164
 PR: #165

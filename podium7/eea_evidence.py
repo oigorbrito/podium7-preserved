@@ -65,14 +65,21 @@ def parse_eea_evidence(raw_payload: bytes, *, locator: str, retrieved_at: dateti
     evidence_id = f"eea-co2-cars:{digest}"
     evidence = RawEvidence(id=evidence_id, source_id=EEA_SOURCE_ID, locator=locator, retrieved_at=retrieved_at, acquisition_method="bounded_structured_dataset", raw_content_ref=raw_content_ref)
 
-    reports = extract_eea_response(raw_payload)
+    try:
+        reports = extract_eea_response(raw_payload)
+    except ValueError as exc:
+        message = str(exc)
+        if message.startswith("duplicate EEA source record ID "):
+            suffix = message[len("duplicate EEA source record ID ") :]
+            raise ValueError(f"duplicate EEA source record id {suffix}") from exc
+        raise
     output: list[EeaEvidenceRecord] = []
     observed_ids: set[int] = set()
     for report in reports:
         identity = report.identity
         record_id = identity.source_record_id
         if record_id in observed_ids:
-            raise ValueError(f"duplicate EEA source record id: {record_id}")
+            raise ValueError(f"duplicate EEA source record id {record_id}")
         if report.issues:
             codes = ", ".join(issue.code for issue in report.issues)
             raise ValueError(f"EEA record {record_id} has incomplete or unsupported evidence: {codes}")
