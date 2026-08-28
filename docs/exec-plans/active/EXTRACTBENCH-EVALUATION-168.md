@@ -31,9 +31,9 @@ Audit hardening requires benchmark fixtures to use explicit container types, str
 
 ## Candidate-comparison disposition
 
-`EXTRACTOR_COMPARISON = PENDING_RAW_SNAPSHOT_AND_EXECUTION`
+`EXTRACTOR_COMPARISON = EXTRACTOR_COMPARISON_PENDING`
 
-No extractor is currently declared better. The official Inmetro PBEV page-1 gold remains `PENDING_RAW_SNAPSHOT` until #174/#175 is executable and the exact PDF bytes/SHA are retained. After that, the same evidence-bound gold must be used for current/candidate extraction comparison. A replacement can only be proposed after reproducible material gain and still requires explicit owner consent.
+No extractor is currently declared better. The official Inmetro PBEV page-1 gold is now `RAW_SNAPSHOT_BOUND` with exact PDF bytes/SHA retained. The same evidence-bound gold must be used for current/candidate extraction comparison. A replacement can only be proposed after reproducible material gain and still requires explicit owner consent.
 
 ## Safety
 

@@ -1,14 +1,13 @@
 {
   "schema": "podium7.extraction-gold.v1",
   "datasetVersion": "inmetro-pbev-2026-page1-gold-1.0",
-  "status": "PENDING_RAW_SNAPSHOT",
+  "status": "RAW_SNAPSHOT_BOUND",
   "source": {
     "publisher": "Instituto Nacional de Metrologia, Qualidade e Tecnologia (Inmetro)",
     "landingPage": "https://www.gov.br/inmetro/pt-br/assuntos/regulamentacao/avaliacao-da-conformidade/programa-brasileiro-de-etiquetagem/tabelas-de-eficiencia-energetica/veiculos-automotivos-pbe-veicular/",
     "documentLocator": "https://www.gov.br/inmetro/pt-br/assuntos/regulamentacao/avaliacao-da-conformidade/programa-brasileiro-de-etiquetagem/tabelas-de-eficiencia-energetica/veiculos-automotivos-pbe-veicular/mascara-pbev-2026_19_jan-rev01.pdf/@@download/file",
     "documentPage": 1,
-    "rawContentSha256": null,
-    "reasonRawHashPending": "The qualified source exposes the table as application/pdf, which the current default Podium acquisition policy deliberately rejects. Do not use this measurement gold as canonical publication evidence until exact document bytes are retained and hashed through an approved PDF acquisition path."
+    "rawContentSha256": "cb8ab26789b75a596f75ebf5f6454f30950d31ff8fff1de99ad56a502679db2b"
   },
   "fields": [
     "category",

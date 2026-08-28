@@ -1,6 +1,6 @@
 # Current work
 
-Status: complete
+Status: active
 
 The current private technical MVP is complete. PR #119 integrated the independent-equivalent validation path, and the intended merge-candidate head passed Operational Readiness V1 and MVP Exit Gate V1 with `validation_source=independent-equivalent`.
 
