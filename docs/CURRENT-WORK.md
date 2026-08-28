@@ -1,13 +1,11 @@
 # Current work
 
-Status: complete
+Status: none
 
 The current private technical MVP is complete. PR #119 integrated the independent-equivalent validation path, and the intended merge-candidate head passed Operational Readiness V1 and MVP Exit Gate V1 with `validation_source=independent-equivalent`.
 
-No repository implementation mission is active and no functional MVP blocker is open.
+No repository implementation mission is declared in this snapshot and no functional MVP blocker is open.
 
-Issue #112, `Restore GitHub Actions hosted-runner execution`, remains open as an infrastructure/operations debt item. GitHub-hosted Actions jobs are still failing before any workflow step is created (`steps=null`, no job logs). This no longer blocks the private MVP because the accepted independent-equivalent execution path produced a passing gate without pretending official CI was green.
+Issue #112, `Restore GitHub Actions hosted-runner execution`, is resolved. After the repository ownership transfer, standard GitHub-hosted runners again created real steps/logs and completed repository workflows successfully. Historical pre-step failures remain infrastructure evidence only and must not be reclassified as test-suite failures.
 
-Owner action for #112 remains limited to GitHub account/repository Actions settings: verify Actions usage/minutes, payment method and budget/spending limits, and repository Actions enablement. Do not change runner architecture or add infrastructure workarounds merely to bypass this condition; ADR-0001 remains in force.
-
-Next work must be declared as a post-MVP mission rather than silently extending the completed MVP scope.
+New post-MVP work must continue to declare its own bounded outcome/acceptance rather than silently extending the completed MVP scope.
