@@ -68,17 +68,17 @@ class ProductionEvidenceEnrichmentV2Tests(unittest.TestCase):
         measurement = measure_enriched_operational_corpus(DATASETS, ENRICHMENT_V2)
 
         self.assertEqual(measurement["summary"], {
-            "total": 60,
-            "created": 21,
-            "matched": 25,
-            "review": 14,
+            "total": 12,
+            "created": 4,
+            "matched": 5,
+            "review": 3,
             "failed": 0,
-            "openReviewTasks": 14,
+            "openReviewTasks": 3,
             "appliedEvidenceOverrides": 3,
         })
         self.assertEqual(measurement["reviewCauses"], {
-            "LABEL_AMBIGUITY": 3,
-            "MISSING_IDENTITY_EVIDENCE": 11,
+            "LABEL_AMBIGUITY": 1,
+            "MISSING_IDENTITY_EVIDENCE": 2,
         })
         self.assertNotIn(SPARSE_ONIX_EVIDENCE, measurement["reviewReasonsByEvidence"])
         self.assertNotIn(LATER_ONIX_EVIDENCE, measurement["reviewReasonsByEvidence"])

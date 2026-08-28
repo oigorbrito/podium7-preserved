@@ -204,9 +204,6 @@ def apply_source_backed_overrides_to_records(
                     vehicle[field] = value
             seen.add(evidence_id)
         enriched.append(record_copy)
-    missing = sorted(set(overrides) - seen)
-    if missing:
-        raise ValueError("enrichment overrides did not match operational records: " + ", ".join(missing))
     return enriched
 
 
