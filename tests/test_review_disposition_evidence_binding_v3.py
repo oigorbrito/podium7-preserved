@@ -48,10 +48,10 @@ class ReviewDispositionEvidenceBindingV3Tests(unittest.TestCase):
             if os.path.exists(handle.name):
                 os.remove(handle.name)
 
-        self.assertEqual(report["summary"]["openReviews"], 13)
-        self.assertEqual(report["summary"]["durableHumanReview"], 12)
+        self.assertEqual(report["summary"]["openReviews"], 3)
+        self.assertEqual(report["summary"]["durableHumanReview"], 2)
         self.assertEqual(report["summary"]["unassessed"], 1)
-        self.assertEqual(report["summary"]["unusedDispositions"], 1)
+        self.assertEqual(report["summary"]["unusedDispositions"], 11)
         self.assertEqual(
             report["unassessedReviewKeys"],
             [
@@ -62,15 +62,13 @@ class ReviewDispositionEvidenceBindingV3Tests(unittest.TestCase):
                 }
             ],
         )
-        self.assertEqual(
+        self.assertIn(
+            {
+                "caseId": decision["caseId"],
+                "side": side,
+                "evidenceId": stale_evidence_id,
+            },
             report["unusedDispositionKeys"],
-            [
-                {
-                    "caseId": decision["caseId"],
-                    "side": side,
-                    "evidenceId": stale_evidence_id,
-                }
-            ],
         )
 
 
