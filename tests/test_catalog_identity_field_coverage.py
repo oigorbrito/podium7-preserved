@@ -1,9 +1,12 @@
 from pathlib import Path
 import unittest
 
+from podium7.catalog import CatalogStore, CatalogVehicleIdentity
+from podium7.catalog_api import CATALOG_API_MAX_PAGE_SIZE
 from podium7.catalog_coverage import (
     BRAZIL_MARKET,
     MEASURED_FIELDS,
+    _consumer_entities,
     measure_published_catalog_identity_coverage,
 )
 
@@ -72,6 +75,32 @@ class CatalogIdentityFieldCoverageTests(unittest.TestCase):
                 )
 
         print("CATALOG_IDENTITY_FIELD_COVERAGE", report)
+
+    def test_consumer_measurement_reads_beyond_single_api_page(self) -> None:
+        store = CatalogStore()
+        expected = CATALOG_API_MAX_PAGE_SIZE + 7
+        for index in range(expected):
+            store.create_catalog_vehicle(
+                CatalogVehicleIdentity(
+                    make=f"Make {index:03d}",
+                    model=f"Model {index:03d}",
+                    powertrain="ICE",
+                    transmission="Automatic",
+                    body_style="Sedan",
+                    market=BRAZIL_MARKET,
+                )
+            )
+
+        entities = _consumer_entities(store)
+
+        self.assertEqual(len(entities), expected)
+        self.assertEqual(len({entity["make"] for entity in entities}), expected)
+
+    def test_retained_corpus_report_is_deterministic(self) -> None:
+        first = measure_published_catalog_identity_coverage(DATASETS)
+        second = measure_published_catalog_identity_coverage(DATASETS)
+
+        self.assertEqual(first, second)
 
 
 if __name__ == "__main__":
