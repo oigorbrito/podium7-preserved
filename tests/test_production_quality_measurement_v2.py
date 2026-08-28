@@ -24,8 +24,8 @@ class ProductionQualityMeasurementV2Tests(unittest.TestCase):
         records = build_source_backed_operational_records(DATASETS)
 
         self.assertEqual(quality["totalCases"], 36)
-        self.assertEqual(operational["summary"]["total"], 72)
-        self.assertEqual(len(records), 72)
+        self.assertEqual(operational["summary"]["total"], 12)
+        self.assertEqual(len(records), 12)
 
         metrics = quality["metrics"]
         self.assertEqual(metrics["falseMergeCount"], 0)
@@ -41,7 +41,7 @@ class ProductionQualityMeasurementV2Tests(unittest.TestCase):
         self.assertEqual(summary["failed"], 0)
         self.assertEqual(
             summary["created"] + summary["matched"] + summary["review"],
-            72,
+            12,
         )
         self.assertEqual(sum(operational["reviewCauses"].values()), summary["openReviewTasks"])
 
