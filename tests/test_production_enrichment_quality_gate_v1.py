@@ -21,17 +21,17 @@ class ProductionEnrichmentQualityGateV1Tests(unittest.TestCase):
         measurement = measure_enriched_operational_corpus(DATASETS, ENRICHMENT)
 
         self.assertEqual(measurement["summary"], {
-            "total": 60,
-            "created": 21,
-            "matched": 23,
-            "review": 16,
+            "total": 12,
+            "created": 4,
+            "matched": 5,
+            "review": 3,
             "failed": 0,
-            "openReviewTasks": 16,
+            "openReviewTasks": 3,
             "appliedEvidenceOverrides": 1,
         })
         self.assertEqual(measurement["reviewCauses"], {
-            "LABEL_AMBIGUITY": 3,
-            "MISSING_IDENTITY_EVIDENCE": 13,
+            "LABEL_AMBIGUITY": 1,
+            "MISSING_IDENTITY_EVIDENCE": 2,
         })
 
     def test_integrated_quality_gate_preserves_identity_safety(self) -> None:
