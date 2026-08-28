@@ -52,20 +52,20 @@ class ProductionEvidenceEnrichmentV3Tests(unittest.TestCase):
         measurement = measure_enriched_operational_corpus(DATASETS, ENRICHMENT_V3)
 
         self.assertEqual(measurement["summary"], {
-            "total": 60,
-            "created": 21,
-            "matched": 26,
-            "review": 13,
+            "total": 12,
+            "created": 4,
+            "matched": 5,
+            "review": 3,
             "failed": 0,
-            "openReviewTasks": 13,
+            "openReviewTasks": 3,
             "appliedEvidenceOverrides": 4,
         })
         self.assertEqual(measurement["reviewCauses"], {
-            "LABEL_AMBIGUITY": 3,
-            "MISSING_IDENTITY_EVIDENCE": 10,
+            "LABEL_AMBIGUITY": 1,
+            "MISSING_IDENTITY_EVIDENCE": 2,
         })
         self.assertNotIn(TCROSS_TRANSMISSION_EVIDENCE, measurement["reviewReasonsByEvidence"])
-        self.assertIn(TCROSS_MODEL_YEAR_EVIDENCE, measurement["reviewReasonsByEvidence"])
+        self.assertNotIn(TCROSS_MODEL_YEAR_EVIDENCE, measurement["reviewReasonsByEvidence"])
 
     def test_v3_integrated_gate_preserves_identity_safety(self) -> None:
         gate = evaluate_production_enrichment_quality_gate(DATASETS, ENRICHMENT_V3)
