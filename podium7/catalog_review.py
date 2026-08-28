@@ -126,6 +126,34 @@ def _comparisons_from_json(payload: str) -> tuple[CatalogReviewComparison, ...]:
     )
 
 
+def _identity_field_bindings(
+    identity: CatalogVehicleIdentity,
+    *,
+    evidence_id: str,
+    source_id: str,
+) -> tuple[dict[str, Any], ...]:
+    bindings: list[dict[str, Any]] = []
+    identity_payload = asdict(identity)
+    identity_payload["external_identifiers"] = [
+        {"namespace": item.namespace, "value": item.value}
+        for item in identity.external_identifiers
+    ]
+    for field, value in identity_payload.items():
+        if value is None:
+            continue
+        if field in {"aliases", "engine_identifiers", "external_identifiers"} and not value:
+            continue
+        bindings.append(
+            {
+                "field_name": field,
+                "field_value_json": json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":")),
+                "source_id": source_id,
+                "raw_evidence_id": evidence_id,
+            }
+        )
+    return tuple(bindings)
+
+
 def _review_id(evidence_id: str) -> str:
     digest = hashlib.sha256(evidence_id.encode("utf-8")).hexdigest()[:24]
     return f"review_{digest}"
@@ -146,7 +174,7 @@ class CatalogReviewQueue:
 
     def _initialize_schema(self) -> None:
         with self.store.transaction():
-            self.store._connection.execute(
+            self.store._connection.executescript(
                 """
                 CREATE TABLE IF NOT EXISTS catalog_v2_review_tasks (
                     id TEXT PRIMARY KEY,
@@ -161,7 +189,18 @@ class CatalogReviewQueue:
                     resolved_at TEXT,
                     resolved_by TEXT,
                     resolution_reason TEXT
-                )
+                );
+
+                CREATE TABLE IF NOT EXISTS catalog_v2_review_field_bindings (
+                    review_id TEXT NOT NULL REFERENCES catalog_v2_review_tasks(id),
+                    evidence_id TEXT NOT NULL REFERENCES raw_evidence(id),
+                    field_name TEXT NOT NULL,
+                    field_value_json TEXT NOT NULL,
+                    source_id TEXT NOT NULL REFERENCES sources(id),
+                    raw_evidence_id TEXT NOT NULL REFERENCES raw_evidence(id),
+                    binding_version INTEGER NOT NULL,
+                    PRIMARY KEY (review_id, field_name, source_id, raw_evidence_id, field_value_json)
+                );
                 """
             )
             self.store._connection.execute(
@@ -220,6 +259,27 @@ class CatalogReviewQueue:
             (review_id,),
         ).fetchone()
         return None if row is None else self._row_to_task(row)
+
+    def review_field_bindings(self, review_id: str) -> list[dict[str, Any]]:
+        rows = self.store._connection.execute(
+            """
+            SELECT field_name, field_value_json, source_id, raw_evidence_id, binding_version
+            FROM catalog_v2_review_field_bindings
+            WHERE review_id = ?
+            ORDER BY field_name, source_id, raw_evidence_id, field_value_json
+            """,
+            (review_id,),
+        ).fetchall()
+        return [
+            {
+                "fieldName": row["field_name"],
+                "fieldValue": json.loads(row["field_value_json"]),
+                "sourceId": row["source_id"],
+                "rawEvidenceId": row["raw_evidence_id"],
+                "bindingVersion": row["binding_version"],
+            }
+            for row in rows
+        ]
 
     def get_by_evidence(self, evidence_id: str) -> CatalogReviewTask | None:
         row = self.store._connection.execute(
@@ -298,6 +358,29 @@ class CatalogReviewQueue:
                     created_at.isoformat(),
                 ),
             )
+            bindings = _identity_field_bindings(
+                identity,
+                evidence_id=evidence_id,
+                source_id=self.store.get_raw_evidence(evidence_id).source_id,
+            )
+            for binding in bindings:
+                self.store._insert_once(
+                    """
+                    INSERT INTO catalog_v2_review_field_bindings(
+                        review_id, evidence_id, field_name, field_value_json,
+                        source_id, raw_evidence_id, binding_version
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?)
+                    """,
+                    (
+                        review_id,
+                        evidence_id,
+                        binding["field_name"],
+                        binding["field_value_json"],
+                        binding["source_id"],
+                        binding["raw_evidence_id"],
+                        1,
+                    ),
+                )
         task = self.get(review_id)
         if task is None:
             raise RuntimeError("review task disappeared after enqueue")
