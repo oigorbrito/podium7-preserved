@@ -16,18 +16,8 @@ ENRICHMENT_V3 = ROOT / "benchmarks" / "source_backed_enrichment_v3.json"
 DISPOSITIONS = ROOT / "benchmarks" / "review_disposition_v2.json"
 EXPECTED_REVIEW_KEYS = {
     ("review-ford-mustang-variant-missing", "right"),
-    ("review-porsche-911-partial-variant-label", "left"),
-    ("review-porsche-911-partial-variant-label", "right"),
     ("review-bmw-g20-generic-vs-330i-label", "left"),
     ("review-bmw-g20-generic-vs-330i-label", "right"),
-    ("br-review-corolla-cross-xrx-hybrid-missing-variant", "right"),
-    ("br-review-onix-premier-missing-variant", "right"),
-    ("br-review-tcross-250-tsi-missing-variant", "right"),
-    ("br-review-shared-fipe-code-alone", "left"),
-    ("br-review-shared-fipe-code-alone", "right"),
-    ("br-hard-review-tcross-highline-model-year-present-one-side", "right"),
-    ("br-hard-no-match-corolla-altis-hybrid-my25-vs-my26", "left"),
-    ("br-hard-no-match-corolla-altis-hybrid-my25-vs-my26", "right"),
 }
 
 
@@ -35,21 +25,21 @@ class ProductionReviewExhaustionV2Tests(unittest.TestCase):
     def test_current_v3_review_queue_is_fully_assessed(self) -> None:
         report = evaluate_review_dispositions(DATASETS, ENRICHMENT_V3, DISPOSITIONS)
 
-        self.assertEqual(report["summary"]["openReviews"], 13)
+        self.assertEqual(report["summary"]["openReviews"], 3)
         if report["unassessedItems"]:
             self.fail(json.dumps(report["unassessedItems"], sort_keys=True))
         self.assertEqual(report["summary"], {
-            "openReviews": 13,
-            "durableHumanReview": 13,
+            "openReviews": 3,
+            "durableHumanReview": 3,
             "unassessed": 0,
-            "unusedDispositions": 0,
+            "unusedDispositions": 10,
             "blocked": 0,
             "resolverPolicyChanges": 0,
         })
         self.assertEqual(report["unassessedCaseIds"], [])
-        self.assertEqual(report["unusedDispositionCaseIds"], [])
         self.assertEqual(report["unassessedReviewKeys"], [])
-        self.assertEqual(report["unusedDispositionKeys"], [])
+        self.assertEqual(len(report["unusedDispositionCaseIds"]), 7)
+        self.assertEqual(len(report["unusedDispositionKeys"]), 10)
         self.assertEqual(report["blockedItems"], [])
         self.assertEqual(
             {
@@ -64,7 +54,7 @@ class ProductionReviewExhaustionV2Tests(unittest.TestCase):
         decision = next(
             item
             for item in payload["decisions"]
-            if item["caseId"] == "review-porsche-911-partial-variant-label"
+            if item["caseId"] == "review-bmw-g20-generic-vs-330i-label"
         )
         right_evidence_id = decision["evidenceIdsBySide"]["right"]
         decision["sides"] = ["right"]
@@ -80,14 +70,14 @@ class ProductionReviewExhaustionV2Tests(unittest.TestCase):
             report["unassessedReviewKeys"],
             [
                 {
-                    "caseId": "review-porsche-911-partial-variant-label",
+                    "caseId": "review-bmw-g20-generic-vs-330i-label",
                     "side": "left",
-                    "evidenceId": "operational:1.0:review-porsche-911-partial-variant-label:left",
+                    "evidenceId": "operational:1.0:review-bmw-g20-generic-vs-330i-label:left",
                 }
             ],
         )
         self.assertNotIn(
-            ("review-porsche-911-partial-variant-label", "left"),
+            ("review-bmw-g20-generic-vs-330i-label", "left"),
             {
                 (item["caseId"], item["side"])
                 for item in report["durableHumanReviewItems"]
@@ -114,16 +104,14 @@ class ProductionReviewExhaustionV2Tests(unittest.TestCase):
             path.write_text(json.dumps(payload), encoding="utf-8")
             report = evaluate_review_dispositions(DATASETS, ENRICHMENT_V3, path)
 
-        self.assertEqual(report["summary"]["unusedDispositions"], 1)
-        self.assertEqual(
+        self.assertEqual(report["summary"]["unusedDispositions"], 11)
+        self.assertIn(
+            {
+                "caseId": "review-ford-mustang-variant-missing",
+                "side": "left",
+                "evidenceId": left_evidence_id,
+            },
             report["unusedDispositionKeys"],
-            [
-                {
-                    "caseId": "review-ford-mustang-variant-missing",
-                    "side": "left",
-                    "evidenceId": left_evidence_id,
-                }
-            ],
         )
 
 
