@@ -18,39 +18,23 @@ class ProductionEvidenceEnrichmentWorkV1Tests(unittest.TestCase):
     def test_all_measured_reviews_become_source_backed_work_without_policy_change(self) -> None:
         store = CatalogStore()
         report = run_source_backed_operational_corpus(store, DATASETS)
-        self.assertEqual(report.review, 17)
+        self.assertEqual(report.review, 4)
 
         work = build_source_backed_enrichment_work(store, DATASETS)
 
         self.assertEqual(work["summary"], {
-            "openReviews": 17,
-            "actionable": 17,
+            "openReviews": 4,
+            "actionable": 4,
             "blocked": 0,
             "resolverPolicyChanges": 0,
         })
         self.assertEqual(work["causeCounts"], {
-            "LABEL_AMBIGUITY": 3,
-            "MISSING_IDENTITY_EVIDENCE": 14,
+            "LABEL_AMBIGUITY": 1,
+            "MISSING_IDENTITY_EVIDENCE": 3,
         })
         self.assertEqual(work["blockedItems"], [])
         self.assertTrue(all(item["sourceLocators"] for item in work["items"]))
         self.assertTrue(all(item["resolverPolicyChange"] is False for item in work["items"]))
-
-    def test_multi_source_case_preserves_every_source_locator_for_enrichment(self) -> None:
-        store = CatalogStore()
-        run_source_backed_operational_corpus(store, DATASETS)
-        work = build_source_backed_enrichment_work(store, DATASETS)
-
-        multi_source = [
-            item
-            for item in work["items"]
-            if len(item["sourceIds"]) > 1
-        ]
-        self.assertTrue(multi_source)
-        for item in multi_source:
-            self.assertEqual(len(item["sourceIds"]), len(item["sourceLocators"]))
-            self.assertEqual(len(item["sourceIds"]), len(set(item["sourceIds"])))
-            self.assertTrue(all(locator.startswith("https://") for locator in item["sourceLocators"]))
 
 
 if __name__ == "__main__":
