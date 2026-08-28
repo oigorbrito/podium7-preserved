@@ -2,6 +2,7 @@ from pathlib import Path
 import unittest
 
 from podium7.catalog_coverage import (
+    BRAZIL_MARKET,
     MEASURED_FIELDS,
     measure_published_catalog_identity_coverage,
 )
@@ -27,16 +28,29 @@ class CatalogIdentityFieldCoverageTests(unittest.TestCase):
         self.assertEqual(set(report["byDataset"]), {path.name for path in DATASETS})
         self.assertIsInstance(report["contractVersion"], str)
         self.assertTrue(report["contractVersion"])
+        self.assertEqual(report["knowledgeState"]["unknown"], "JSON null")
+        self.assertEqual(report["brazil"]["market"], BRAZIL_MARKET)
+        self.assertGreater(report["brazil"]["total"], 0)
         self.assertEqual(
             report["reviewEvidence"]["count"],
             report["operational"]["review"],
         )
         self.assertFalse(report["reviewEvidence"]["fieldAttributionAvailable"])
 
+        dataset_identities = report["datasets"]
+        self.assertEqual(
+            {item["name"] for item in dataset_identities},
+            {path.name for path in DATASETS},
+        )
+        for identity in dataset_identities:
+            self.assertTrue(identity["schema"])
+            self.assertTrue(identity["datasetVersion"])
+            self.assertEqual(len(identity["sha256"]), 64)
+
         for field in MEASURED_FIELDS:
             field_report = report["fields"][field]
             self.assertEqual(
-                field_report["present"] + field_report["missing"],
+                field_report["present"] + field_report["unknownNull"],
                 report["publishedVehicles"],
             )
             self.assertGreaterEqual(field_report["coverage"], 0.0)
@@ -48,10 +62,11 @@ class CatalogIdentityFieldCoverageTests(unittest.TestCase):
         for dataset_report in report["byDataset"].values():
             self.assertTrue(dataset_report["operational"]["ok"])
             self.assertEqual(dataset_report["operational"]["failed"], 0)
+            self.assertEqual(dataset_report["dataset"]["name"], dataset_report["dataset"]["name"])
             for field in MEASURED_FIELDS:
                 field_report = dataset_report["fields"][field]
                 self.assertEqual(
-                    field_report["present"] + field_report["missing"],
+                    field_report["present"] + field_report["unknownNull"],
                     dataset_report["total"],
                 )
 
