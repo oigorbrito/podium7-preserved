@@ -10,10 +10,13 @@ Measure consumer-visible coverage of `powertrain`, `transmission`, and `body_sty
 
 - replay the three retained identity datasets through the existing operational path;
 - measure all canonical vehicles returned by the consumer API using cursor pagination, with no fixed population ceiling;
-- report present/missing, coverage, raw/normalized cardinality, normalization collisions and market breakdown;
+- report known/present versus contract-defined unknown (`null`), coverage, raw/normalized cardinality and normalization collisions;
+- fail explicitly if a measured consumer key is missing, blank or has a JSON type outside the frozen Catalog `2.0` contract instead of counting contract violations as coverage misses;
+- report market breakdown and an explicit exact-code `BR` slice without inventing a geographic taxonomy;
 - report isolated dataset/source-family evidence slices through the same operational path;
 - expose the current operational review count and state explicitly when field-level contradiction attribution is unavailable;
-- bind the report to the consumer contract version and retained datasets;
+- bind the report to the consumer contract version and each retained dataset's schema, dataset version and SHA-256 digest;
+- allow deterministic JSON to be emitted to stdout or retained through an explicit output path;
 - keep the result explicitly bounded to the retained corpus;
 - validate the focused test and repository harness before integration.
 
@@ -30,14 +33,16 @@ No resolver change, new data source, BPT2 schema change, filter implementation, 
 
 ## Decision
 
-The denominator is every canonical vehicle returned by the consumer API after the real corpus replay, not source records and not the first API page. Dataset breakdowns are isolated evidence slices only; dataset/source is not promoted into catalog identity. Review evidence remains aggregate when the operational pipeline does not expose field-level attribution; the measurement must not invent contradiction ownership. This remains bounded evidence and does not establish production-wide completeness.
+The denominator is every canonical vehicle returned by the consumer API after the real corpus replay, not source records and not the first API page. Catalog contract `2.0` guarantees the measured keys exist and uses JSON `null` for unknown, so the report treats null as the unknown knowledge state and rejects missing/blank/wrong-type values as contract violations. Dataset breakdowns are isolated evidence slices only; dataset/source is not promoted into catalog identity. `BR` is highlighted only as the exact market code already present in the retained corpus. Review evidence remains aggregate when the operational pipeline does not expose field-level attribution; the measurement must not invent contradiction ownership. This remains bounded evidence and does not establish production-wide completeness.
 
 ## Progress log
 
 - 2026-08-27 — initial bounded measurement implemented over Production Corpus V2.
 - 2026-08-27 — audit found three consumer-contract gaps: fixed `limit=100`, no dataset/source-family breakdown and no explicit review/contradiction granularity statement.
 - 2026-08-27 — measurement hardened to cursor-pagination of all consumer vehicles, isolated per-dataset replay, contract-version binding and fail-honest aggregate review evidence.
+- 2026-08-28 — BPT2 consumer-contract reconciliation found remaining precision gaps: `missing` conflated contract-defined unknown with invalid shape, Brazil was only implicit in generic market output, and retained inputs were bound only by filename.
+- 2026-08-28 — report hardened to `present + unknownNull`, contract-shape failure, explicit exact-code `BR` slice, dataset schema/version/SHA-256 identity and optional deterministic JSON output file.
 
 ## Validation
 
-Focused branch validation pending on the hardened head. Hosted GitHub Actions issue #112 remains a separate infrastructure condition when jobs fail before workflow steps are created.
+Focused branch validation remains pending on the hardened head. Hosted GitHub Actions issue #112 remains a separate infrastructure condition when jobs fail before workflow steps are created. Do not rerun unchanged hosted Actions or reinterpret pre-step runner failure as product-test evidence.
