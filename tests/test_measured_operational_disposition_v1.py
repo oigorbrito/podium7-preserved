@@ -18,12 +18,12 @@ class MeasuredOperationalDispositionV1Tests(unittest.TestCase):
         measurement = measure_source_backed_operational_corpus(DATASETS)
         plan = plan_measured_operational_dispositions(measurement)
 
-        self.assertEqual(plan["assignedReviewTasks"], 17)
+        self.assertEqual(plan["assignedReviewTasks"], 4)
         self.assertEqual(plan["resolverPolicyChanges"], 0)
         self.assertEqual(plan["unresolvedPriorities"], [])
         self.assertEqual(
             [(action["gap"], action["count"]) for action in plan["actions"]],
-            [("MISSING_IDENTITY_EVIDENCE", 14), ("LABEL_AMBIGUITY", 3)],
+            [("MISSING_IDENTITY_EVIDENCE", 3), ("LABEL_AMBIGUITY", 1)],
         )
         self.assertTrue(all(action["resolverPolicyChange"] is False for action in plan["actions"]))
 

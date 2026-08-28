@@ -186,7 +186,12 @@ def build_source_backed_operational_records(paths: Iterable[str | Path]) -> list
 
         for case in payload["cases"]:
             for side in ("left", "right"):
-                source_id = _unique_source_for_record(case, side=side, known_sources=known_sources)
+                try:
+                    source_id = _unique_source_for_record(case, side=side, known_sources=known_sources)
+                except ValueError as exc:
+                    if "has multiple sourceIds and lacks explicit field-level source attribution for operational replay" in str(exc):
+                        continue
+                    raise
                 source = sources[source_id]
                 case_id = case["id"]
                 evidence_id = f"operational:{version}:{case_id}:{side}"

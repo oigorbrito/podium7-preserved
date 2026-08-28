@@ -177,6 +177,17 @@ class CatalogFieldProvenanceTests(unittest.TestCase):
         payload["cases"][0]["left"] = "not-an-object"
         self._assert_invalid(payload, "left and right identities must be objects")
 
+    def test_identity_list_defaults_can_be_omitted(self) -> None:
+        payload = _payload()
+        # Remove list fields which should default to empty lists
+        payload["cases"][0]["left"].pop("aliases", None)
+        payload["cases"][0]["left"].pop("engine_identifiers", None)
+        payload["cases"][0]["left"].pop("external_identifiers", None)
+        # Should parse successfully without ValueError
+        path = _write_payload(payload)
+        self.addCleanup(path.unlink, missing_ok=True)
+        load_catalog_identity_benchmark(path)
+
     def _assert_invalid(self, payload: object, message: str) -> None:
         path = _write_payload(payload)
         self.addCleanup(path.unlink, missing_ok=True)

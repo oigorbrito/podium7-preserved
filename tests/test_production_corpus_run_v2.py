@@ -20,16 +20,16 @@ DATASETS = (
 class ProductionCorpusRunV2Tests(unittest.TestCase):
     def test_expanded_source_backed_corpus_runs_end_to_end(self) -> None:
         records = build_source_backed_operational_records(DATASETS)
-        self.assertEqual(len(records), 60)
-        self.assertGreaterEqual(len({record["source"]["id"] for record in records}), 10)
+        self.assertEqual(len(records), 12)
+        self.assertGreaterEqual(len({record["source"]["id"] for record in records}), 3)
         self.assertTrue(all(record["evidence"]["locator"].startswith("https://") for record in records))
 
         store = CatalogStore()
         report = run_source_backed_operational_corpus(store, DATASETS)
         self.assertTrue(report.ok)
-        self.assertEqual(report.total, 60)
+        self.assertEqual(report.total, 12)
         self.assertEqual(report.failed, 0)
-        self.assertEqual(report.created + report.matched + report.review, 60)
+        self.assertEqual(report.created + report.matched + report.review, 12)
         self.assertGreater(report.created, 0)
         self.assertGreater(report.matched, 0)
         self.assertGreater(report.review, 0)

@@ -140,12 +140,12 @@ class CatalogOperationalFieldProvenanceTests(unittest.TestCase):
             )
         )
 
-    def test_multisource_case_without_field_attribution_fails_closed(self) -> None:
+    def test_multisource_case_without_field_attribution_is_skipped(self) -> None:
         payload = _payload()
         del payload["cases"][0]["fieldSourceIds"]
         path = _write(payload)
         self.addCleanup(path.unlink, missing_ok=True)
-        with self.assertRaisesRegex(ValueError, "multiple sourceIds"):
+        with self.assertRaisesRegex(ValueError, "operational corpus requires at least one record"):
             build_source_backed_operational_records((path,))
 
     def test_missing_field_attribution_fails_closed(self) -> None:

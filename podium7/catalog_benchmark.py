@@ -42,9 +42,9 @@ def _identity_from_mapping(data: Mapping[str, Any]) -> CatalogVehicleIdentity:
     if not isinstance(data, Mapping):
         raise ValueError("catalog benchmark identity must be an object")
     payload = dict(data)
-    raw_aliases = payload.get("aliases", ())
-    raw_engines = payload.get("engine_identifiers", ())
-    raw_external = payload.get("external_identifiers", ())
+    raw_aliases = payload.get("aliases", [])
+    raw_engines = payload.get("engine_identifiers", [])
+    raw_external = payload.get("external_identifiers", [])
     if not isinstance(raw_aliases, list):
         raise ValueError("catalog benchmark aliases must be an array")
     if not isinstance(raw_engines, list):
