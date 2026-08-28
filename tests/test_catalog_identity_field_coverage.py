@@ -59,10 +59,11 @@ class CatalogIdentityFieldCoverageTests(unittest.TestCase):
                 field_report["normalizedDistinct"], field_report["rawDistinct"]
             )
 
-        for dataset_report in report["byDataset"].values():
+        for dataset_name, dataset_report in report["byDataset"].items():
             self.assertTrue(dataset_report["operational"]["ok"])
             self.assertEqual(dataset_report["operational"]["failed"], 0)
-            self.assertEqual(dataset_report["dataset"]["name"], dataset_report["dataset"]["name"])
+            self.assertEqual(dataset_report["dataset"]["name"], dataset_name)
+            self.assertEqual(len(dataset_report["dataset"]["sha256"]), 64)
             for field in MEASURED_FIELDS:
                 field_report = dataset_report["fields"][field]
                 self.assertEqual(
