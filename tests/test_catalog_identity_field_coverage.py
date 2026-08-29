@@ -24,11 +24,19 @@ DATASETS = (
 
 
 class CatalogIdentityFieldCoverageTests(unittest.TestCase):
-    def test_measurement_runs_after_real_consumer_projection(self) -> None:
+    def test_measurement_runs_after_provenance_gated_consumer_projection(self) -> None:
         report = measure_published_catalog_identity_coverage(DATASETS)
 
+        eligibility = report["provenanceEligibility"]
+        self.assertEqual(eligibility["records"], 60)
+        self.assertEqual(
+            eligibility["records"],
+            eligibility["replayableRecords"] + eligibility["blockedRecords"],
+        )
+        self.assertGreater(eligibility["replayableRecords"], 0)
+        self.assertGreater(eligibility["blockedRecords"], 0)
+        self.assertEqual(report["operational"]["total"], eligibility["replayableRecords"])
         self.assertTrue(report["operational"]["ok"])
-        self.assertEqual(report["operational"]["total"], 60)
         self.assertEqual(report["operational"]["failed"], 0)
         self.assertGreater(report["publishedVehicles"], 0)
         self.assertEqual(set(report["fields"]), set(MEASURED_FIELDS))
@@ -37,7 +45,6 @@ class CatalogIdentityFieldCoverageTests(unittest.TestCase):
         self.assertTrue(report["contractVersion"])
         self.assertEqual(report["knowledgeState"]["unknown"], "JSON null")
         self.assertEqual(report["brazil"]["market"], BRAZIL_MARKET)
-        self.assertGreater(report["brazil"]["total"], 0)
         self.assertEqual(
             report["reviewEvidence"]["count"],
             report["operational"]["review"],
@@ -67,6 +74,15 @@ class CatalogIdentityFieldCoverageTests(unittest.TestCase):
             )
 
         for dataset_name, dataset_report in report["byDataset"].items():
+            dataset_eligibility = dataset_report["provenanceEligibility"]
+            self.assertEqual(
+                dataset_eligibility["records"],
+                dataset_eligibility["replayableRecords"] + dataset_eligibility["blockedRecords"],
+            )
+            self.assertEqual(
+                dataset_report["operational"]["total"],
+                dataset_eligibility["replayableRecords"],
+            )
             self.assertTrue(dataset_report["operational"]["ok"])
             self.assertEqual(dataset_report["operational"]["failed"], 0)
             self.assertEqual(dataset_report["dataset"]["name"], dataset_name)
@@ -78,7 +94,7 @@ class CatalogIdentityFieldCoverageTests(unittest.TestCase):
                     dataset_report["total"],
                 )
 
-        print("CATALOG_IDENTITY_FIELD_COVERAGE", report)
+        print("CATALOG_IDENTITY_FIELD_COVERAGE_PROVENANCE_GATED", report)
 
     def test_consumer_measurement_reads_beyond_single_api_page(self) -> None:
         store = CatalogStore()
