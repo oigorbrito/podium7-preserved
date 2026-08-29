@@ -22,6 +22,7 @@ from .catalog_review import (
     CatalogReviewState,
     CatalogReviewTask,
 )
+from .catalog_review_cause import snapshot_review_causes
 from .domain import CandidateFact, DecisionStatus, RawEvidence, Source
 
 
@@ -357,11 +358,18 @@ def ingest_catalog_record(
             vehicle_id = store.create_catalog_vehicle(identity)
         elif action is CatalogIngestionAction.REVIEW:
             assert review_queue is not None
+            review_comparisons = _review_comparisons(comparisons)
             task = review_queue.enqueue(
                 evidence_id=evidence.id,
                 identity=identity,
                 candidate_vehicle_ids=review_vehicle_ids,
-                comparisons=_review_comparisons(comparisons),
+                comparisons=review_comparisons,
+            )
+            snapshot_review_causes(
+                store,
+                review_id=task.id,
+                comparisons=review_comparisons,
+                candidate_vehicle_ids=review_vehicle_ids,
             )
             review_id = task.id
 
