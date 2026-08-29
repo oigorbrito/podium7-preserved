@@ -14,8 +14,30 @@ class RecurringRunState(str, Enum):
     ACCEPTED = "ACCEPTED"
     UNCHANGED = "UNCHANGED"
     DRIFT = "DRIFT"
+    REVIEW_REQUIRED = "REVIEW_REQUIRED"
     DEGRADED = "DEGRADED"
     RETRYABLE = "RETRYABLE"
+
+
+@dataclass(frozen=True)
+class SourceTermsPin:
+    locator: str
+    expected_sha256: str
+
+    def __post_init__(self) -> None:
+        if not isinstance(self.locator, str) or not self.locator.strip() or self.locator != self.locator.strip():
+            raise ValueError("terms locator must be a non-empty HTTPS URL without surrounding whitespace")
+        parsed = urlparse(self.locator)
+        if parsed.scheme.casefold() != "https" or not parsed.hostname:
+            raise ValueError("terms locator must be an HTTPS URL")
+        if parsed.username is not None or parsed.password is not None or parsed.fragment:
+            raise ValueError("terms locator cannot contain credentials or fragments")
+        if not isinstance(self.expected_sha256, str):
+            raise ValueError("expected_sha256 must be a SHA-256 hex digest")
+        digest = self.expected_sha256.casefold()
+        if len(digest) != 64 or any(character not in "0123456789abcdef" for character in digest):
+            raise ValueError("expected_sha256 must be a SHA-256 hex digest")
+        object.__setattr__(self, "expected_sha256", digest)
 
 
 @dataclass(frozen=True)
@@ -25,6 +47,7 @@ class RecurringSourceContract:
     expected_content_type: str
     expected_schema_signature: str
     max_retries: int = 2
+    terms_pin: SourceTermsPin | None = None
 
     def __post_init__(self) -> None:
         if not isinstance(self.source_id, str) or not self.source_id.strip():
@@ -39,6 +62,8 @@ class RecurringSourceContract:
             raise ValueError("expected_schema_signature is required")
         if isinstance(self.max_retries, bool) or not isinstance(self.max_retries, int) or self.max_retries < 0:
             raise ValueError("max_retries must be a non-negative integer")
+        if self.terms_pin is not None and not isinstance(self.terms_pin, SourceTermsPin):
+            raise ValueError("terms_pin must be SourceTermsPin when provided")
 
 
 @dataclass(frozen=True)
@@ -49,14 +74,7 @@ class RecurringCheckpoint:
     def __post_init__(self) -> None:
         if not isinstance(self.last_sha, dict) or not isinstance(self.retry_counts, dict):
             raise ValueError("checkpoint last_sha and retry_counts must be objects")
-        if any(
-            not isinstance(key, str)
-            or not key.strip()
-            or not isinstance(value, str)
-            or len(value) != 64
-            or any(character not in "0123456789abcdef" for character in value.casefold())
-            for key, value in self.last_sha.items()
-        ):
+        if any(not isinstance(key, str) or not key.strip() or not isinstance(value, str) or len(value) != 64 or any(character not in "0123456789abcdef" for character in value.casefold()) for key, value in self.last_sha.items()):
             raise ValueError("checkpoint last_sha entries must contain source ids and SHA-256 hex digests")
         if any(not isinstance(key, str) or not key.strip() or isinstance(value, bool) or not isinstance(value, int) or value < 0 for key, value in self.retry_counts.items()):
             raise ValueError("checkpoint retry_counts must contain non-negative integers")
@@ -64,10 +82,7 @@ class RecurringCheckpoint:
         object.__setattr__(self, "retry_counts", dict(self.retry_counts))
 
     def to_dict(self) -> dict[str, dict[str, object]]:
-        return {
-            "lastSha": dict(sorted(self.last_sha.items())),
-            "retryCounts": dict(sorted(self.retry_counts.items())),
-        }
+        return {"lastSha": dict(sorted(self.last_sha.items())), "retryCounts": dict(sorted(self.retry_counts.items()))}
 
     @classmethod
     def from_dict(cls, payload: Mapping[str, object]) -> "RecurringCheckpoint":
@@ -90,6 +105,8 @@ class RecurringRunResult:
     schema_signature: str | None
     retry_count: int
     mutation_required: bool
+    terms_locator: str | None = None
+    terms_sha256: str | None = None
 
 
 class RecurringAcquisitionCoordinator:
@@ -134,7 +151,7 @@ class RecurringAcquisitionCoordinator:
             return "AUTHORIZED_LOCATOR_MISMATCH"
         return None
 
-    def record_success(self, source_id: str, acquisition: DirectHttpAcquisition, *, schema_signature: str) -> RecurringRunResult:
+    def record_success(self, source_id: str, acquisition: DirectHttpAcquisition, *, schema_signature: str, terms_acquisition: DirectHttpAcquisition | None = None) -> RecurringRunResult:
         contract = self._contracts.get(source_id)
         if contract is None:
             raise ValueError("source is not approved for recurring acquisition")
@@ -142,9 +159,12 @@ class RecurringAcquisitionCoordinator:
             raise ValueError("acquisition must be DirectHttpAcquisition")
         if not isinstance(schema_signature, str) or not schema_signature.strip():
             raise ValueError("schema_signature is required")
+        if terms_acquisition is not None and not isinstance(terms_acquisition, DirectHttpAcquisition):
+            raise ValueError("terms_acquisition must be DirectHttpAcquisition when provided")
         authorization_error = self._consume_authorization(source_id, acquisition.requested_url)
         if authorization_error is not None:
             return RecurringRunResult(source_id, RecurringRunState.DRIFT, authorization_error, acquisition.requested_url, acquisition.sha256, schema_signature, self._retry_counts.get(source_id, 0), False)
+
         final_host = urlparse(acquisition.final_url).hostname
         if final_host is None or final_host.casefold() != contract.operation_policy.host.casefold():
             return RecurringRunResult(source_id, RecurringRunState.DRIFT, "FINAL_HOST_DRIFT", acquisition.final_url, acquisition.sha256, schema_signature, self._retry_counts.get(source_id, 0), False)
@@ -156,12 +176,29 @@ class RecurringAcquisitionCoordinator:
         if schema_signature != contract.expected_schema_signature:
             return RecurringRunResult(source_id, RecurringRunState.DRIFT, "SCHEMA_DRIFT", acquisition.final_url, acquisition.sha256, schema_signature, self._retry_counts.get(source_id, 0), False)
 
+        terms_locator = None
+        terms_sha256 = None
+        if contract.terms_pin is not None:
+            terms_locator = contract.terms_pin.locator
+            if terms_acquisition is None:
+                return RecurringRunResult(source_id, RecurringRunState.REVIEW_REQUIRED, "TERMS_EVIDENCE_UNAVAILABLE", acquisition.final_url, acquisition.sha256, schema_signature, self._retry_counts.get(source_id, 0), False, terms_locator, None)
+            if terms_acquisition.requested_url != terms_locator:
+                return RecurringRunResult(source_id, RecurringRunState.REVIEW_REQUIRED, "TERMS_LOCATOR_MISMATCH", acquisition.final_url, acquisition.sha256, schema_signature, self._retry_counts.get(source_id, 0), False, terms_acquisition.requested_url, terms_acquisition.sha256)
+            if terms_acquisition.final_url != terms_locator:
+                return RecurringRunResult(source_id, RecurringRunState.REVIEW_REQUIRED, "TERMS_FINAL_LOCATOR_DRIFT", acquisition.final_url, acquisition.sha256, schema_signature, self._retry_counts.get(source_id, 0), False, terms_acquisition.final_url, terms_acquisition.sha256)
+            actual_terms_sha = hashlib.sha256(terms_acquisition.body).hexdigest()
+            terms_sha256 = actual_terms_sha
+            if actual_terms_sha != terms_acquisition.sha256:
+                return RecurringRunResult(source_id, RecurringRunState.REVIEW_REQUIRED, "TERMS_HASH_MISMATCH", acquisition.final_url, acquisition.sha256, schema_signature, self._retry_counts.get(source_id, 0), False, terms_locator, terms_acquisition.sha256)
+            if actual_terms_sha != contract.terms_pin.expected_sha256:
+                return RecurringRunResult(source_id, RecurringRunState.REVIEW_REQUIRED, "TERMS_DRIFT", acquisition.final_url, acquisition.sha256, schema_signature, self._retry_counts.get(source_id, 0), False, terms_locator, actual_terms_sha)
+
         prior = self._last_sha.get(source_id)
         self._retry_counts[source_id] = 0
         if prior == acquisition.sha256:
-            return RecurringRunResult(source_id, RecurringRunState.UNCHANGED, "IDENTICAL_CONTENT", acquisition.final_url, acquisition.sha256, schema_signature, 0, False)
+            return RecurringRunResult(source_id, RecurringRunState.UNCHANGED, "IDENTICAL_CONTENT", acquisition.final_url, acquisition.sha256, schema_signature, 0, False, terms_locator, terms_sha256)
         self._last_sha[source_id] = acquisition.sha256
-        return RecurringRunResult(source_id, RecurringRunState.ACCEPTED, "NEW_VALID_CONTENT", acquisition.final_url, acquisition.sha256, schema_signature, 0, True)
+        return RecurringRunResult(source_id, RecurringRunState.ACCEPTED, "NEW_VALID_CONTENT", acquisition.final_url, acquisition.sha256, schema_signature, 0, True, terms_locator, terms_sha256)
 
     def record_failure(self, source_id: str, locator: str, *, reason: str) -> RecurringRunResult:
         contract = self._contracts.get(source_id)
@@ -183,4 +220,4 @@ class RecurringAcquisitionCoordinator:
         self._retry_counts[source_id] = 0
 
 
-__all__ = ["RecurringAcquisitionCoordinator", "RecurringCheckpoint", "RecurringRunResult", "RecurringRunState", "RecurringSourceContract"]
+__all__ = ["RecurringAcquisitionCoordinator", "RecurringCheckpoint", "RecurringRunResult", "RecurringRunState", "RecurringSourceContract", "SourceTermsPin"]

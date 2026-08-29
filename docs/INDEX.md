@@ -65,6 +65,7 @@
 - [`EEA-SEMANTIC-EXPANSION-V2.md`](EEA-SEMANTIC-EXPANSION-V2.md) — source-backed fuel semantics plus regulatory identity nonclaims.
 - [`OFFICIAL-SOURCE-DISCOVERY-V1.md`](OFFICIAL-SOURCE-DISCOVERY-V1.md) — bounded official-source candidate discovery with explicit non-identity-proof contract.
 - [`RECURRING-SOURCE-POLICY-V1.md`](RECURRING-SOURCE-POLICY-V1.md) — fail-closed robots interpretation and per-host pacing gate required before repeated live acquisition.
+- [`SOURCE-TERMS-DRIFT-GATE-V1.md`](SOURCE-TERMS-DRIFT-GATE-V1.md) — bounded source-origin terms drift gate for recurring acquisition.
 - [`POST-MVP-SOURCE-ACQUISITION-OUTCOME-V1.md`](POST-MVP-SOURCE-ACQUISITION-OUTCOME-V1.md) — synchronized outcome and integration order for the post-MVP source acquisition stack.
 - [`MULTISOURCE-CONFLICT-DISPOSITION-V1.md`](MULTISOURCE-CONFLICT-DISPOSITION-V1.md) — explicit persisted conflict-state observability for bounded multi-source validation.
 - [`REPEATABLE-WEB-EXTRACTION-V1.md`](REPEATABLE-WEB-EXTRACTION-V1.md)
