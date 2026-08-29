@@ -43,6 +43,7 @@
 - [`NHTSA-VPIC-EVIDENCE-CONTRACT-V1.md`](NHTSA-VPIC-EVIDENCE-CONTRACT-V1.md) — source-specific discovery/VIN-backed evidence, provenance, nonclaims and fail-closed boundaries.
 - [`EEA-EVIDENCE-CONTRACT-V2.md`](EEA-EVIDENCE-CONTRACT-V2.md) — regulatory identity/support evidence and provenance refinement without retail-trim/year semantic widening.
 - [`DIRECT-HTTP-ACQUISITION-V1.md`](DIRECT-HTTP-ACQUISITION-V1.md) — bounded fail-closed direct HTTP transport and snapshot contract.
+- [`PDF-ACQUISITION-MARKET-EVALUATION-V1.md`](PDF-ACQUISITION-MARKET-EVALUATION-V1.md) — market-first evaluation for the bounded source-specific PDF acquisition path.
 - [`NETWORK-TARGET-BINDING-V1.md`](NETWORK-TARGET-BINDING-V1.md) — DNS-rebinding-resistant acquisition path that binds validated resolution to the actual socket connection while preserving hostname TLS verification.
 - [`INMETRO-PBEV-DOCUMENT-PATH-V1.md`](INMETRO-PBEV-DOCUMENT-PATH-V1.md) — source-specific current PBEV PDF acquisition and ruled-table extraction path without widening global HTTP media policy.
 - [`PRODUCTION-SOURCE-DISTRIBUTION-V1.md`](PRODUCTION-SOURCE-DISTRIBUTION-V1.md) — bounded regression gate for independently inspected source-family and regional diversity without a production-completeness claim.
