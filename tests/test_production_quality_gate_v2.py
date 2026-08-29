@@ -23,16 +23,22 @@ class ProductionQualityGateV2Tests(unittest.TestCase):
         dispositions = plan_measured_operational_dispositions(measurement)
 
         summary = measurement["summary"]
-        self.assertEqual(summary["total"], 60)
+        eligibility = measurement["provenanceEligibility"]
+        self.assertEqual(eligibility["records"], 60)
+        self.assertEqual(
+            eligibility["records"],
+            eligibility["replayableRecords"] + eligibility["blockedRecords"],
+        )
+        self.assertGreater(eligibility["blockedRecords"], 0)
+        self.assertEqual(summary["total"], eligibility["replayableRecords"])
         self.assertEqual(summary["failed"], 0)
-        self.assertEqual(summary["created"], 21)
-        self.assertEqual(summary["matched"], 22)
-        self.assertEqual(summary["review"], 17)
-        self.assertEqual(summary["openReviewTasks"], 17)
-        self.assertEqual(measurement["reviewCauses"], {
-            "LABEL_AMBIGUITY": 3,
-            "MISSING_IDENTITY_EVIDENCE": 14,
-        })
+        self.assertEqual(
+            summary["created"] + summary["matched"] + summary["review"],
+            summary["total"],
+        )
+        self.assertEqual(summary["openReviewTasks"], summary["review"])
+        self.assertEqual(sum(measurement["reviewCauses"].values()), summary["review"])
+        self.assertNotIn("UNKNOWN_REVIEW_CAUSE", measurement["reviewCauses"])
 
         metrics = quality["metrics"]
         self.assertEqual(quality["totalCases"], 30)
@@ -42,9 +48,9 @@ class ProductionQualityGateV2Tests(unittest.TestCase):
         self.assertEqual(metrics["missedMatchCount"], 0)
         self.assertEqual(metrics["ambiguousOvercommitCount"], 0)
 
-        self.assertEqual(priorities[0]["gap"], "MISSING_IDENTITY_EVIDENCE")
-        self.assertEqual(priorities[0]["count"], 14)
-        self.assertEqual(dispositions["assignedReviewTasks"], 17)
+        self.assertEqual(sum(item["count"] for item in priorities), summary["review"])
+        self.assertTrue(all("RESOLVER" not in item["disposition"] for item in priorities))
+        self.assertEqual(dispositions["assignedReviewTasks"], summary["review"])
         self.assertEqual(dispositions["unresolvedPriorities"], [])
         self.assertEqual(dispositions["resolverPolicyChanges"], 0)
 

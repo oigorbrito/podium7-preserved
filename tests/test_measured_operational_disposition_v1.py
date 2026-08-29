@@ -16,14 +16,18 @@ DATASETS = (
 class MeasuredOperationalDispositionV1Tests(unittest.TestCase):
     def test_all_measured_reviews_route_to_evidence_work_without_resolver_change(self) -> None:
         measurement = measure_source_backed_operational_corpus(DATASETS)
+        eligibility = measurement["provenanceEligibility"]
         plan = plan_measured_operational_dispositions(measurement)
 
-        self.assertEqual(plan["assignedReviewTasks"], 17)
+        self.assertEqual(eligibility["records"], 60)
+        self.assertEqual(eligibility["replayableRecords"], measurement["summary"]["total"])
+        self.assertGreater(eligibility["blockedRecords"], 0)
+        self.assertEqual(plan["assignedReviewTasks"], measurement["summary"]["review"])
         self.assertEqual(plan["resolverPolicyChanges"], 0)
         self.assertEqual(plan["unresolvedPriorities"], [])
         self.assertEqual(
-            [(action["gap"], action["count"]) for action in plan["actions"]],
-            [("MISSING_IDENTITY_EVIDENCE", 14), ("LABEL_AMBIGUITY", 3)],
+            plan["assignedReviewTasks"],
+            sum(action["count"] for action in plan["actions"]),
         )
         self.assertTrue(all(action["resolverPolicyChange"] is False for action in plan["actions"]))
 

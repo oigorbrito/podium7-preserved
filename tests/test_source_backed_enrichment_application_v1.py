@@ -1,7 +1,7 @@
 from pathlib import Path
 import unittest
 
-from podium7.catalog_operational import build_source_backed_operational_records
+from podium7.operational_provenance import build_provenance_eligible_operational_records
 from podium7.source_backed_enrichment import (
     apply_source_backed_overrides_to_records,
     evaluate_source_backed_enrichment,
@@ -43,7 +43,7 @@ class SourceBackedEnrichmentApplicationV1Tests(unittest.TestCase):
             }
         })
 
-        records = build_source_backed_operational_records(DATASETS)
+        records = build_provenance_eligible_operational_records(DATASETS)
         enriched = apply_source_backed_overrides_to_records(records, overrides)
         target = next(
             item

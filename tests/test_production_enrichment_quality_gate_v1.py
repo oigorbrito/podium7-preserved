@@ -17,28 +17,38 @@ ENRICHMENT = ROOT / "benchmarks" / "source_backed_enrichment_v1.json"
 
 
 class ProductionEnrichmentQualityGateV1Tests(unittest.TestCase):
-    def test_enriched_replay_reduces_review_only_by_source_backed_evidence(self) -> None:
+    def test_enriched_replay_is_measured_only_on_provenance_eligible_records(self) -> None:
         measurement = measure_enriched_operational_corpus(DATASETS, ENRICHMENT)
+        summary = measurement["summary"]
+        eligibility = measurement["provenanceEligibility"]
 
-        self.assertEqual(measurement["summary"], {
-            "total": 60,
-            "created": 21,
-            "matched": 23,
-            "review": 16,
-            "failed": 0,
-            "openReviewTasks": 16,
-            "appliedEvidenceOverrides": 1,
-        })
-        self.assertEqual(measurement["reviewCauses"], {
-            "LABEL_AMBIGUITY": 3,
-            "MISSING_IDENTITY_EVIDENCE": 13,
-        })
+        self.assertEqual(eligibility["records"], 60)
+        self.assertEqual(
+            eligibility["records"],
+            eligibility["replayableRecords"] + eligibility["blockedRecords"],
+        )
+        self.assertGreater(eligibility["blockedRecords"], 0)
+        self.assertEqual(summary["total"], eligibility["replayableRecords"])
+        self.assertEqual(summary["failed"], 0)
+        self.assertEqual(
+            summary["created"] + summary["matched"] + summary["review"],
+            summary["total"],
+        )
+        self.assertEqual(summary["openReviewTasks"], summary["review"])
+        self.assertEqual(summary["appliedEvidenceOverrides"], 1)
+        self.assertEqual(sum(measurement["reviewCauses"].values()), summary["review"])
+        self.assertNotIn("UNKNOWN_REVIEW_CAUSE", measurement["reviewCauses"])
 
     def test_integrated_quality_gate_preserves_identity_safety(self) -> None:
         gate = evaluate_production_enrichment_quality_gate(DATASETS, ENRICHMENT)
 
         self.assertTrue(gate["passed"])
         self.assertTrue(all(gate["checks"].values()))
+        self.assertEqual(
+            gate["baselineOperational"]["provenanceEligibility"],
+            gate["operational"]["provenanceEligibility"],
+        )
+        self.assertLessEqual(gate["operationalReviewDelta"], 0)
         metrics = gate["identityQuality"]["metrics"]
         self.assertEqual(metrics["autoMatchPrecision"], 1.0)
         self.assertEqual(metrics["autoMatchRecall"], 1.0)

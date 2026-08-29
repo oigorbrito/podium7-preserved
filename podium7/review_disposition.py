@@ -6,9 +6,12 @@ from typing import Any, Iterable
 
 from .catalog import CatalogStore
 from .catalog_batch import ingest_catalog_batch, parse_catalog_batch_payload
-from .catalog_operational import build_source_backed_operational_records
 from .evidence_enrichment import build_source_backed_enrichment_work
 from .enrichment_quality import measure_enriched_operational_corpus
+from .operational_provenance import (
+    build_provenance_eligible_operational_records,
+    measure_operational_provenance_eligibility,
+)
 from .source_backed_enrichment import (
     apply_source_backed_overrides_to_records,
     load_source_backed_enrichment_overrides,
@@ -141,8 +144,15 @@ def evaluate_review_dispositions(
 ) -> dict[str, Any]:
     dataset_paths = tuple(paths)
     overrides = load_source_backed_enrichment_overrides(dataset_paths, enrichment_path)
-    records = build_source_backed_operational_records(dataset_paths)
-    records = apply_source_backed_overrides_to_records(records, overrides)
+    eligibility = measure_operational_provenance_eligibility(dataset_paths)
+    records = build_provenance_eligible_operational_records(dataset_paths)
+    replayable_evidence_ids = {record["evidence"]["id"] for record in records}
+    operational_overrides = {
+        evidence_id: field_values
+        for evidence_id, field_values in overrides.items()
+        if evidence_id in replayable_evidence_ids
+    }
+    records = apply_source_backed_overrides_to_records(records, operational_overrides)
     store = CatalogStore()
     ingest_catalog_batch(store, parse_catalog_batch_payload({"records": records}))
     work = build_source_backed_enrichment_work(store, dataset_paths)
@@ -159,8 +169,22 @@ def evaluate_review_dispositions(
         (case_id, side, decision["evidenceId"]): decision
         for (case_id, side), decision in dispositions.items()
     }
+    provenance_blocked_item_keys = {
+        (
+            record["caseId"],
+            record["side"],
+            f"operational:{record['datasetVersion']}:{record['caseId']}:{record['side']}",
+        )
+        for record in eligibility["records"]
+        if not record["replayable"]
+    }
+    provenance_blocked_disposition_item_keys = (
+        set(disposition_by_item_key) & provenance_blocked_item_keys
+    )
     unused_disposition_item_keys = (
-        set(disposition_by_item_key) - current_review_item_keys
+        set(disposition_by_item_key)
+        - current_review_item_keys
+        - provenance_blocked_disposition_item_keys
     )
 
     durable: list[dict[str, Any]] = []
@@ -200,16 +224,24 @@ def evaluate_review_dispositions(
             "durableHumanReview": len(durable),
             "unassessed": len(unassessed),
             "unusedDispositions": len(unused_disposition_item_keys),
+            "provenanceBlockedDispositions": len(provenance_blocked_disposition_item_keys),
             "blocked": len(blocked),
             "resolverPolicyChanges": 0,
         },
+        "provenanceEligibility": eligibility["summary"],
         "unassessedCaseIds": sorted({item["caseId"] for item in unassessed}),
         "unusedDispositionCaseIds": sorted(
             {case_id for case_id, _, _ in unused_disposition_item_keys}
         ),
+        "provenanceBlockedDispositionCaseIds": sorted(
+            {case_id for case_id, _, _ in provenance_blocked_disposition_item_keys}
+        ),
         "unassessedReviewKeys": _review_item_key_payload(unassessed_item_keys),
         "unusedDispositionKeys": _review_item_key_payload(
             unused_disposition_item_keys
+        ),
+        "provenanceBlockedDispositionKeys": _review_item_key_payload(
+            provenance_blocked_disposition_item_keys
         ),
         "durableHumanReviewItems": durable,
         "unassessedItems": unassessed,

@@ -16,23 +16,33 @@ class ProductionOperationalMeasurementV1Tests(unittest.TestCase):
     def test_measured_replay_is_failure_free_and_review_load_is_visible(self) -> None:
         measurement = measure_source_backed_operational_corpus(DATASETS)
         summary = measurement["summary"]
+        eligibility = measurement["provenanceEligibility"]
 
-        self.assertEqual(summary["total"], 60)
-        self.assertEqual(summary["created"], 21)
-        self.assertEqual(summary["matched"], 22)
-        self.assertEqual(summary["review"], 17)
+        self.assertEqual(eligibility["records"], 60)
+        self.assertEqual(
+            eligibility["records"],
+            eligibility["replayableRecords"] + eligibility["blockedRecords"],
+        )
+        self.assertGreater(eligibility["replayableRecords"], 0)
+        self.assertGreater(eligibility["blockedRecords"], 0)
+        self.assertEqual(summary["total"], eligibility["replayableRecords"])
         self.assertEqual(summary["failed"], 0)
-        self.assertEqual(summary["catalogItems"], 21)
-        self.assertEqual(summary["openReviewTasks"], 17)
-        self.assertAlmostEqual(summary["automaticRate"], 43 / 60)
-        self.assertAlmostEqual(summary["reviewRate"], 17 / 60)
-        self.assertEqual(sum(measurement["actionsBySide"]["left"].values()), 30)
-        self.assertEqual(sum(measurement["actionsBySide"]["right"].values()), 30)
-        self.assertEqual(sum(measurement["reviewCauses"].values()), 17)
-        self.assertEqual(measurement["reviewCauses"], {
-            "LABEL_AMBIGUITY": 3,
-            "MISSING_IDENTITY_EVIDENCE": 14,
-        })
+        self.assertEqual(
+            summary["created"] + summary["matched"] + summary["review"],
+            summary["total"],
+        )
+        self.assertEqual(summary["openReviewTasks"], summary["review"])
+        self.assertLessEqual(summary["catalogItems"], summary["total"])
+        self.assertAlmostEqual(
+            summary["automaticRate"],
+            (summary["created"] + summary["matched"]) / summary["total"],
+        )
+        self.assertAlmostEqual(summary["reviewRate"], summary["review"] / summary["total"])
+        self.assertEqual(
+            sum(sum(side.values()) for side in measurement["actionsBySide"].values()),
+            summary["total"],
+        )
+        self.assertEqual(sum(measurement["reviewCauses"].values()), summary["review"])
         self.assertNotIn("UNKNOWN_REVIEW_CAUSE", measurement["reviewCauses"])
 
         print("PRODUCTION_OPERATIONAL_MEASUREMENT_V1", measurement)

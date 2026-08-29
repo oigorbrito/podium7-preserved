@@ -17,16 +17,26 @@ DATASETS = (
 )
 ENRICHMENT_V3 = ROOT / "benchmarks" / "source_backed_enrichment_v3.json"
 DISPOSITIONS = ROOT / "benchmarks" / "review_disposition_v2.json"
+FORD_CASE_ID = "review-ford-mustang-variant-missing"
+FORD_SIDE = "right"
+FORD_CURRENT_EVIDENCE_ID = "operational:1.0:review-ford-mustang-variant-missing:right"
+FORD_STALE_EVIDENCE_ID = "operational:1.0:review-ford-mustang-variant-missing:left"
 
 
 class ReviewDispositionEvidenceBindingV3Tests(unittest.TestCase):
     def test_stale_evidence_id_is_both_unused_and_current_item_unassessed(self) -> None:
         payload = json.loads(DISPOSITIONS.read_text(encoding="utf-8"))
-        decision = payload["decisions"][0]
-        side = decision["sides"][0]
-        current_evidence_id = decision["evidenceIdsBySide"][side]
-        stale_evidence_id = current_evidence_id + ":stale"
-        decision["evidenceIdsBySide"][side] = stale_evidence_id
+        decision = next(
+            item
+            for item in payload["decisions"]
+            if item["caseId"] == FORD_CASE_ID
+        )
+        self.assertEqual(decision["sides"], [FORD_SIDE])
+        self.assertEqual(
+            decision["evidenceIdsBySide"][FORD_SIDE],
+            FORD_CURRENT_EVIDENCE_ID,
+        )
+        decision["evidenceIdsBySide"][FORD_SIDE] = FORD_STALE_EVIDENCE_ID
 
         handle = tempfile.NamedTemporaryFile(
             mode="w",
@@ -48,17 +58,18 @@ class ReviewDispositionEvidenceBindingV3Tests(unittest.TestCase):
             if os.path.exists(handle.name):
                 os.remove(handle.name)
 
-        self.assertEqual(report["summary"]["openReviews"], 13)
-        self.assertEqual(report["summary"]["durableHumanReview"], 12)
+        self.assertEqual(report["summary"]["openReviews"], 3)
+        self.assertEqual(report["summary"]["durableHumanReview"], 2)
         self.assertEqual(report["summary"]["unassessed"], 1)
         self.assertEqual(report["summary"]["unusedDispositions"], 1)
+        self.assertEqual(report["summary"]["provenanceBlockedDispositions"], 10)
         self.assertEqual(
             report["unassessedReviewKeys"],
             [
                 {
-                    "caseId": decision["caseId"],
-                    "side": side,
-                    "evidenceId": current_evidence_id,
+                    "caseId": FORD_CASE_ID,
+                    "side": FORD_SIDE,
+                    "evidenceId": FORD_CURRENT_EVIDENCE_ID,
                 }
             ],
         )
@@ -66,11 +77,19 @@ class ReviewDispositionEvidenceBindingV3Tests(unittest.TestCase):
             report["unusedDispositionKeys"],
             [
                 {
-                    "caseId": decision["caseId"],
-                    "side": side,
-                    "evidenceId": stale_evidence_id,
+                    "caseId": FORD_CASE_ID,
+                    "side": FORD_SIDE,
+                    "evidenceId": FORD_STALE_EVIDENCE_ID,
                 }
             ],
+        )
+        self.assertNotIn(
+            {
+                "caseId": FORD_CASE_ID,
+                "side": FORD_SIDE,
+                "evidenceId": FORD_STALE_EVIDENCE_ID,
+            },
+            report["provenanceBlockedDispositionKeys"],
         )
 
 

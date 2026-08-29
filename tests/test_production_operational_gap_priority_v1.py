@@ -15,19 +15,14 @@ DATASETS = (
 
 class ProductionOperationalGapPriorityV1Tests(unittest.TestCase):
     def test_measured_gap_priority_is_evidence_enrichment_not_resolver_weakening(self) -> None:
-        priorities = prioritize_operational_gaps(
-            measure_source_backed_operational_corpus(DATASETS)
-        )
+        measurement = measure_source_backed_operational_corpus(DATASETS)
+        priorities = prioritize_operational_gaps(measurement)
 
-        self.assertEqual([item["gap"] for item in priorities], [
-            "MISSING_IDENTITY_EVIDENCE",
-            "LABEL_AMBIGUITY",
-        ])
-        self.assertEqual(priorities[0]["count"], 14)
-        self.assertEqual(priorities[0]["disposition"], "ENRICH_IDENTITY_EVIDENCE")
-        self.assertAlmostEqual(priorities[0]["reviewShare"], 14 / 17)
-        self.assertEqual(priorities[1]["count"], 3)
-        self.assertEqual(priorities[1]["disposition"], "ENRICH_LABEL_EVIDENCE")
+        self.assertEqual(
+            {item["gap"]: item["count"] for item in priorities},
+            measurement["reviewCauses"],
+        )
+        self.assertEqual(sum(item["count"] for item in priorities), measurement["summary"]["review"])
         self.assertTrue(all("RESOLVER" not in item["disposition"] for item in priorities))
 
     def test_failures_and_unknown_review_causes_preempt_known_review_friction(self) -> None:

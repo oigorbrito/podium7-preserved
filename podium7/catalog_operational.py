@@ -9,6 +9,10 @@ from .catalog import CatalogStore
 from .catalog_batch import CatalogBatchReport, ingest_catalog_batch, parse_catalog_batch_payload
 from .catalog_quality import classify_review_reason
 from .catalog_review import CatalogReviewQueue
+from .operational_provenance import (
+    measure_operational_provenance_eligibility,
+    run_provenance_eligible_operational_corpus,
+)
 
 
 def build_source_backed_operational_records(paths: Iterable[str | Path]) -> list[dict[str, Any]]:
@@ -28,12 +32,20 @@ def build_source_backed_operational_records(paths: Iterable[str | Path]) -> list
         retrieved_at = f"{created_at}T00:00:00Z"
 
         for case in payload.get("cases", ()):
+            case_id = case.get("id")
             source_ids = case.get("sourceIds", ())
             if not source_ids:
-                raise ValueError(f"case {case.get('id')!r} has no sourceIds")
-            source = sources[source_ids[0]]
+                raise ValueError(f"case {case_id!r} has no sourceIds")
+            if len(source_ids) != 1:
+                raise ValueError(
+                    f"case {case_id!r} has ambiguous case-level source attribution; "
+                    "operational replay requires exactly one defensible source per record side"
+                )
+            source_id = source_ids[0]
+            if source_id not in sources:
+                raise ValueError(f"case {case_id!r} references unknown source {source_id!r}")
+            source = sources[source_id]
             for side in ("left", "right"):
-                case_id = case["id"]
                 evidence_id = f"operational:{version}:{case_id}:{side}"
                 records.append(
                     {
@@ -67,8 +79,14 @@ def run_source_backed_operational_corpus(
 
 
 def measure_source_backed_operational_corpus(paths: Iterable[str | Path]) -> dict[str, Any]:
+    dataset_paths = tuple(Path(path) for path in paths)
+    eligibility = measure_operational_provenance_eligibility(dataset_paths)
     store = CatalogStore()
-    report = run_source_backed_operational_corpus(store, paths)
+    report = run_provenance_eligible_operational_corpus(store, dataset_paths)
+    replayable_records = eligibility["summary"]["replayableRecords"]
+    if report.total != replayable_records:
+        raise RuntimeError("provenance eligibility and operational measurement record counts diverged")
+
     action_by_side: dict[str, Counter[str]] = {
         "left": Counter(),
         "right": Counter(),
@@ -123,6 +141,7 @@ def measure_source_backed_operational_corpus(paths: Iterable[str | Path]) -> dic
             "catalogItems": catalog_items,
             "openReviewTasks": len(tasks),
         },
+        "provenanceEligibility": eligibility["summary"],
         "actionsBySide": {
             side: dict(sorted(counter.items()))
             for side, counter in action_by_side.items()

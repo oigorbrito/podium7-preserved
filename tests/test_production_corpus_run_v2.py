@@ -3,9 +3,10 @@ import unittest
 
 from podium7.catalog import CatalogStore
 from podium7.catalog_api import list_catalog_vehicles
-from podium7.catalog_operational import (
-    build_source_backed_operational_records,
-    run_source_backed_operational_corpus,
+from podium7.operational_provenance import (
+    build_provenance_eligible_operational_records,
+    measure_operational_provenance_eligibility,
+    run_provenance_eligible_operational_corpus,
 )
 
 
@@ -19,17 +20,21 @@ DATASETS = (
 
 class ProductionCorpusRunV2Tests(unittest.TestCase):
     def test_expanded_source_backed_corpus_runs_end_to_end(self) -> None:
-        records = build_source_backed_operational_records(DATASETS)
-        self.assertEqual(len(records), 60)
-        self.assertGreaterEqual(len({record["source"]["id"] for record in records}), 10)
+        eligibility = measure_operational_provenance_eligibility(DATASETS)["summary"]
+        records = build_provenance_eligible_operational_records(DATASETS)
+
+        self.assertEqual(eligibility["records"], 60)
+        self.assertEqual(len(records), eligibility["replayableRecords"])
+        self.assertGreater(eligibility["replayableRecords"], 0)
+        self.assertGreater(eligibility["blockedRecords"], 0)
         self.assertTrue(all(record["evidence"]["locator"].startswith("https://") for record in records))
 
         store = CatalogStore()
-        report = run_source_backed_operational_corpus(store, DATASETS)
+        report = run_provenance_eligible_operational_corpus(store, DATASETS)
         self.assertTrue(report.ok)
-        self.assertEqual(report.total, 60)
+        self.assertEqual(report.total, eligibility["replayableRecords"])
         self.assertEqual(report.failed, 0)
-        self.assertEqual(report.created + report.matched + report.review, 60)
+        self.assertEqual(report.created + report.matched + report.review, report.total)
         self.assertGreater(report.created, 0)
         self.assertGreater(report.matched, 0)
         self.assertGreater(report.review, 0)
@@ -39,8 +44,11 @@ class ProductionCorpusRunV2Tests(unittest.TestCase):
         self.assertGreater(len(consumer["items"]), 0)
 
         print(
-            "PRODUCTION_CORPUS_RUN_V2",
+            "PRODUCTION_CORPUS_RUN_V2_PROVENANCE_GATED",
             {
+                "retainedRecords": eligibility["records"],
+                "replayableRecords": eligibility["replayableRecords"],
+                "blockedRecords": eligibility["blockedRecords"],
                 "total": report.total,
                 "created": report.created,
                 "matched": report.matched,

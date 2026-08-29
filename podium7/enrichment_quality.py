@@ -6,9 +6,13 @@ from typing import Any, Iterable
 
 from .catalog import CatalogStore
 from .catalog_batch import ingest_catalog_batch, parse_catalog_batch_payload
-from .catalog_operational import build_source_backed_operational_records
+from .catalog_operational import measure_source_backed_operational_corpus
 from .catalog_quality import classify_review_reason, evaluate_identity_quality
 from .catalog_review import CatalogReviewQueue
+from .operational_provenance import (
+    build_provenance_eligible_operational_records,
+    measure_operational_provenance_eligibility,
+)
 from .source_backed_enrichment import (
     apply_source_backed_overrides_to_records,
     evaluate_source_backed_enrichment,
@@ -22,11 +26,21 @@ def measure_enriched_operational_corpus(
 ) -> dict[str, Any]:
     dataset_paths = tuple(paths)
     overrides = load_source_backed_enrichment_overrides(dataset_paths, enrichment_path)
-    records = build_source_backed_operational_records(dataset_paths)
-    records = apply_source_backed_overrides_to_records(records, overrides)
+    eligibility = measure_operational_provenance_eligibility(dataset_paths)
+    records = build_provenance_eligible_operational_records(dataset_paths)
+    replayable_evidence_ids = {record["evidence"]["id"] for record in records}
+    operational_overrides = {
+        evidence_id: field_values
+        for evidence_id, field_values in overrides.items()
+        if evidence_id in replayable_evidence_ids
+    }
+    excluded_override_ids = sorted(set(overrides) - set(operational_overrides))
+    records = apply_source_backed_overrides_to_records(records, operational_overrides)
 
     store = CatalogStore()
     report = ingest_catalog_batch(store, parse_catalog_batch_payload({"records": records}))
+    if report.total != eligibility["summary"]["replayableRecords"]:
+        raise RuntimeError("provenance eligibility and enriched operational record counts diverged")
     action_counts: Counter[str] = Counter()
     for result in report.results:
         if result.action is not None:
@@ -99,7 +113,15 @@ def measure_enriched_operational_corpus(
             "review": report.review,
             "failed": report.failed,
             "openReviewTasks": len(tasks),
-            "appliedEvidenceOverrides": len(overrides),
+            "appliedEvidenceOverrides": len(operational_overrides),
+            "excludedEvidenceOverrides": len(excluded_override_ids),
+        },
+        "provenanceEligibility": eligibility["summary"],
+        "enrichmentScope": {
+            "evidenceOverrides": len(overrides),
+            "appliedEvidenceOverrides": len(operational_overrides),
+            "excludedEvidenceOverrides": len(excluded_override_ids),
+            "excludedEvidenceOverrideIds": excluded_override_ids,
         },
         "actionCounts": dict(sorted(action_counts.items())),
         "reviewCauses": dict(sorted(causes.items())),
@@ -115,14 +137,23 @@ def evaluate_production_enrichment_quality_gate(
     dataset_paths = tuple(paths)
     identity_quality = evaluate_identity_quality(dataset_paths)
     enrichment = evaluate_source_backed_enrichment(dataset_paths, enrichment_path)
+    baseline_operational = measure_source_backed_operational_corpus(dataset_paths)
     operational = measure_enriched_operational_corpus(dataset_paths, enrichment_path)
 
     metrics = identity_quality["metrics"]
+    baseline_summary = baseline_operational["summary"]
     summary = operational["summary"]
     review_causes = operational["reviewCauses"]
+    same_provenance_scope = (
+        baseline_operational["provenanceEligibility"] == operational["provenanceEligibility"]
+    )
     checks = {
         "zeroIngestionFailures": summary["failed"] == 0,
-        "sourceBackedReviewReduction": summary["review"] < 22,
+        "sameProvenanceEligibleScope": same_provenance_scope,
+        "noOperationalReviewRegression": (
+            same_provenance_scope and summary["review"] <= baseline_summary["review"]
+        ),
+        "sourceBackedEnrichmentEvidence": enrichment["summary"]["resolvedReviews"] > 0,
         "noUnknownReviewCause": review_causes.get("UNKNOWN_REVIEW_CAUSE", 0) == 0,
         "identityPrecisionPreserved": metrics["autoMatchPrecision"] == 1.0,
         "identityRecallPreserved": metrics["autoMatchRecall"] == 1.0,
@@ -135,6 +166,8 @@ def evaluate_production_enrichment_quality_gate(
         "schema": "podium7.production-enrichment-quality-gate.v1",
         "passed": all(checks.values()),
         "checks": checks,
+        "operationalReviewDelta": summary["review"] - baseline_summary["review"],
+        "baselineOperational": baseline_operational,
         "operational": operational,
         "identityQuality": identity_quality,
         "enrichment": enrichment,

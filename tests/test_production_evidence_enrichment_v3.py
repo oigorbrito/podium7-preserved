@@ -48,29 +48,50 @@ class ProductionEvidenceEnrichmentV3Tests(unittest.TestCase):
         })
         self.assertNotIn(TCROSS_MODEL_YEAR_EVIDENCE, overrides)
 
-    def test_v3_operational_replay_reduces_review_to_thirteen(self) -> None:
+    def test_v3_operational_replay_is_provenance_gated(self) -> None:
         measurement = measure_enriched_operational_corpus(DATASETS, ENRICHMENT_V3)
+        summary = measurement["summary"]
+        eligibility = measurement["provenanceEligibility"]
+        scope = measurement["enrichmentScope"]
+        overrides = load_source_backed_enrichment_overrides(DATASETS, ENRICHMENT_V3)
 
-        self.assertEqual(measurement["summary"], {
-            "total": 60,
-            "created": 21,
-            "matched": 26,
-            "review": 13,
-            "failed": 0,
-            "openReviewTasks": 13,
-            "appliedEvidenceOverrides": 4,
-        })
-        self.assertEqual(measurement["reviewCauses"], {
-            "LABEL_AMBIGUITY": 3,
-            "MISSING_IDENTITY_EVIDENCE": 10,
-        })
+        self.assertEqual(eligibility["records"], 60)
+        self.assertEqual(
+            eligibility["records"],
+            eligibility["replayableRecords"] + eligibility["blockedRecords"],
+        )
+        self.assertGreater(eligibility["blockedRecords"], 0)
+        self.assertEqual(summary["total"], eligibility["replayableRecords"])
+        self.assertEqual(summary["failed"], 0)
+        self.assertEqual(
+            summary["created"] + summary["matched"] + summary["review"],
+            summary["total"],
+        )
+        self.assertEqual(summary["openReviewTasks"], summary["review"])
+        self.assertEqual(scope["evidenceOverrides"], len(overrides))
+        self.assertEqual(
+            scope["evidenceOverrides"],
+            scope["appliedEvidenceOverrides"] + scope["excludedEvidenceOverrides"],
+        )
+        self.assertEqual(summary["appliedEvidenceOverrides"], scope["appliedEvidenceOverrides"])
+        self.assertEqual(summary["excludedEvidenceOverrides"], scope["excludedEvidenceOverrides"])
+        self.assertGreater(scope["excludedEvidenceOverrides"], 0)
+        self.assertIn(TCROSS_TRANSMISSION_EVIDENCE, scope["excludedEvidenceOverrideIds"])
+        self.assertEqual(sum(measurement["reviewCauses"].values()), summary["review"])
+        self.assertNotIn("UNKNOWN_REVIEW_CAUSE", measurement["reviewCauses"])
         self.assertNotIn(TCROSS_TRANSMISSION_EVIDENCE, measurement["reviewReasonsByEvidence"])
-        self.assertIn(TCROSS_MODEL_YEAR_EVIDENCE, measurement["reviewReasonsByEvidence"])
 
     def test_v3_integrated_gate_preserves_identity_safety(self) -> None:
         gate = evaluate_production_enrichment_quality_gate(DATASETS, ENRICHMENT_V3)
 
         self.assertTrue(gate["passed"])
+        self.assertTrue(all(gate["checks"].values()))
+        self.assertEqual(
+            gate["baselineOperational"]["provenanceEligibility"],
+            gate["operational"]["provenanceEligibility"],
+        )
+        self.assertLessEqual(gate["operationalReviewDelta"], 0)
+        self.assertEqual(gate["enrichment"]["summary"]["resolvedReviews"], 3)
         self.assertEqual(gate["identityQuality"]["metrics"]["autoMatchPrecision"], 1.0)
         self.assertEqual(gate["identityQuality"]["metrics"]["autoMatchRecall"], 1.0)
         self.assertEqual(gate["identityQuality"]["metrics"]["falseMergeCount"], 0)

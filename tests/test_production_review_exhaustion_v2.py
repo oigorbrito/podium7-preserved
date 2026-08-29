@@ -14,12 +14,14 @@ DATASETS = (
 )
 ENRICHMENT_V3 = ROOT / "benchmarks" / "source_backed_enrichment_v3.json"
 DISPOSITIONS = ROOT / "benchmarks" / "review_disposition_v2.json"
-EXPECTED_REVIEW_KEYS = {
+EXPECTED_OPERATIONAL_REVIEW_KEYS = {
     ("review-ford-mustang-variant-missing", "right"),
-    ("review-porsche-911-partial-variant-label", "left"),
-    ("review-porsche-911-partial-variant-label", "right"),
     ("review-bmw-g20-generic-vs-330i-label", "left"),
     ("review-bmw-g20-generic-vs-330i-label", "right"),
+}
+EXPECTED_PROVENANCE_BLOCKED_DISPOSITION_KEYS = {
+    ("review-porsche-911-partial-variant-label", "left"),
+    ("review-porsche-911-partial-variant-label", "right"),
     ("br-review-corolla-cross-xrx-hybrid-missing-variant", "right"),
     ("br-review-onix-premier-missing-variant", "right"),
     ("br-review-tcross-250-tsi-missing-variant", "right"),
@@ -32,20 +34,26 @@ EXPECTED_REVIEW_KEYS = {
 
 
 class ProductionReviewExhaustionV2Tests(unittest.TestCase):
-    def test_current_v3_review_queue_is_fully_assessed(self) -> None:
+    def test_current_v3_operational_review_queue_is_fully_assessed(self) -> None:
         report = evaluate_review_dispositions(DATASETS, ENRICHMENT_V3, DISPOSITIONS)
+        summary = report["summary"]
+        eligibility = report["provenanceEligibility"]
 
-        self.assertEqual(report["summary"]["openReviews"], 13)
         if report["unassessedItems"]:
             self.fail(json.dumps(report["unassessedItems"], sort_keys=True))
-        self.assertEqual(report["summary"], {
-            "openReviews": 13,
-            "durableHumanReview": 13,
-            "unassessed": 0,
-            "unusedDispositions": 0,
-            "blocked": 0,
-            "resolverPolicyChanges": 0,
-        })
+        self.assertEqual(eligibility["records"], 60)
+        self.assertEqual(
+            eligibility["records"],
+            eligibility["replayableRecords"] + eligibility["blockedRecords"],
+        )
+        self.assertGreater(eligibility["blockedRecords"], 0)
+        self.assertEqual(summary["openReviews"], 3)
+        self.assertEqual(summary["durableHumanReview"], summary["openReviews"])
+        self.assertEqual(summary["unassessed"], 0)
+        self.assertEqual(summary["unusedDispositions"], 0)
+        self.assertEqual(summary["provenanceBlockedDispositions"], 10)
+        self.assertEqual(summary["blocked"], 0)
+        self.assertEqual(summary["resolverPolicyChanges"], 0)
         self.assertEqual(report["unassessedCaseIds"], [])
         self.assertEqual(report["unusedDispositionCaseIds"], [])
         self.assertEqual(report["unassessedReviewKeys"], [])
@@ -56,7 +64,18 @@ class ProductionReviewExhaustionV2Tests(unittest.TestCase):
                 (item["caseId"], item["side"])
                 for item in report["durableHumanReviewItems"]
             },
-            EXPECTED_REVIEW_KEYS,
+            EXPECTED_OPERATIONAL_REVIEW_KEYS,
+        )
+        self.assertEqual(
+            {
+                (item["caseId"], item["side"])
+                for item in report["provenanceBlockedDispositionKeys"]
+            },
+            EXPECTED_PROVENANCE_BLOCKED_DISPOSITION_KEYS,
+        )
+        self.assertEqual(
+            summary["durableHumanReview"] + summary["provenanceBlockedDispositions"],
+            13,
         )
 
     def test_case_disposition_does_not_cover_an_unassessed_side(self) -> None:
@@ -64,7 +83,7 @@ class ProductionReviewExhaustionV2Tests(unittest.TestCase):
         decision = next(
             item
             for item in payload["decisions"]
-            if item["caseId"] == "review-porsche-911-partial-variant-label"
+            if item["caseId"] == "review-bmw-g20-generic-vs-330i-label"
         )
         right_evidence_id = decision["evidenceIdsBySide"]["right"]
         decision["sides"] = ["right"]
@@ -80,14 +99,14 @@ class ProductionReviewExhaustionV2Tests(unittest.TestCase):
             report["unassessedReviewKeys"],
             [
                 {
-                    "caseId": "review-porsche-911-partial-variant-label",
+                    "caseId": "review-bmw-g20-generic-vs-330i-label",
                     "side": "left",
-                    "evidenceId": "operational:1.0:review-porsche-911-partial-variant-label:left",
+                    "evidenceId": "operational:1.0:review-bmw-g20-generic-vs-330i-label:left",
                 }
             ],
         )
         self.assertNotIn(
-            ("review-porsche-911-partial-variant-label", "left"),
+            ("review-bmw-g20-generic-vs-330i-label", "left"),
             {
                 (item["caseId"], item["side"])
                 for item in report["durableHumanReviewItems"]
