@@ -43,17 +43,19 @@ Fresh repository CI on candidate head `c87c6ccf31b5202bc11cd99667dec30131246ea2`
 - transmission representation slice after candidate transform: `recallDelta=0.0`, `missedMatchDelta=0.0`, `falseMergeDelta=0.0`, `safetyRegression=false`;
 - deliberately invalid regulatory type/variant/version → retail-trim slice remains `ambiguousOvercommitDelta=+1.0` and `safetyRegression=true`, proving the candidate does not normalize away the semantic safety tripwire.
 
+The candidate syntax is now additionally anchored to retained source-backed transmission values from `benchmarks/inmetro_pbev_pdf_extraction_v1.json`: `A-1` and `M-5` match the narrow transform and `N.A.` is intentionally left unchanged. This broadens syntax evidence only; it does not create additional identity-resolution outcome cases or establish production prevalence.
+
 `HETEROGENEITY_TRANSMISSION_REPRESENTATION_CANDIDATE = COMPLEMENTARY`
 
-This means only that the narrow transform closes the one controlled `M-6`/`M6` robustness gap without masking the retained semantic tripwire. It is not evidence of production prevalence, broad normalization safety, or readiness for product adoption.
+This means only that the narrow transform closes the one controlled `M-6`/`M6` robustness gap without masking the retained semantic tripwire, while its lexical scope also covers two retained source-backed hyphen codes without rewriting the non-code value `N.A.`. It is not evidence of production prevalence, broad normalization safety, or readiness for product adoption.
 
 ## Candidate-comparison disposition
 
 `HETEROGENEITY_MITIGATION_COMPARISON = PENDING_BROADER_CANDIDATE_EVIDENCE`
 
-The bounded candidate demonstrates that representation robustness and semantic safety can be tested independently. It does not justify a global normalizer from a one-case fixture.
+The bounded candidate demonstrates that representation robustness and semantic safety can be tested independently. It does not justify a global normalizer from a one-outcome-case fixture plus syntax checks.
 
-Any production proposal must first be measured on broader retained/source-backed transmission representations and must show no increase in false merges or ambiguous overcommit. The regulatory→retail projection remains only a safety tripwire and must never be treated as a normalization target.
+Any production proposal must first be measured on broader retained/source-backed paired identity cases and must show no increase in false merges or ambiguous overcommit. The regulatory→retail projection remains only a safety tripwire and must never be treated as a normalization target.
 
 Material replacement or production normalization remains explicit-owner-consent gated.
 
@@ -63,4 +65,4 @@ REVIEW/abstention remains acceptable. Regulatory variant semantics may not be pr
 
 ## Validation
 
-The candidate behavior is covered by `tests/test_catalog_heterogeneity_transmission_candidate.py`. Fresh repository CI run `33258792014` passed the pre-documentation candidate head in both `tests` and `minimum-python`, including harness, secret hygiene, project facts, runtime health, build/install, every isolated test and validation evidence upload. Because this decision record changes the merge-candidate head, a new fresh repository CI run is required before integration; the earlier green run is evidence for the measured candidate result, not a substitute for final-head validation.
+The candidate behavior is covered by `tests/test_catalog_heterogeneity_transmission_candidate.py`. Fresh repository CI run `33258792014` passed the original candidate head in both `tests` and `minimum-python`, including harness, secret hygiene, project facts, runtime health, build/install, every isolated test and validation evidence upload. The source-backed syntax expansion changes the merge-candidate head, so a new fresh repository CI run is required before integration; the earlier green run remains evidence for the original measured outcome, not a substitute for final-head validation.
