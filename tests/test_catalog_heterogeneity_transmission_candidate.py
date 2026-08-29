@@ -1,4 +1,6 @@
 from dataclasses import replace
+import json
+from pathlib import Path
 import re
 import unittest
 
@@ -8,6 +10,7 @@ from podium7.catalog_heterogeneity_adapter import compare_catalog_heterogeneity
 
 
 _TRANSMISSION_HYPHEN_CODE = re.compile(r"^([A-Za-z]+)-(\d+)$")
+_GOLD_PATH = Path("benchmarks/inmetro_pbev_pdf_extraction_v1.json")
 
 
 def _normalize_transmission_code(value: str | None) -> str | None:
@@ -78,6 +81,14 @@ def _dataset(
 
 
 class TransmissionRepresentationCandidateTests(unittest.TestCase):
+    def test_candidate_syntax_is_bounded_by_retained_inmetro_codes(self) -> None:
+        payload = json.loads(_GOLD_PATH.read_text(encoding="utf-8"))
+        retained = {case["expected"]["transmission"] for case in payload["cases"]}
+        self.assertEqual({"N.A.", "A-1", "M-5"}, retained)
+        self.assertEqual("A1", _normalize_transmission_code("A-1"))
+        self.assertEqual("M5", _normalize_transmission_code("M-5"))
+        self.assertEqual("N.A.", _normalize_transmission_code("N.A."))
+
     def test_hyphen_code_candidate_recovers_representation_recall_without_false_merge(self) -> None:
         clean = _dataset(
             "clean",
