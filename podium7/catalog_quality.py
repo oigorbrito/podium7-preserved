@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-from collections import Counter
+from collections import Counter, defaultdict
 from pathlib import Path
 from typing import Any, Iterable
 
+from .catalog import CatalogVehicleIdentity
 from .catalog_benchmark import evaluate_catalog_identity_benchmark, load_catalog_identity_benchmark
 
 
@@ -37,6 +38,69 @@ def evaluate_identity_quality(paths: Iterable[str | Path]) -> dict[str, Any]:
             "reviewRate": rate(review, len(cases)),
         },
         "cases": cases,
+    }
+
+
+def _present_identity_fields(identity: CatalogVehicleIdentity) -> set[str]:
+    present: set[str] = set()
+    for field_name, value in vars(identity).items():
+        if value is None:
+            continue
+        if isinstance(value, tuple) and not value:
+            continue
+        present.add(field_name)
+    return present
+
+
+def measure_field_source_contribution(paths: Iterable[str | Path]) -> dict[str, Any]:
+    datasets = [load_catalog_identity_benchmark(path) for path in paths]
+    if not datasets:
+        raise ValueError("at least one identity benchmark is required")
+
+    total_by_dimension: Counter[str] = Counter()
+    attributed_by_dimension: Counter[str] = Counter()
+    contribution: dict[str, Counter[str]] = defaultdict(Counter)
+    dataset_versions: list[str] = []
+
+    for dataset in datasets:
+        dataset_versions.append(dataset.version)
+        for case in dataset.cases:
+            for identity, attribution in (
+                (case.left, case.left_field_source_ids),
+                (case.right, case.right_field_source_ids),
+            ):
+                present_fields = _present_identity_fields(identity)
+                total_by_dimension.update(present_fields)
+                for field_name, source_ids in attribution.items():
+                    attributed_by_dimension[field_name] += 1
+                    for source_id in source_ids:
+                        contribution[field_name][source_id] += 1
+
+    total_fields = sum(total_by_dimension.values())
+    attributed_fields = sum(attributed_by_dimension.values())
+    coverage_by_dimension = {
+        field_name: attributed_by_dimension[field_name] / total
+        for field_name, total in sorted(total_by_dimension.items())
+    }
+    unattributed_by_dimension = {
+        field_name: total - attributed_by_dimension[field_name]
+        for field_name, total in sorted(total_by_dimension.items())
+    }
+
+    return {
+        "schema": "podium7.field-source-contribution.v1",
+        "datasets": dataset_versions,
+        "totalPresentFieldObservations": total_fields,
+        "attributedFieldObservations": attributed_fields,
+        "attributionCoverage": attributed_fields / total_fields if total_fields else None,
+        "totalByDimension": dict(sorted(total_by_dimension.items())),
+        "attributedByDimension": dict(sorted(attributed_by_dimension.items())),
+        "unattributedByDimension": unattributed_by_dimension,
+        "coverageByDimension": coverage_by_dimension,
+        "sourceContributionByDimension": {
+            field_name: dict(sorted(source_counts.items()))
+            for field_name, source_counts in sorted(contribution.items())
+        },
     }
 
 
@@ -95,5 +159,6 @@ __all__ = [
     "analyze_review_cases",
     "classify_review_reason",
     "evaluate_identity_quality",
+    "measure_field_source_contribution",
     "review_disposition",
 ]
