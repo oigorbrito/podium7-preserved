@@ -36,7 +36,9 @@ VIN decode methods may produce source-backed attributes for a concrete VIN/parti
 4. the evidence record retains the exact request locator or canonical request representation plus raw response bytes/hash;
 5. no existing Podium semantic invariant is widened to make the field fit.
 
-A missing, blank, null, unknown or error-valued vPIC variable is absence of evidence. It is never negative evidence that the vehicle lacks the attribute.
+A missing, blank or null vPIC variable is absence of evidence. It is never negative evidence that the vehicle lacks the attribute.
+
+vPIC explicitly supports partial VIN decoding. For the bounded `DecodeVinValues` adapter, source error-code handling is conservative and explicit: code `0` (clean decode) and code `6` (incomplete VIN/partial decode) are the only admitted decode states. Any other code, alone or combined with `6`, fails closed before candidate facts are emitted. This prevents a response that explicitly warns of inaccurate model-year/data semantics (for example code `11`) or unavailable/invalid decode conditions from becoming evidence merely because some fields are populated. Expanding the admitted code set requires a separate source-backed contract change.
 
 ## Initial field contract
 
@@ -107,10 +109,10 @@ The evidence store must preserve the source → raw evidence → candidate → n
 
 A VIN-evidence adapter must freeze independently inspected responses covering at least:
 
-1. a case with explicit model year plus configuration variables intended for mapping;
+1. a clean or supported partial-VIN case with explicit model year plus configuration variables intended for mapping;
 2. a case with one or more absent optional variables, proving no negative inference;
-3. an unsupported/unregistered variable value that fails closed;
-4. a malformed/error response path;
+3. an unsupported/unregistered variable or decode-error state that fails closed;
+4. a malformed response path;
 5. duplicate/conflicting source representation handling where applicable.
 
 Fixtures must pin exact bytes/hash and expected source-to-Podium mappings independently of extraction code.
