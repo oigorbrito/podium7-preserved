@@ -1,0 +1,13 @@
+{
+  "schema": "podium7.identity-safety-baseline.v1",
+  "baselineVersion": "production-quality-gate-v3",
+  "datasets": ["1.0", "br-1.0", "br-adjacent-incomplete-1.0"],
+  "totalCases": 30,
+  "metrics": {
+    "autoMatchPrecision": 1.0,
+    "autoMatchRecall": 1.0,
+    "falseMergeCount": 0,
+    "ambiguousOvercommitCount": 0
+  },
+  "sourceDocument": "docs/PRODUCTION-QUALITY-GATE-V3.md"
+}
