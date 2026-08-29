@@ -227,6 +227,23 @@ class CatalogReviewQueueTests(unittest.TestCase):
         )
         self.assertEqual(first, second)
 
+    def test_review_enqueue_persists_explicit_field_bindings(self) -> None:
+        task = self.enqueue(6)
+        bindings = self.queue.review_field_bindings(task.id)
+
+        self.assertTrue(bindings)
+        self.assertTrue(all(binding["bindingVersion"] == 1 for binding in bindings))
+        self.assertEqual(
+            {binding["sourceId"] for binding in bindings},
+            {SOURCE.id},
+        )
+        self.assertEqual(
+            {binding["rawEvidenceId"] for binding in bindings},
+            {task.evidence_id},
+        )
+        self.assertIn("make", {binding["fieldName"] for binding in bindings})
+        self.assertIn("model", {binding["fieldName"] for binding in bindings})
+
     def test_enqueue_rejects_same_evidence_with_different_identity(self) -> None:
         task = self.enqueue(7)
         changed = CatalogVehicleIdentity(make="Toyota", model="RAV4")
@@ -237,6 +254,48 @@ class CatalogReviewQueueTests(unittest.TestCase):
                 candidate_vehicle_ids=task.candidate_vehicle_ids,
                 comparisons=task.comparisons,
             )
+
+    def test_review_enqueue_rolls_back_bindings_on_failure(self) -> None:
+        item = self.add_evidence(7)
+        candidate = self.seed_candidate()
+        self.store._connection.execute(
+            """
+            CREATE TRIGGER review_binding_fail AFTER INSERT ON catalog_v2_review_field_bindings
+            WHEN NEW.field_name = 'model'
+            BEGIN
+                SELECT RAISE(ABORT, 'binding failure');
+            END
+            """
+        )
+        with self.assertRaisesRegex(ValueError, "binding failure"):
+            self.queue.enqueue(
+                evidence_id=item.id,
+                identity=full_identity(),
+                candidate_vehicle_ids=(candidate,),
+                comparisons=(
+                    CatalogReviewComparison(candidate, "REVIEW", "incomplete"),
+                ),
+            )
+        self.assertIsNone(self.queue.get_by_evidence(item.id))
+        self.assertEqual(self.queue.review_field_bindings("review_missing"), [])
+
+    def test_legacy_review_without_binding_remains_explicit(self) -> None:
+        item = self.add_evidence(8)
+        candidate = self.seed_candidate()
+        task = self.queue.enqueue(
+            evidence_id=item.id,
+            identity=full_identity(),
+            candidate_vehicle_ids=(candidate,),
+            comparisons=(
+                CatalogReviewComparison(candidate, "REVIEW", "incomplete"),
+            ),
+        )
+        self.store._connection.execute(
+            "DELETE FROM catalog_v2_review_field_bindings WHERE review_id = ?",
+            (task.id,),
+        )
+        self.assertEqual(self.queue.review_field_bindings(task.id), [])
+        self.assertIsNotNone(self.queue.get(task.id))
 
     def test_get_unknown_returns_none(self) -> None:
         self.assertIsNone(self.queue.get("review_missing"))
