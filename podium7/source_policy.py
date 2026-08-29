@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from enum import Enum
+import math
 from urllib.parse import urlparse
 from urllib.robotparser import RobotFileParser
 
@@ -22,10 +23,14 @@ class SourceOperationPolicy:
     robots_mode: RobotsMode = RobotsMode.REQUIRED
 
     def __post_init__(self) -> None:
-        if not self.source_id.strip() or not self.host.strip() or not self.user_agent.strip():
+        if any(not isinstance(value, str) or not value.strip() for value in (self.source_id, self.host, self.user_agent)):
             raise ValueError("source_id, host, and user_agent are required")
-        if self.min_interval_seconds < 0:
-            raise ValueError("min_interval_seconds cannot be negative")
+        if isinstance(self.min_interval_seconds, bool) or not isinstance(self.min_interval_seconds, (int, float)):
+            raise ValueError("min_interval_seconds must be a finite non-negative number")
+        if not math.isfinite(float(self.min_interval_seconds)) or self.min_interval_seconds < 0:
+            raise ValueError("min_interval_seconds must be a finite non-negative number")
+        if not isinstance(self.robots_mode, RobotsMode):
+            raise ValueError("robots_mode must be a RobotsMode value")
 
 
 @dataclass(frozen=True)
@@ -41,6 +46,8 @@ class RecurringSourceGate:
         self._rate_limiter = RateLimiter(policy.min_interval_seconds)
 
     def evaluate(self, locator: str, *, now: float, robots_text: str | None = None) -> SourceOperationDecision:
+        if isinstance(now, bool) or not isinstance(now, (int, float)) or not math.isfinite(float(now)):
+            raise ValueError("now must be a finite number")
         parsed = urlparse(locator)
         if parsed.scheme != "https" or parsed.hostname is None:
             return SourceOperationDecision(False, "INVALID_LOCATOR", self.policy.min_interval_seconds)
@@ -65,6 +72,6 @@ class RecurringSourceGate:
 
         if effective_interval != self._rate_limiter.min_interval_seconds:
             self._rate_limiter.min_interval_seconds = effective_interval
-        if not self._rate_limiter.allow(self.policy.host.casefold(), now):
+        if not self._rate_limiter.allow(self.policy.host.casefold(), float(now)):
             return SourceOperationDecision(False, "HOST_PACING", effective_interval)
         return SourceOperationDecision(True, "ALLOW", effective_interval)
