@@ -1,0 +1,100 @@
+{
+  "schema": "podium7.pbev-quantitative-semantic-observation.v1",
+  "datasetVersion": "inmetro-pbev-2026-2026-08-observation-1.0",
+  "status": "LIVE_SOURCE_OBSERVATION_NOT_ACCEPTANCE",
+  "source": {
+    "publisher": "Instituto Nacional de Metrologia, Qualidade e Tecnologia (Inmetro)",
+    "landingPage": "https://www.gov.br/inmetro/pt-br/assuntos/regulamentacao/avaliacao-da-conformidade/programa-brasileiro-de-etiquetagem/tabelas-de-eficiencia-energetica/veiculos-automotivos-pbe-veicular",
+    "documentLocator": "https://www.gov.br/inmetro/pt-br/assuntos/regulamentacao/avaliacao-da-conformidade/programa-brasileiro-de-etiquetagem/tabelas-de-eficiencia-energetica/veiculos-automotivos-pbe-veicular/mascara-pbev-2026_19_jan-rev01.pdf/@@download/file",
+    "landingPageUpdatedAt": "2026-08-19T08:16:00-03:00",
+    "documentInternalUpdate": "14-Aug-26",
+    "documentPage": 1,
+    "reportedBrands": 43,
+    "reportedModelsVersions": 965,
+    "rawContentSha256": null,
+    "snapshotLocator": null,
+    "snapshotRetrievability": "LIVE_MUTABLE_SOURCE_ONLY"
+  },
+  "acceptanceGuard": {
+    "sourceBoundAcceptanceAllowed": false,
+    "reason": "The current publication was inspected through the mutable official locator, but exact response bytes were not retained and SHA-256-bound for this observation. This artifact may constrain semantics but must not satisfy issue #232 acceptance or replace the historical extraction gold."
+  },
+  "fields": {
+    "energy_consumption": {
+      "status": "OBSERVED",
+      "sourceLabel": "Consumo Energético",
+      "sourceUnit": "MJ/km",
+      "valueShape": "scalar",
+      "missingness": "COLUMN_SPECIFIC_REVIEW_REQUIRED"
+    },
+    "electric_range": {
+      "status": "OBSERVED",
+      "sourceLabel": "Autonomia no modo Elétrico",
+      "sourceUnit": "km",
+      "valueShape": "scalar",
+      "missingness": "COLUMN_SPECIFIC_REVIEW_REQUIRED"
+    },
+    "fuel_consumption_city": {
+      "status": "BLOCKED_PENDING_SOURCE_BOUND_HEADER_CONTEXT",
+      "sourceLabel": "Cidade",
+      "sourceUnit": "km/l",
+      "requiredContext": ["fuel"],
+      "rule": "Do not bind ethanol/gasoline context from column position without source-bound header evidence."
+    },
+    "fuel_consumption_highway": {
+      "status": "BLOCKED_PENDING_SOURCE_BOUND_HEADER_CONTEXT",
+      "sourceLabel": "Estrada",
+      "sourceUnit": "km/l",
+      "requiredContext": ["fuel"],
+      "rule": "Do not bind ethanol/gasoline context from column position without source-bound header evidence."
+    },
+    "co2_fossil": {
+      "status": "BLOCKED_PENDING_EXACT_COLUMN_SEMANTICS",
+      "sourceLabel": "CO2 fóssil",
+      "sourceUnit": "g/km"
+    },
+    "co2e_fossil": {
+      "status": "BLOCKED_PENDING_EXACT_COLUMN_SEMANTICS",
+      "sourceLabel": "CO2e fóssil",
+      "sourceUnit": "g/km"
+    }
+  },
+  "missingMarkersObserved": ["ND", "N.A."],
+  "cases": [
+    {
+      "id": "pbev-current-p1-byd-dolphin-mini-gs-ev",
+      "evidenceLocator": "documentPage=1; row beginning 'Sub Compacto BYD DOLPHIN MINI GS EV'",
+      "identity": {
+        "make": "BYD",
+        "model": "DOLPHIN MINI",
+        "variant": "GS EV",
+        "propulsionType": "Elétrico"
+      },
+      "observedQuantities": {
+        "energy_consumption": {"value": 0.41, "unit": "MJ/km"},
+        "electric_range": {"value": 280, "unit": "km"}
+      }
+    },
+    {
+      "id": "pbev-current-p1-fiat-mobi-trekking",
+      "evidenceLocator": "documentPage=1; row beginning 'Sub Compacto FIAT MOBI TREKKING 1.0-6V'",
+      "identity": {
+        "make": "FIAT",
+        "model": "MOBI",
+        "variant": "TREKKING",
+        "propulsionType": "Combustão"
+      },
+      "observedQuantities": {
+        "energy_consumption": {"value": 1.46, "unit": "MJ/km"}
+      },
+      "unboundObservations": {
+        "fuelConsumptionValuesPresent": true,
+        "reason": "Fuel-specific city/highway values are intentionally not promoted until source-bound header context is retained."
+      }
+    }
+  ],
+  "identityBoundary": {
+    "quantitativeFactsParticipateInIdentityResolution": false,
+    "rule": "Resolve canonical vehicle/configuration identity first; quantitative facts attach only after identity resolution. Equal quantitative values never imply identity."
+  }
+}
