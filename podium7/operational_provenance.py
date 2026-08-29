@@ -1,0 +1,137 @@
+from __future__ import annotations
+
+from collections import Counter
+import json
+from pathlib import Path
+from typing import Any, Iterable, Mapping
+
+from .catalog_benchmark import load_catalog_identity_benchmark
+
+
+def _present_vehicle_fields(vehicle: Mapping[str, Any]) -> tuple[str, ...]:
+    return tuple(
+        field_name
+        for field_name, value in vehicle.items()
+        if value is not None and not (isinstance(value, (list, tuple)) and not value)
+    )
+
+
+def unique_source_for_record(
+    case: Mapping[str, Any],
+    *,
+    side: str,
+    known_sources: set[str],
+) -> tuple[str, str]:
+    case_id = case.get("id")
+    vehicle = case.get(side)
+    if not isinstance(vehicle, Mapping):
+        raise ValueError(f"case {case_id!r} {side} vehicle must be an object")
+
+    raw_field_sources = case.get("fieldSourceIds")
+    case_sources = case.get("sourceIds")
+    if not isinstance(case_sources, list) or not case_sources:
+        raise ValueError(f"case {case_id!r} has invalid case-level source attribution")
+    if any(not isinstance(source_id, str) or not source_id.strip() for source_id in case_sources):
+        raise ValueError(f"case {case_id!r} has invalid case-level source attribution")
+    if len(set(case_sources)) != len(case_sources):
+        raise ValueError(f"case {case_id!r} has duplicate case-level source attribution")
+    if set(case_sources) - known_sources:
+        raise ValueError(f"case {case_id!r} references unknown source ids")
+
+    if raw_field_sources is None:
+        if len(case_sources) == 1:
+            return case_sources[0], "SOLE_CASE_SOURCE"
+        raise ValueError(
+            f"case {case_id!r} has multiple sourceIds and lacks explicit field-level source attribution for operational replay"
+        )
+    if not isinstance(raw_field_sources, Mapping):
+        raise ValueError(f"case {case_id!r} fieldSourceIds must be an object when provided")
+    side_sources = raw_field_sources.get(side)
+    if not isinstance(side_sources, Mapping):
+        raise ValueError(f"case {case_id!r} lacks explicit field-level source attribution for {side}")
+
+    common_sources: set[str] | None = None
+    for field_name in _present_vehicle_fields(vehicle):
+        source_ids = side_sources.get(field_name)
+        if not isinstance(source_ids, list) or not source_ids:
+            raise ValueError(f"case {case_id!r} {side}.{field_name} lacks explicit source attribution")
+        if any(not isinstance(source_id, str) or not source_id.strip() for source_id in source_ids):
+            raise ValueError(f"case {case_id!r} {side}.{field_name} has invalid source attribution")
+        if len(set(source_ids)) != len(source_ids):
+            raise ValueError(f"case {case_id!r} {side}.{field_name} source attribution contains duplicates")
+        attributed = set(source_ids)
+        if attributed - known_sources:
+            raise ValueError(f"case {case_id!r} {side}.{field_name} references unknown source ids")
+        common_sources = attributed if common_sources is None else common_sources & attributed
+
+    if common_sources is None or len(common_sources) != 1:
+        raise ValueError(f"case {case_id!r} {side} has no unique source common to every present field")
+    return next(iter(common_sources)), "EXPLICIT_FIELD_ATTRIBUTION"
+
+
+def measure_operational_provenance_eligibility(paths: Iterable[str | Path]) -> dict[str, Any]:
+    records: list[dict[str, Any]] = []
+    dataset_versions: list[str] = []
+    case_ids: set[str] = set()
+
+    for raw_path in paths:
+        path = Path(raw_path)
+        load_catalog_identity_benchmark(path)
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        version = payload["datasetVersion"]
+        dataset_versions.append(version)
+        known_sources = {source["id"] for source in payload["sources"]}
+
+        for case in payload["cases"]:
+            case_id = case["id"]
+            case_ids.add(f"{version}:{case_id}")
+            for side in ("left", "right"):
+                try:
+                    source_id, method = unique_source_for_record(
+                        case,
+                        side=side,
+                        known_sources=known_sources,
+                    )
+                except ValueError as exc:
+                    records.append({
+                        "datasetVersion": version,
+                        "caseId": case_id,
+                        "side": side,
+                        "replayable": False,
+                        "method": None,
+                        "sourceId": None,
+                        "reason": str(exc),
+                    })
+                else:
+                    records.append({
+                        "datasetVersion": version,
+                        "caseId": case_id,
+                        "side": side,
+                        "replayable": True,
+                        "method": method,
+                        "sourceId": source_id,
+                        "reason": None,
+                    })
+
+    if not records:
+        raise ValueError("operational provenance eligibility requires at least one record")
+
+    replayable = [record for record in records if record["replayable"]]
+    blocked = [record for record in records if not record["replayable"]]
+    return {
+        "schema": "podium7.operational-provenance-eligibility.v1",
+        "datasets": dataset_versions,
+        "summary": {
+            "cases": len(case_ids),
+            "records": len(records),
+            "replayableRecords": len(replayable),
+            "blockedRecords": len(blocked),
+            "replayableRate": len(replayable) / len(records),
+            "replayableByMethod": dict(sorted(Counter(record["method"] for record in replayable).items())),
+            "blockedByReason": dict(sorted(Counter(record["reason"] for record in blocked).items())),
+        },
+        "records": records,
+    }
+
+
+__all__ = ["measure_operational_provenance_eligibility", "unique_source_for_record"]
