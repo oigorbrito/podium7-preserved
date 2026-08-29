@@ -1,6 +1,6 @@
 # Heterogeneity stress benchmark — issue #170
 
-Status: benchmark contract integrated; current-resolver baseline measured; one bounded representation candidate measured; broader mitigation comparison remains open
+Status: benchmark contract integrated; current-resolver baseline measured; one bounded representation candidate integrated; broader mitigation comparison remains open
 
 ## Goal
 
@@ -23,7 +23,7 @@ These are bounded controlled-fixture measurements. They are not production-wide 
 2. Flag any increase in false merges or ambiguous overcommit as a safety regression. — complete.
 3. Construct controlled automotive slices, including regulatory type/variant/version versus retail trim, without changing source semantics. — complete.
 4. Evaluate current Podium behavior on clean and heterogeneous slices. — complete for the retained controlled baseline fixtures.
-5. Evaluate candidate normalization/schema-mapping/blocking/matching approaches only after a concrete candidate is defined. — one bounded transmission-representation candidate measured; broader candidates remain open.
+5. Evaluate candidate normalization/schema-mapping/blocking/matching approaches only after a concrete candidate is defined. — one bounded transmission-representation candidate measured and integrated; broader candidates remain open.
 6. Record `CURRENT_BETTER`, `NEW_BETTER`, `COMPLEMENTARY`, or `NO_MATERIAL_GAIN` only at the scope actually measured; material replacement requires explicit owner consent. — bounded transmission representation disposition recorded below; no global mitigation winner declared.
 
 ## Benchmark-contract utility disposition
@@ -61,8 +61,14 @@ Material replacement or production normalization remains explicit-owner-consent 
 
 ## Safety
 
-REVIEW/abstention remains acceptable. Regulatory variant semantics may not be promoted to retail trim by convenience. Manufacture/model year and all frozen source/evidence boundaries remain unchanged. The candidate transformation exists only in benchmark tests on this branch.
+REVIEW/abstention remains acceptable. Regulatory variant semantics may not be promoted to retail trim by convenience. Manufacture/model year and all frozen source/evidence boundaries remain unchanged. The candidate transformation remains test-only; integration of the benchmark probe does not change production resolver behavior.
 
 ## Validation
 
-The candidate behavior is covered by `tests/test_catalog_heterogeneity_transmission_candidate.py`. Fresh repository CI run `33258792014` passed the original candidate head in both `tests` and `minimum-python`, including harness, secret hygiene, project facts, runtime health, build/install, every isolated test and validation evidence upload. The source-backed syntax expansion changes the merge-candidate head, so a new fresh repository CI run is required before integration; the earlier green run remains evidence for the original measured outcome, not a substitute for final-head validation.
+The candidate behavior is covered by `tests/test_catalog_heterogeneity_transmission_candidate.py`.
+
+- Original measured candidate head `c87c6ccf31b5202bc11cd99667dec30131246ea2`: fresh repository CI run `33258792014` passed in both `tests` and `minimum-python`.
+- Final source-backed syntax-expansion head `3d6917892c6cb25e119ce8039664f04af1423b10`: fresh repository CI run `33259480461` passed in both jobs, including secret hygiene, repository harness, project facts, runtime health, package build/install, every test in isolation and validation evidence upload.
+- PR #213 was then integrated into `main` by merge commit `908dd4713689da61503f6d6ead6a149b031d4685`.
+
+Those green runs validate the bounded benchmark probe only. They do not authorize a production normalizer, establish prevalence, or complete the broader heterogeneity-mitigation comparison.
