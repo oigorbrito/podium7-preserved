@@ -6,6 +6,10 @@ from datetime import datetime
 from typing import Any
 
 from .catalog import CatalogStore
+from .catalog_batch_failure import (
+    CatalogBatchFailureSnapshot,
+    CatalogBatchFailureStore,
+)
 from .catalog_ingestion import (
     CatalogIngestionAction,
     CatalogIngestionResult,
@@ -217,12 +221,31 @@ def _success_result(
     )
 
 
+def _failure_snapshot(
+    index: int,
+    envelope: CatalogBatchEnvelope,
+    error_message: str,
+) -> CatalogBatchFailureSnapshot:
+    return CatalogBatchFailureSnapshot(
+        evidence_id=envelope.evidence.id,
+        index=index,
+        record_id=envelope.record_id,
+        source_id=envelope.source.id,
+        source_locator=envelope.source.locator,
+        evidence_locator=envelope.evidence.locator,
+        raw_content_ref=envelope.evidence.raw_content_ref,
+        error_code=CATALOG_BATCH_RECORD_ERROR,
+        error_message=error_message,
+    )
+
+
 def ingest_catalog_batch(
     store: CatalogStore,
     envelopes: Sequence[CatalogBatchEnvelope],
 ) -> CatalogBatchReport:
     results: list[CatalogBatchRecordResult] = []
     created = matched = review = failed = 0
+    failure_store = CatalogBatchFailureStore(store)
 
     for index, envelope in enumerate(envelopes):
         if not isinstance(envelope, CatalogBatchEnvelope):
@@ -235,6 +258,9 @@ def ingest_catalog_batch(
                 evidence=envelope.evidence,
             )
         except ValueError as exc:
+            message = str(exc)
+            with store.transaction():
+                failure_store.save(_failure_snapshot(index, envelope, message))
             failed += 1
             results.append(
                 CatalogBatchRecordResult(
@@ -243,7 +269,7 @@ def ingest_catalog_batch(
                     ok=False,
                     evidence_id=envelope.evidence.id,
                     error_code=CATALOG_BATCH_RECORD_ERROR,
-                    error_message=str(exc),
+                    error_message=message,
                 )
             )
             continue

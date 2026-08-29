@@ -1,0 +1,179 @@
+from __future__ import annotations
+
+from dataclasses import dataclass
+import json
+from typing import Any, Mapping
+
+from .catalog import CatalogStore
+
+
+BATCH_FAILURE_SCHEMA_VERSION = 1
+
+
+@dataclass(frozen=True)
+class CatalogBatchFailureSnapshot:
+    evidence_id: str
+    index: int
+    record_id: str | None
+    source_id: str
+    source_locator: str
+    evidence_locator: str
+    raw_content_ref: str
+    error_code: str
+    error_message: str
+
+    def __post_init__(self) -> None:
+        if isinstance(self.index, bool) or not isinstance(self.index, int) or self.index < 0:
+            raise ValueError("batch failure index must be a non-negative integer")
+        if self.record_id is not None and (not isinstance(self.record_id, str) or not self.record_id.strip()):
+            raise ValueError("batch failure record_id must be non-empty text when provided")
+        for field_name in (
+            "evidence_id",
+            "source_id",
+            "source_locator",
+            "evidence_locator",
+            "raw_content_ref",
+            "error_code",
+            "error_message",
+        ):
+            value = getattr(self, field_name)
+            if not isinstance(value, str) or not value.strip():
+                raise ValueError(f"batch failure {field_name} must be non-empty text")
+
+    def to_payload(self) -> dict[str, object]:
+        return {
+            "evidenceId": self.evidence_id,
+            "index": self.index,
+            "recordId": self.record_id,
+            "sourceId": self.source_id,
+            "sourceLocator": self.source_locator,
+            "evidenceLocator": self.evidence_locator,
+            "rawContentRef": self.raw_content_ref,
+            "error": {"code": self.error_code, "message": self.error_message},
+        }
+
+
+class CatalogBatchFailureStore:
+    def __init__(self, store: CatalogStore) -> None:
+        self.store = store
+        self._initialize()
+
+    def _initialize(self) -> None:
+        with self.store.transaction():
+            self.store._connection.execute(
+                """
+                CREATE TABLE IF NOT EXISTS catalog_batch_failure_metadata (
+                    component TEXT PRIMARY KEY,
+                    version INTEGER NOT NULL
+                )
+                """
+            )
+            self.store._connection.execute(
+                """
+                CREATE TABLE IF NOT EXISTS catalog_batch_failures (
+                    evidence_id TEXT PRIMARY KEY,
+                    payload_json TEXT NOT NULL
+                )
+                """
+            )
+            row = self.store._connection.execute(
+                "SELECT version FROM catalog_batch_failure_metadata WHERE component = 'catalog-batch-failure'"
+            ).fetchone()
+            if row is None:
+                self.store._connection.execute(
+                    "INSERT INTO catalog_batch_failure_metadata(component, version) VALUES ('catalog-batch-failure', ?)",
+                    (BATCH_FAILURE_SCHEMA_VERSION,),
+                )
+            else:
+                try:
+                    version = int(row[0])
+                except (TypeError, ValueError) as exc:
+                    raise ValueError("invalid catalog batch failure schema version") from exc
+                if version != BATCH_FAILURE_SCHEMA_VERSION:
+                    raise ValueError(f"unsupported catalog batch failure schema version {row[0]}")
+
+    @staticmethod
+    def _payload(snapshot: CatalogBatchFailureSnapshot) -> str:
+        if not isinstance(snapshot, CatalogBatchFailureSnapshot):
+            raise ValueError("snapshot must be a CatalogBatchFailureSnapshot")
+        return json.dumps(
+            snapshot.to_payload(),
+            ensure_ascii=False,
+            sort_keys=True,
+            separators=(",", ":"),
+        )
+
+    @staticmethod
+    def _decode_payload(raw: Any) -> CatalogBatchFailureSnapshot:
+        if not isinstance(raw, str):
+            raise ValueError("stored batch failure payload must be JSON text")
+        try:
+            payload = json.loads(raw)
+        except (TypeError, ValueError) as exc:
+            raise ValueError("stored batch failure payload must be valid JSON") from exc
+        if not isinstance(payload, Mapping):
+            raise ValueError("stored batch failure payload must be a JSON object")
+        error = payload.get("error")
+        if not isinstance(error, Mapping):
+            raise ValueError("stored batch failure error must be a JSON object")
+        try:
+            return CatalogBatchFailureSnapshot(
+                evidence_id=payload["evidenceId"],
+                index=payload["index"],
+                record_id=payload["recordId"],
+                source_id=payload["sourceId"],
+                source_locator=payload["sourceLocator"],
+                evidence_locator=payload["evidenceLocator"],
+                raw_content_ref=payload["rawContentRef"],
+                error_code=error["code"],
+                error_message=error["message"],
+            )
+        except KeyError as exc:
+            raise ValueError(f"stored batch failure payload is missing field {exc.args[0]}") from exc
+
+    def save(self, snapshot: CatalogBatchFailureSnapshot) -> None:
+        payload = self._payload(snapshot)
+        row = self.store._connection.execute(
+            "SELECT payload_json FROM catalog_batch_failures WHERE evidence_id = ?",
+            (snapshot.evidence_id,),
+        ).fetchone()
+        if row is None:
+            self.store._connection.execute(
+                "INSERT INTO catalog_batch_failures(evidence_id, payload_json) VALUES (?, ?)",
+                (snapshot.evidence_id, payload),
+            )
+            return
+        if row[0] != payload:
+            raise ValueError(
+                f"batch failure for evidence {snapshot.evidence_id!r} already exists with different metadata"
+            )
+
+    def get(self, evidence_id: str) -> CatalogBatchFailureSnapshot | None:
+        if not isinstance(evidence_id, str) or not evidence_id.strip():
+            raise ValueError("evidence_id is required")
+        row = self.store._connection.execute(
+            "SELECT payload_json FROM catalog_batch_failures WHERE evidence_id = ?",
+            (evidence_id,),
+        ).fetchone()
+        if row is None:
+            return None
+        return self._decode_payload(row[0])
+
+    def all(self) -> tuple[CatalogBatchFailureSnapshot, ...]:
+        rows = self.store._connection.execute(
+            "SELECT payload_json FROM catalog_batch_failures ORDER BY evidence_id"
+        ).fetchall()
+        return tuple(self._decode_payload(row[0]) for row in rows)
+
+    def count(self) -> int:
+        row = self.store._connection.execute(
+            "SELECT COUNT(*) FROM catalog_batch_failures"
+        ).fetchone()
+        return int(row[0])
+
+
+__all__ = [
+    "BATCH_FAILURE_SCHEMA_VERSION",
+    "CatalogBatchFailureSnapshot",
+    "CatalogBatchFailureStore",
+]
