@@ -1,0 +1,77 @@
+{
+  "schema": "podium7.production-end-to-end-corpus.v2",
+  "evidenceClass": "BOUNDED_REPOSITORY_RETAINED_OPERATIONAL_CORPUS",
+  "description": "Incrementally expands the existing six-record operational corpus with two records derived only from the already-retained vehicle-makes-models Artega snapshot. This is a bounded reproducibility probe, not production completeness or authority promotion.",
+  "baseCorpus": "benchmarks/production_end_to_end_corpus_v1.json",
+  "sourceSnapshot": {
+    "path": "data/raw/vehicle-makes-models/artega.json",
+    "sha256": "c168127c2a0684cd694fc79a95f1602f48a1b9bf65b1c45716034b0298276614",
+    "gitBlobSha": "560e795a8a0a9e97d20b7b201b3537962c7d6824",
+    "upstream": "https://github.com/gor3a/vehicle-makes-models/blob/560e795a8a0a9e97d20b7b201b3537962c7d6824/data/json/artega.json",
+    "acquisitionDate": "2026-08-19",
+    "repositoryRetentionTimestamp": "2026-08-19T21:26:04Z",
+    "timestampBoundary": "The source attribution retains acquisition date only. Catalog RawEvidence retrievedAt uses the first repository retention timestamp and must not be represented as an exact upstream-fetch time.",
+    "reuse": "ODbL-1.0 attribution recorded in data/raw/vehicle-makes-models/SOURCE.md"
+  },
+  "additionalRecords": [
+    {
+      "recordId": "vehicle-makes-models-artega-gt",
+      "source": {
+        "id": "vehicle-makes-models",
+        "name": "gor3a/vehicle-makes-models",
+        "locator": "https://github.com/gor3a/vehicle-makes-models"
+      },
+      "evidence": {
+        "id": "prod-e2e-v2-artega-gt",
+        "locator": "https://github.com/gor3a/vehicle-makes-models/blob/main/data/json/artega.json#/makes/0/models/0/generations/0/engines/0",
+        "retrievedAt": "2026-08-19T21:26:04Z",
+        "acquisitionMethod": "repository-retained-pinned-github-json-snapshot",
+        "rawContentRef": "sha256:c168127c2a0684cd694fc79a95f1602f48a1b9bf65b1c45716034b0298276614@data/raw/vehicle-makes-models/artega.json"
+      },
+      "vehicle": {
+        "make": "Artega",
+        "model": "GT",
+        "generation": "GT (2010)",
+        "powertrain": "3.6L V6 6AT (300 HP)",
+        "transmission": "6-speed automatic DSG"
+      }
+    },
+    {
+      "recordId": "vehicle-makes-models-artega-scalo",
+      "source": {
+        "id": "vehicle-makes-models",
+        "name": "gor3a/vehicle-makes-models",
+        "locator": "https://github.com/gor3a/vehicle-makes-models"
+      },
+      "evidence": {
+        "id": "prod-e2e-v2-artega-scalo",
+        "locator": "https://github.com/gor3a/vehicle-makes-models/blob/main/data/json/artega.json#/makes/0/models/1/generations/0/engines/0",
+        "retrievedAt": "2026-08-19T21:26:04Z",
+        "acquisitionMethod": "repository-retained-pinned-github-json-snapshot",
+        "rawContentRef": "sha256:c168127c2a0684cd694fc79a95f1602f48a1b9bf65b1c45716034b0298276614@data/raw/vehicle-makes-models/artega.json"
+      },
+      "vehicle": {
+        "make": "Artega",
+        "model": "Scalo",
+        "generation": "Scalo (2015)",
+        "powertrain": "37 KWh (265 HP)",
+        "transmission": "1-Speed automatic"
+      }
+    }
+  ],
+  "expected": {
+    "total": 8,
+    "created": 5,
+    "matched": 2,
+    "review": 1,
+    "failed": 0,
+    "catalogVehicles": 5,
+    "consumerItems": 5
+  },
+  "nonClaims": [
+    "production completeness",
+    "vehicle-makes-models authority promotion",
+    "manufacturing-year or model-year semantics from yearStart/yearEnd",
+    "coverage beyond the eight retained records"
+  ]
+}
