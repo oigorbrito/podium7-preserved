@@ -16,7 +16,7 @@ def evaluate_identity_quality(paths: Iterable[str | Path]) -> dict[str, Any]:
     expected_match = sum(case["expected"] == "MATCH" for case in cases)
     predicted_match = sum(case["predicted"] == "MATCH" for case in cases)
     true_match = sum(case["expected"] == "MATCH" and case["predicted"] == "MATCH" for case in cases)
-    false_merge = sum(case["expected"] != "MATCH" and case["predicted"] == "MATCH" for case in cases)
+    false_merge = sum(case["expected"] == "NO_MATCH" and case["predicted"] == "MATCH" for case in cases)
     missed_match = sum(case["expected"] == "MATCH" and case["predicted"] != "MATCH" for case in cases)
     overcommit = sum(case["expected"] == "REVIEW" and case["predicted"] != "REVIEW" for case in cases)
     review = sum(case["predicted"] == "REVIEW" for case in cases)
