@@ -58,6 +58,19 @@ class ExpandedCorpusMeasurementTests(unittest.TestCase):
         self.assertEqual(metrics["missedMatchCount"], 0)
         self.assertEqual(metrics["ambiguousOvercommitCount"], 0)
 
+        safety = measurement["retainedIdentitySafety"]
+        self.assertEqual(safety, operational["retainedIdentitySafety"])
+        self.assertEqual(safety["baseline"]["name"], "production_identity_safety_baseline_v3.json")
+        self.assertEqual(safety["baseline"]["baselineVersion"], "production-quality-gate-v3")
+        self.assertGreater(safety["baseline"]["bytes"], 0)
+        self.assertEqual(len(safety["baseline"]["sha256"]), 64)
+        comparison = safety["comparison"]
+        self.assertTrue(comparison["passed"])
+        self.assertEqual(comparison["regressions"], [])
+        self.assertEqual(comparison["totalCases"], 30)
+        self.assertTrue(all(item["passed"] for item in comparison["metrics"].values()))
+        self.assertIn("not derived from operational action labels", safety["boundary"])
+
         boundaries = measurement["boundaries"]
         self.assertFalse(boundaries["operationalActionsAreQualityLabels"])
         self.assertFalse(boundaries["historicalV3BlockedSidesIncluded"])
@@ -65,6 +78,7 @@ class ExpandedCorpusMeasurementTests(unittest.TestCase):
 
         self.assertEqual(artifact["operational"], operational)
         self.assertEqual(artifact["identityQuality"], quality)
+        self.assertEqual(artifact["operational"]["retainedIdentitySafety"], safety)
         self.assertEqual(len(artifact["datasets"]), 3)
 
     def test_measurement_artifact_is_deterministic(self) -> None:

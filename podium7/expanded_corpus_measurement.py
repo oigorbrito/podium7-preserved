@@ -11,6 +11,10 @@ from .catalog_batch import ingest_catalog_batch, parse_catalog_batch_payload
 from .catalog_provenance_audit import audit_catalog_provenance
 from .catalog_quality import evaluate_identity_quality
 from .catalog_review_cause import CatalogReviewCauseStore
+from .identity_regression import (
+    compare_identity_quality_to_baseline,
+    load_identity_safety_baseline,
+)
 from .measurement_artifact import measurement_artifact_json
 
 
@@ -85,6 +89,11 @@ def measure_expanded_corpus(
     provenance = audit_catalog_provenance(store)
     quality = evaluate_identity_quality(quality_paths)
 
+    baseline_path = corpus_path.parent / "production_identity_safety_baseline_v3.json"
+    baseline_raw = baseline_path.read_bytes()
+    baseline = load_identity_safety_baseline(baseline_path)
+    safety_comparison = compare_identity_quality_to_baseline(quality, baseline)
+
     review_store = CatalogReviewCauseStore(store)
     review_causes: Counter[str] = Counter()
     review_snapshots: list[dict[str, Any]] = []
@@ -115,6 +124,17 @@ def measure_expanded_corpus(
         }
         for row in conflict_rows
     ]
+
+    retained_identity_safety = {
+        "baseline": {
+            "name": baseline_path.name,
+            "sha256": sha256(baseline_raw).hexdigest(),
+            "bytes": len(baseline_raw),
+            "baselineVersion": baseline["baselineVersion"],
+        },
+        "comparison": safety_comparison,
+        "boundary": "Retained identity-safety comparison uses independently labeled identity quality and is not derived from operational action labels.",
+    }
 
     operational = {
         "schema": "podium7.production-operational-measurement.v1",
@@ -148,6 +168,7 @@ def measure_expanded_corpus(
             "disposition": "NO_EXPLICIT_CONFLICTS" if not conflicts else "EXPLICIT_CONFLICTS_RETAINED",
         },
         "provenance": provenance,
+        "retainedIdentitySafety": retained_identity_safety,
     }
 
     artifact_json = measurement_artifact_json(
@@ -160,6 +181,7 @@ def measure_expanded_corpus(
         "schema": EXPANDED_CORPUS_MEASUREMENT_SCHEMA,
         "operational": operational,
         "labeledIdentityQuality": quality,
+        "retainedIdentitySafety": retained_identity_safety,
         "artifact": artifact,
         "boundaries": {
             "precisionRecallBasis": "independently labeled identity benchmark cases only",
