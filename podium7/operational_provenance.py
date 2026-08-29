@@ -5,6 +5,8 @@ import json
 from pathlib import Path
 from typing import Any, Iterable, Mapping
 
+from .catalog import CatalogStore
+from .catalog_batch import CatalogBatchReport, ingest_catalog_batch, parse_catalog_batch_payload
 from .catalog_benchmark import load_catalog_identity_benchmark
 
 
@@ -134,4 +136,65 @@ def measure_operational_provenance_eligibility(paths: Iterable[str | Path]) -> d
     }
 
 
-__all__ = ["measure_operational_provenance_eligibility", "unique_source_for_record"]
+def build_provenance_eligible_operational_records(
+    paths: Iterable[str | Path],
+) -> list[dict[str, Any]]:
+    records: list[dict[str, Any]] = []
+    for raw_path in paths:
+        path = Path(raw_path)
+        load_catalog_identity_benchmark(path)
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        version = payload["datasetVersion"]
+        sources = {source["id"]: source for source in payload["sources"]}
+        known_sources = set(sources)
+        created_at = payload.get("createdAt", "2026-08-23")
+        retrieved_at = f"{created_at}T00:00:00Z"
+
+        for case in payload["cases"]:
+            case_id = case["id"]
+            for side in ("left", "right"):
+                try:
+                    source_id, _method = unique_source_for_record(
+                        case,
+                        side=side,
+                        known_sources=known_sources,
+                    )
+                except ValueError:
+                    continue
+                source = sources[source_id]
+                evidence_id = f"operational:{version}:{case_id}:{side}"
+                records.append({
+                    "recordId": evidence_id,
+                    "source": {
+                        "id": source["id"],
+                        "name": source.get("publisher") or source.get("title") or source["id"],
+                        "locator": source["url"],
+                    },
+                    "evidence": {
+                        "id": evidence_id,
+                        "locator": source["url"],
+                        "retrievedAt": retrieved_at,
+                        "acquisitionMethod": "source-backed-golden-replay",
+                        "rawContentRef": f"benchmark:{path.name}#{case_id}:{side}",
+                    },
+                    "vehicle": case[side],
+                })
+    if not records:
+        raise ValueError("provenance-eligible operational corpus requires at least one record")
+    return records
+
+
+def run_provenance_eligible_operational_corpus(
+    store: CatalogStore,
+    paths: Iterable[str | Path],
+) -> CatalogBatchReport:
+    records = build_provenance_eligible_operational_records(paths)
+    return ingest_catalog_batch(store, parse_catalog_batch_payload({"records": records}))
+
+
+__all__ = [
+    "build_provenance_eligible_operational_records",
+    "measure_operational_provenance_eligibility",
+    "run_provenance_eligible_operational_corpus",
+    "unique_source_for_record",
+]

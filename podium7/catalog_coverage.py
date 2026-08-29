@@ -8,7 +8,10 @@ from typing import Any, Iterable
 
 from .catalog import CATALOG_CONTRACT_DEFAULT_VERSION, CatalogStore
 from .catalog_api import CATALOG_API_MAX_PAGE_SIZE, list_catalog_vehicles
-from .catalog_operational import run_source_backed_operational_corpus
+from .operational_provenance import (
+    measure_operational_provenance_eligibility,
+    run_provenance_eligible_operational_corpus,
+)
 
 
 MEASURED_FIELDS = ("powertrain", "transmission", "body_style")
@@ -123,6 +126,17 @@ def _operational_report(operational: Any) -> dict[str, Any]:
     }
 
 
+def _empty_operational_report() -> dict[str, Any]:
+    return {
+        "total": 0,
+        "created": 0,
+        "matched": 0,
+        "review": 0,
+        "failed": 0,
+        "ok": True,
+    }
+
+
 def _dataset_identity(path: Path) -> dict[str, str]:
     raw = path.read_bytes()
     payload = json.loads(raw)
@@ -140,14 +154,30 @@ def _dataset_identity(path: Path) -> dict[str, str]:
     }
 
 
-def _dataset_report(path: Path) -> dict[str, Any]:
+def _provenance_gated_replay(
+    dataset_paths: tuple[Path, ...],
+) -> tuple[CatalogStore, dict[str, Any], dict[str, Any]]:
+    eligibility = measure_operational_provenance_eligibility(dataset_paths)
     store = CatalogStore()
-    operational = run_source_backed_operational_corpus(store, (path,))
+    if eligibility["summary"]["replayableRecords"]:
+        operational = _operational_report(
+            run_provenance_eligible_operational_corpus(store, dataset_paths)
+        )
+    else:
+        operational = _empty_operational_report()
+    if operational["total"] != eligibility["summary"]["replayableRecords"]:
+        raise RuntimeError("provenance eligibility and replay record counts diverged")
+    return store, operational, eligibility["summary"]
+
+
+def _dataset_report(path: Path) -> dict[str, Any]:
+    store, operational, eligibility = _provenance_gated_replay((path,))
     entities = _consumer_entities(store)
     return {
         "dataset": _dataset_identity(path),
         "total": len(entities),
-        "operational": _operational_report(operational),
+        "operational": operational,
+        "provenanceEligibility": eligibility,
         "fields": {field: _field_report(entities, field) for field in MEASURED_FIELDS},
         "byMarket": _market_report(entities),
         "brazil": _specific_market_report(entities, BRAZIL_MARKET),
@@ -158,14 +188,14 @@ def measure_published_catalog_identity_coverage(
     datasets: Iterable[Path],
 ) -> dict[str, Any]:
     dataset_paths = tuple(Path(path) for path in datasets)
-    store = CatalogStore()
-    operational = run_source_backed_operational_corpus(store, dataset_paths)
+    store, operational, eligibility = _provenance_gated_replay(dataset_paths)
     entities = _consumer_entities(store)
     return {
-        "scope": "source-backed-production-corpus-v2-consumer-output",
+        "scope": "provenance-gated-source-backed-consumer-output",
         "contractVersion": CATALOG_CONTRACT_DEFAULT_VERSION,
         "datasets": [_dataset_identity(path) for path in dataset_paths],
-        "operational": _operational_report(operational),
+        "operational": operational,
+        "provenanceEligibility": eligibility,
         "publishedVehicles": len(entities),
         "fields": {field: _field_report(entities, field) for field in MEASURED_FIELDS},
         "byMarket": _market_report(entities),
@@ -175,13 +205,13 @@ def measure_published_catalog_identity_coverage(
             for path in dataset_paths
         },
         "reviewEvidence": {
-            "count": operational.review,
-            "granularity": "aggregate-operational",
+            "count": operational["review"],
+            "granularity": "aggregate-provenance-eligible-operational",
             "fieldAttributionAvailable": False,
             "note": (
-                "The existing operational corpus report exposes review count at aggregate run "
-                "granularity only. This measurement does not invent field-level contradiction "
-                "attribution when the pipeline does not publish it."
+                "Review count covers only provenance-eligible operational records. Blocked "
+                "record sides are reported separately under provenanceEligibility and are not "
+                "silently attributed or replayed."
             ),
         },
         "knowledgeState": {
@@ -194,12 +224,13 @@ def measure_published_catalog_identity_coverage(
             ),
         },
         "boundary": (
-            "This is measured coverage on the bounded source-backed Production Corpus V2 "
-            "after the real ingestion/resolution path and fully paginated consumer export. "
-            "Dataset breakdowns are measured through isolated replays of the same operational "
-            "path and are evidence slices, not identity fields. Dataset versions and SHA-256 "
-            "digests bind the report to the exact retained inputs. It is not a claim of "
-            "production-wide population coverage."
+            "This is measured field coverage only on the provenance-eligible subset of the "
+            "bounded retained source-backed corpus after real ingestion/resolution and fully "
+            "paginated consumer export. provenanceEligibility reports the complete retained "
+            "record-side universe and the blocked portion. Blocked records are excluded rather "
+            "than assigned a source by list position. Dataset versions and SHA-256 digests bind "
+            "the report to exact inputs. This is neither production-wide population coverage "
+            "nor evidence that blocked sides have missing field values."
         ),
     }
 
