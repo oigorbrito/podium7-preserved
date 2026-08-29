@@ -38,6 +38,10 @@
 ## Acquisition, extraction, review, export, and operational readiness
 
 - [`FIRST-REAL-STRUCTURED-INGESTION.md`](FIRST-REAL-STRUCTURED-INGESTION.md)
+- [`SOURCE-EVIDENCE-GAP-MATRIX-V1.md`](SOURCE-EVIDENCE-GAP-MATRIX-V1.md) — reconstructed qualified-source coverage and decision-critical evidence gaps for the post-MVP acquisition mission.
+- [`SOURCE-QUALIFICATION-V1.md`](SOURCE-QUALIFICATION-V1.md) — targeted primary-source qualification against measured post-MVP identity/evidence gaps.
+- [`NHTSA-VPIC-EVIDENCE-CONTRACT-V1.md`](NHTSA-VPIC-EVIDENCE-CONTRACT-V1.md) — source-specific discovery/VIN-backed evidence, provenance, nonclaims and fail-closed boundaries.
+- [`EEA-EVIDENCE-CONTRACT-V2.md`](EEA-EVIDENCE-CONTRACT-V2.md) — regulatory identity/support evidence and provenance refinement without retail-trim/year semantic widening.
 - [`DIRECT-HTTP-ACQUISITION-V1.md`](DIRECT-HTTP-ACQUISITION-V1.md) — bounded fail-closed direct HTTP transport and snapshot contract.
 - [`NETWORK-TARGET-BINDING-V1.md`](NETWORK-TARGET-BINDING-V1.md) — DNS-rebinding-resistant acquisition path that binds validated resolution to the actual socket connection while preserving hostname TLS verification.
 - [`INMETRO-PBEV-DOCUMENT-PATH-V1.md`](INMETRO-PBEV-DOCUMENT-PATH-V1.md) — source-specific current PBEV PDF acquisition and ruled-table extraction path without widening global HTTP media policy.

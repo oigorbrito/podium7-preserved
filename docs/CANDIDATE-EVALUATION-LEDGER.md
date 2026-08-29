@@ -136,6 +136,66 @@ The unrecovered original per-candidate results remain `ARCHIVED_UNRECOVERABLE`; 
 | Decision | `REFERENCE` |
 | Evidence | `COMPLIANT-ALTERNATIVE-SOURCES-V1.md`, PR #63, live artifact `9497328553` |
 
+## Post-MVP targeted qualification — Brazil identity evidence
+
+### SENATRAN WSDenatran / RENAVAM
+
+| Field | Recorded value |
+|---|---|
+| Capability | row-level Brazilian vehicle identity/configuration evidence candidate |
+| Candidate | SENATRAN WSDenatran / RENAVAM official API, `https://www.gov.br/conecta/catalogo/apis/wsdenatran` |
+| Version | primary catalog and technical response documentation checked 2026-08-25 |
+| License/terms | official catalog requires SENATRAN authorization and contracting of the online consultation service with SERPRO; no anonymous public production access is assumed |
+| Hypothesis | official RENAVAM data can supply the distinct manufacturing-year/model-year and sparse configuration attributes measured as Podium evidence gaps |
+| Parameters | documentation-only qualification; no credentialed live request attempted |
+| Environment | primary official web documentation; no Podium runtime probe required because the decision-critical boundary is documented authorization/contract access |
+| Result | documentation confirms separate `anoModelo` and `anoFabricacao` plus brand/model, body, power, displacement, fuel, engine number and gearbox number fields in the vehicle response model |
+| Interpretation | strongest identified Brazil row-level semantic fit; cannot be treated as an available recurring adapter until legitimate access and applicable use terms exist |
+| Decision | `UNDECIDED` |
+| Evidence | `SOURCE-QUALIFICATION-V1.md`; official Conecta catalog and technical documentation checked 2026-08-25 |
+
+### SENATRAN public fleet datasets
+
+| Field | Recorded value |
+|---|---|
+| Capability | official Brazilian aggregate/reference evidence |
+| Candidate | SENATRAN 2026 fleet publications, `https://www.gov.br/transportes/pt-br/assuntos/transito/conteudo-Senatran/frota-de-veiculos-2026` |
+| Version | current 2026 monthly publication surface checked 2026-08-25 |
+| License/terms | official public government publication; resource-specific terms remain authoritative for any redistribution decision |
+| Hypothesis | public fleet data can corroborate official terminology/aggregate dimensions without being misused as row-level identity proof |
+| Parameters | documentation-only qualification |
+| Environment | primary official web publication |
+| Result | publication exposes aggregated views by `Ano de Fabricação Modelo`, brand/model, fuel, power and vehicle type/species |
+| Interpretation | useful semantic and aggregate plausibility reference; insufficient granularity for individual catalog identity resolution |
+| Decision | `REFERENCE` |
+| Evidence | `SOURCE-QUALIFICATION-V1.md`; official SENATRAN 2026 fleet publication checked 2026-08-25 |
+
+### SENATRAN CAT / SISCAT
+
+| Field | Recorded value |
+|---|---|
+| Capability | official Brazilian homologation identity semantics |
+| Candidate | SENATRAN CAT/SISCAT service documentation |
+| Version | service page last modified 2025-12-15; official service material checked 2026-08-25 |
+| License/terms | official service/homologation documentation; no public anonymous machine-readable CAT catalog was established in this qualification |
+| Hypothesis | CAT establishes the regulatory meaning of RENAVAM brand/model/version identity and may anchor future source contracts |
+| Parameters | documentation-only qualification |
+| Environment | primary official gov.br service documentation |
+| Result | CAT is documented as the homologation instrument granting a specific RENAVAM `marca/modelo/versão` code |
+| Interpretation | authoritative semantic reference, but not a currently established automated data-acquisition surface |
+| Decision | `REFERENCE` |
+| Evidence | `SOURCE-QUALIFICATION-V1.md`; official SISCAT/CAT service documentation checked 2026-08-25 |
+
+## Post-MVP targeted qualification — retained structured sources
+
+The 2026-08-25 documentation review strengthens but does not replace the existing decisions for NHTSA vPIC and EEA:
+
+- **NHTSA vPIC — `ADAPT`:** official documentation states the dataset is populated from manufacturer submissions and provides VIN decoding plus a vehicle-variable catalog. Use returned VIN-backed variables only when present and within documented U.S. scope; missing variables are absence of evidence, not negative proof.
+- **EEA passenger-car monitoring — `ADAPT`:** current 2025 provisional data officially expose manufacturer, type-approval number, type, variant, version, make, commercial name, fuel, engine capacity/power, mass, registration year and electric/emissions fields. Preserve regulatory/type-approval semantics; do not convert type/variant/version into retail trim identity or registration year into manufacturing year.
+- **Primary manufacturer artifacts — `REFERENCE` evidence class:** official manufacturer-published specifications/homologation/ordering material may be used case-by-case for generation, retail trim or mechanical distinctions, but no generic manufacturer source family is approved by this row. Each concrete source requires its own qualification and provenance contract.
+
+No new broad live probe was executed. Existing NHTSA/EEA operational evidence remains recoverable and sufficient; WSDenatran's limiting condition is documented authorization/contract access, not unknown public endpoint behavior.
+
 ## FuelEconomy.gov discovery extension
 
 The same live run `32655508584` verified the existing official model-menu endpoint for Toyota 2025: HTTP 200 JSON, 3,427 bytes, SHA-256 `be18d61bb6c505ff8f75ed9fb4c165321407e5956d041e5f9b6be36e0e27e6f6`, with 63 parsed model/options entries. This remains `REFERENCE`: it strengthens the evidence for a future deterministic discovery flow but does not create a third independent source family.
@@ -171,7 +231,7 @@ Every new/repeated candidate evaluation must record:
 
 `FIRST_SELECTED_STRUCTURED_SOURCE = RECOVERED_SUFFICIENT`
 
-`HISTORICAL_SOFTWARE_TEST_LEDGER = ARCHIVED_UNRECOVERABLE / NOT CURRENTLY DECISION_CRITICAL`
+`HISTORICAL_SOFTWARE_TEST_LEDGER = ARCHIVED_UNRECOVERABLE / NOT CURRENTLY DECISION CRITICAL`
 
 `WHOLESALE_HISTORICAL_RETEST_REQUIRED = NO`
 
