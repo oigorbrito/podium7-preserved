@@ -1,0 +1,162 @@
+{
+  "schema": "podium7.inmetro-pbev-quantitative-semantics.v1",
+  "datasetVersion": "inmetro-pbev-quantitative-semantics-1.0",
+  "artifact": "INMETRO_PBEV_QUANTITATIVE_SEMANTICS_V1",
+  "purpose": "Source-backed benchmark for the current official PBEV table's quantitative column semantics. Identity extraction stays unchanged.",
+  "cases": [
+    {
+      "id": "byd-dolphin-mini-gs-ev",
+      "rowReference": "P0:L56",
+      "sourceUrl": "https://www.gov.br/inmetro/pt-br/assuntos/regulamentacao/avaliacao-da-conformidade/programa-brasileiro-de-etiquetagem/tabelas-de-eficiencia-energetica/veiculos-automotivos-pbe-veicular/mascara-pbev-2026_19_jan-rev01.pdf/@@download/file",
+      "sourceExcerpt": "Sub Compacto BYD DOLPHIN MINI GS EV Elétrico Elétrico N.A. S E E ND ND ND A \\ 0 \\ \\ \\ \\ 58.6 41.9 0.41 280 A A -",
+      "identity": {
+        "category": "Sub Compacto",
+        "make": "BYD",
+        "model": "DOLPHIN MINI",
+        "version": "GS EV",
+        "engine": "Elétrico",
+        "propulsion": "Elétrico",
+        "fuelCode": "E"
+      },
+      "quantitative": {
+        "transmissionCode": "N.A.",
+        "steeringAssistCode": "S",
+        "vehpCode": "E",
+        "emissions": {
+          "tailpipeCo2Gkm": null,
+          "tailpipeCo2eGkm": null
+        },
+        "consumption": {
+          "cityKmL": null,
+          "roadKmL": null,
+          "cityKmLe": 58.6,
+          "roadKmLe": 41.9
+        },
+        "comparison": {
+          "relative": 0.41,
+          "absoluteGrade": "A",
+          "generalGrade": "A"
+        }
+      },
+      "expectedMissing": [
+        "emissions.tailpipeCo2Gkm",
+        "emissions.tailpipeCo2eGkm",
+        "consumption.cityKmL",
+        "consumption.roadKmL"
+      ]
+    },
+    {
+      "id": "fiat-500e-icon",
+      "rowReference": "P0:L59",
+      "sourceUrl": "https://www.gov.br/inmetro/pt-br/assuntos/regulamentacao/avaliacao-da-conformidade/programa-brasileiro-de-etiquetagem/tabelas-de-eficiencia-energetica/veiculos-automotivos-pbe-veicular/mascara-pbev-2026_19_jan-rev01.pdf/@@download/file",
+      "sourceExcerpt": "Sub Compacto FIAT 500E ICON ELÉTRICO Elétrico A-1 S E E ND ND ND A \\ \\ \\ \\ \\ \\ \\ 47.3 40.4 0.46 227 C A -",
+      "identity": {
+        "category": "Sub Compacto",
+        "make": "FIAT",
+        "model": "500E",
+        "version": "ICON",
+        "engine": "ELÉTRICO",
+        "propulsion": "Elétrico",
+        "fuelCode": "E"
+      },
+      "quantitative": {
+        "transmissionCode": "A-1",
+        "steeringAssistCode": "S",
+        "vehpCode": "E",
+        "emissions": {
+          "tailpipeCo2Gkm": null,
+          "tailpipeCo2eGkm": null
+        },
+        "consumption": {
+          "cityKmL": null,
+          "roadKmL": null,
+          "cityKmLe": 47.3,
+          "roadKmLe": 40.4
+        },
+        "comparison": {
+          "relative": 0.46,
+          "absoluteGrade": "C",
+          "generalGrade": "A"
+        }
+      },
+      "expectedMissing": [
+        "emissions.tailpipeCo2Gkm",
+        "emissions.tailpipeCo2eGkm",
+        "consumption.cityKmL",
+        "consumption.roadKmL"
+      ]
+    },
+    {
+      "id": "fiat-mobi-trekking",
+      "rowReference": "P0:L60",
+      "sourceUrl": "https://www.gov.br/inmetro/pt-br/assuntos/regulamentacao/avaliacao-da-conformidade/programa-brasileiro-de-etiquetagem/tabelas-de-eficiencia-energetica/veiculos-automotivos-pbe-veicular/mascara-pbev-2026_19_jan-rev01.pdf/@@download/file",
+      "sourceExcerpt": "Sub Compacto FIAT MOBI TREKKING 1.0-6V Combustão M-5 S E F 38 280 3 B 0 91 \\ 9.8 10.6 14.0 15.1 \\ \\ 1.46 \\ E B -",
+      "identity": {
+        "category": "Sub Compacto",
+        "make": "FIAT",
+        "model": "MOBI",
+        "version": "TREKKING",
+        "engine": "1.0-6V",
+        "propulsion": "Combustão",
+        "fuelCode": "F"
+      },
+      "quantitative": {
+        "transmissionCode": "M-5",
+        "steeringAssistCode": "S",
+        "vehpCode": "E",
+        "emissions": {
+          "tailpipeCo2Gkm": 38,
+          "tailpipeCo2eGkm": 3
+        },
+        "consumption": {
+          "cityKmL": 9.8,
+          "roadKmL": 10.6,
+          "cityKmLe": 14.0,
+          "roadKmLe": 15.1
+        },
+        "comparison": {
+          "relative": 1.46,
+          "absoluteGrade": "E",
+          "generalGrade": "B"
+        }
+      },
+      "expectedMissing": []
+    },
+    {
+      "id": "peugeot-208-gt-hybrid",
+      "rowReference": "P0:L87",
+      "sourceUrl": "https://www.gov.br/inmetro/pt-br/assuntos/regulamentacao/avaliacao-da-conformidade/programa-brasileiro-de-etiquetagem/tabelas-de-eficiencia-energetica/veiculos-automotivos-pbe-veicular/mascara-pbev-2026_19_jan-rev01.pdf/@@download/file",
+      "sourceExcerpt": "Compacto PEUGEOT 208 GT HYBRID 1.0T-12V Híbrido CVT-7 S E F 48 372 5 B 0 99 \\ 9.1 9.6 13.0 13.8 \\ \\ 1.60 \\ C C -",
+      "identity": {
+        "category": "Compacto",
+        "make": "PEUGEOT",
+        "model": "208",
+        "version": "GT HYBRID",
+        "engine": "1.0T-12V",
+        "propulsion": "Híbrido",
+        "fuelCode": "F"
+      },
+      "quantitative": {
+        "transmissionCode": "CVT-7",
+        "steeringAssistCode": "S",
+        "vehpCode": "E",
+        "emissions": {
+          "tailpipeCo2Gkm": 48,
+          "tailpipeCo2eGkm": 5
+        },
+        "consumption": {
+          "cityKmL": 9.1,
+          "roadKmL": 9.6,
+          "cityKmLe": 13.0,
+          "roadKmLe": 13.8
+        },
+        "comparison": {
+          "relative": 1.60,
+          "absoluteGrade": "C",
+          "generalGrade": "C"
+        }
+      },
+      "expectedMissing": []
+    }
+  ]
+}
