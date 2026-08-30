@@ -1,6 +1,6 @@
 # Podium 7 handoff
 
-Last refreshed: 2026-08-29
+Last refreshed: 2026-08-30
 
 This file is the compact resume point for a new chat, Codex session, or agent handoff. It does not replace canonical product, architecture, or workflow documents.
 
@@ -26,17 +26,18 @@ This file is the compact resume point for a new chat, Codex session, or agent ha
 - The private technical MVP is complete.
 - The repository-wide post-MVP functional audit #236 completed its code/operational review after fixing its reproducible findings.
 - Durable audit disposition: `POST_MVP_FUNCTIONAL_AUDIT = PENDING_EXTERNAL_EVIDENCE`.
+- #214 is completed: the exact Inmetro PBEV PDF bytes are retained as a repository fixture and verify against SHA-256 `cb8ab26789b75a596f75ebf5f6454f30950d31ff8fff1de99ad56a502679db2b`.
+- #168 is completed: after benchmark-discovered parser fixes, pdfplumber and Camelot lattice both reproduced 21/21 authorized gold fields on the retained slice; disposition `NO_MATERIAL_GAIN`, so pdfplumber remains the selected path.
+- #232 is the only open issue and the active remaining scientific/product gate: benchmark PBEV quantitative column semantics before publication.
 - No known reproducible code/operational defect remains within the audited implementation contracts.
 - This is not authorization to claim `100% functional post-MVP` or universal automotive-data completeness.
-- Remaining external-evidence/scientific blockers are #214 (reproducible bound PDF bytes), #168 (PDF-to-structured extraction benchmark), and #232 (PBEV quantitative semantic benchmark). These remain fail-closed.
 
 ## Resume order
 
 1. Refresh live `main`, PRs, issues, CI, and repository-declared work.
-2. Advance #214 using ADR-0001 market-first evaluation of mature durable snapshot/storage mechanisms; never substitute mutable upstream bytes for the bound historical digest.
-3. Advance #232 independently where evidence can be separately acquired, frozen, reuse-reviewed and digest-bound without weakening source semantics.
-4. Run #168 only when the exact source-bound PDF bytes required by its benchmark are reproducibly available; #214 is its direct blocker.
-5. Require repository CI on exact final heads before squash merge.
+2. Advance #232 using the retained digest-bound PBEV fixture; benchmark exact units, context, missingness, emissions-column semantics, cardinality/conflicts, and the identity boundary before any public enrichment-vocabulary change.
+3. Do not use quantitative equality for identity resolution and do not expose unbenchmarked PBEV quantities to BPT2.
+4. Require repository CI on exact final heads before squash merge.
 
 ## Operating style
 

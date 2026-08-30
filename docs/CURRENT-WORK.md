@@ -1,35 +1,36 @@
 # Current work
 
-Status: blocked
+Status: active
 
-## Current disposition
+## Active outcome
 
-The repository-wide post-MVP functional audit #236 completed its code/operational review with:
+Advance #232: establish evidence-bound semantics for current Inmetro PBEV quantitative columns before extending the public quantitative-enrichment vocabulary or exposing those facts to BPT2.
+
+The repository-wide post-MVP functional audit #236 remains durably recorded as:
 
 `POST_MVP_FUNCTIONAL_AUDIT = PENDING_EXTERNAL_EVIDENCE`
 
-No known reproducible code/operational defect remains from the audited path. This is not a `100% functional post-MVP` claim because external evidence/scientific gates remain unresolved.
+No known reproducible code/operational defect remains from the audited implementation path. This is not a `100% functional post-MVP` claim because the remaining quantitative semantic gate has not yet passed.
 
-## Audit hardening integrated
+## Recently completed prerequisites
 
-The audit fixed concrete defects without weakening evidence, resolver, provenance, fusion, ambiguity or publication rules, including:
+- #214 is completed. The exact historical/current-equal Inmetro PBEV PDF bytes are retained in the repository and verify against SHA-256 `cb8ab26789b75a596f75ebf5f6454f30950d31ff8fff1de99ad56a502679db2b`.
+- #168 is completed. The real-PDF ExtractBench-style comparison found two transmission parser defects, which were fixed. After remediation, pdfplumber and Camelot lattice both reproduced 21/21 authorized fields on the retained slice. Disposition: `NO_MATERIAL_GAIN`; retain pdfplumber.
+- #112 is historical/closed. Hosted GitHub Actions is operational and remains the official merge gate.
 
-- bounded PDF acquisition now uses validated-IP socket binding;
-- arbitrary HTTP snapshot CLI and public-web benchmark default transport use the bound network path;
-- bound HTTP Host authority handles IPv6 and scheme-specific default ports correctly;
-- domain JSON values must round-trip without silent Python-to-JSON coercion;
-- unresolved/review conflicts cannot carry a selected candidate;
-- live handoff/state/work documents and active checkout URLs reflect the current repository/CI state.
+## #232 benchmark boundary
 
-Repository CI remains the official gate and includes secret hygiene, harness validation, runtime health, package build/install, isolated tests on the configured current and minimum-supported runtimes, and validation artifacts where configured.
+Use the retained digest-bound PBEV fixture to benchmark, before publication:
 
-## Blocking external-evidence/scientific work
+1. `energy_consumption` as source-supplied `MJ/km` scalar semantics;
+2. `electric_range` in `km`, preserving numeric zero versus missing/not-applicable states;
+3. city/highway fuel consumption with explicit fuel as material context;
+4. exact semantics of emissions/CO2/CO2e columns without conflation;
+5. column-specific meanings of `ND`, `N.A.` and other source placeholders;
+6. identity-first attachment: quantitative facts never participate in catalog matching;
+7. fail-closed conflict/cardinality behavior for same identity/context with incompatible values.
 
-1. #214 — make the exact historical Inmetro PBEV benchmark PDF bytes reproducibly retrievable and SHA-verified. Mutable upstream reacquisition must not substitute for the bound historical digest.
-2. #168 — execute the bounded PDF-to-structured benchmark after #214 provides the exact source-bound bytes.
-3. #232 — establish evidence-bound semantics for current PBEV quantitative columns before extending the public enrichment vocabulary or exposing those facts to BPT2.
-
-#214 is the direct blocker for #168. #232 remains an independent evidence-bound quantitative semantics track. Where one external dependency blocks progress, continue any independent evidence-scoped work that does not weaken source binding.
+Do not add PBEV quantities to the public enrichment vocabulary until this benchmark passes. Do not modify Catalog JSON 2.0. BPT2 remains a consumer; acquisition, evidence and reconciliation remain Podium-owned.
 
 ## Current evidence boundary
 
