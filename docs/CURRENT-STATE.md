@@ -29,11 +29,19 @@ The historical PDF evidence/retrievability gate #214 is completed: the exact ret
 
 The PDF-to-structured benchmark #168 is completed. On the retained page-1 gold slice, after fixing the transmission extraction defects found by the benchmark, the current pdfplumber path and Camelot lattice each reproduced 21/21 authorized fields with no material measured gain from replacement. The bounded disposition is `NO_MATERIAL_GAIN`; pdfplumber remains selected.
 
-The source-bound quantitative benchmark for #232 is complete and merged. The retained digest-bound PBEV bytes are still available as the repository fixture, and #232 is now closed after CI-green squash integration on the exact head.
+The source-bound quantitative benchmark for #232 is complete and merged. The retained digest-bound PBEV bytes remain available as a repository fixture; #232 is closed.
+
+Operator installation and first-run closeout #267 is complete and integrated by PR #268. The validated private runbook covers clean installation, package installation, health, operational readiness, first-run smoke, persistence, backup/restore boundary, durable review operation, update, troubleshooting, cleanup, and separation of optional integrations.
 
 `PRIVATE_PROJECT_ENGINEERING_CLOSURE = PASS`
 
-The current private engineering scope is complete and validated by the documented gates. Public/package release readiness remains intentionally blocked by private/proprietary policy.
+`OPERATOR_INSTALLATION_CLOSEOUT = PASS`
+
+The current private engineering scope is complete and validated by the documented gates. Public/package release readiness remains intentionally blocked by private/proprietary policy. Paid, contractual, credentialed, new-region, and new-source integrations remain `OPTIONAL_FUTURE_CAPABILITY` unless a separately approved scope makes them required.
+
+## Operating mode
+
+The project is in `MAINTENANCE / OPTIONAL PRODUCT EVOLUTION`. Do not create work solely to preserve project activity; open new work when a measured defect, maintenance requirement, or approved product expansion exists.
 
 ## Volatile facts
 
@@ -49,6 +57,7 @@ CI also publishes the derived facts as an artifact.
 
 - Resume context: [`HANDOFF.md`](HANDOFF.md)
 - Active mission: [`CURRENT-WORK.md`](CURRENT-WORK.md)
+- Operator installation/runbook: [`OPERATOR-INSTALLATION-V1.md`](OPERATOR-INSTALLATION-V1.md)
 - Operating workflow: [`DEVELOPMENT-WORKFLOW.md`](DEVELOPMENT-WORKFLOW.md)
 - Product invariants: [`INVARIANTS.md`](INVARIANTS.md)
 - Documentation map: [`INDEX.md`](INDEX.md)
