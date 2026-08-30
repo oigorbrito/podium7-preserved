@@ -28,7 +28,7 @@ The historical PDF evidence/retrievability gate #214 is completed: the exact ret
 
 The PDF-to-structured benchmark #168 is completed. On the retained page-1 gold slice, after fixing the transmission extraction defects found by the benchmark, the current pdfplumber path and Camelot lattice each reproduced 21/21 authorized fields with no material measured gain from replacement. The bounded disposition is `NO_MATERIAL_GAIN`; pdfplumber remains selected.
 
-The only open issue is #232, which gates PBEV quantitative publication semantics. The retained digest-bound PBEV bytes are now available for that work, but exact per-column units, context dimensions, missingness, emissions semantics, cardinality/conflict behavior, and publication vocabulary remain to be benchmarked before exposure to BPT2.
+The only open issue is #232, which gates PBEV quantitative publication semantics. The retained digest-bound PBEV bytes are available, and the source-bound quantitative benchmark now exists locally; GitHub integration, CI on the exact head, and merge/close remain to complete the repository-level closure.
 
 ## Volatile facts
 

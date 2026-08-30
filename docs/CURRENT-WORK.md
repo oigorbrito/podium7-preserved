@@ -4,13 +4,13 @@ Status: active
 
 ## Active outcome
 
-Advance #232: establish evidence-bound semantics for current Inmetro PBEV quantitative columns before extending the public quantitative-enrichment vocabulary or exposing those facts to BPT2.
+Advance #232: integrate the now source-bound Inmetro PBEV quantitative benchmark, validate it in CI, and then publish/merge the result before extending the public quantitative-enrichment vocabulary or exposing those facts to BPT2.
 
 The repository-wide post-MVP functional audit #236 remains durably recorded as:
 
 `POST_MVP_FUNCTIONAL_AUDIT = PENDING_EXTERNAL_EVIDENCE`
 
-No known reproducible code/operational defect remains from the audited implementation path. This is not a `100% functional post-MVP` claim because the remaining quantitative semantic gate has not yet passed.
+No known reproducible code/operational defect remains from the audited implementation path. This is not a `100% functional post-MVP` claim because the remaining quantitative benchmark is now implemented locally but still needs GitHub integration/merge.
 
 ## Recently completed prerequisites
 
@@ -30,7 +30,7 @@ Use the retained digest-bound PBEV fixture to benchmark, before publication:
 6. identity-first attachment: quantitative facts never participate in catalog matching;
 7. fail-closed conflict/cardinality behavior for same identity/context with incompatible values.
 
-Do not add PBEV quantities to the public enrichment vocabulary until this benchmark passes. Do not modify Catalog JSON 2.0. BPT2 remains a consumer; acquisition, evidence and reconciliation remain Podium-owned.
+Do not add PBEV quantities to the public enrichment vocabulary until the benchmark is merged and CI-green on the exact head. Do not modify Catalog JSON 2.0. BPT2 remains a consumer; acquisition, evidence and reconciliation remain Podium-owned.
 
 ## Current evidence boundary
 

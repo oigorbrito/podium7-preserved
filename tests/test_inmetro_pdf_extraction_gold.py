@@ -24,7 +24,7 @@ class InmetroPdfExtractionGoldTests(unittest.TestCase):
         fixture = Path(gold["source"]["snapshotLocator"])
         metadata_path = fixture.with_suffix(".json")
         metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
-        self.assertEqual(str(fixture), metadata["fixturePath"])
+        self.assertEqual(fixture.as_posix(), metadata["fixturePath"])
         self.assertEqual(gold["source"]["rawContentSha256"], metadata["sha256"])
         self.assertEqual(fixture.stat().st_size, metadata["bytes"])
         self.assertEqual(gold["source"]["documentLocator"], metadata["documentLocator"])
