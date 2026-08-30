@@ -1,6 +1,6 @@
 # Podium 7 handoff
 
-Last refreshed: 2026-08-25
+Last refreshed: 2026-08-30
 
 This file is the compact resume point for a new chat, Codex session, or agent handoff. It does not replace canonical product, architecture, or workflow documents.
 
@@ -8,7 +8,7 @@ This file is the compact resume point for a new chat, Codex session, or agent ha
 
 1. Read root `AGENTS.md`, then this file.
 2. Read `docs/INDEX.md`, `docs/CURRENT-STATE.md`, `docs/CURRENT-WORK.md`, and `docs/DEVELOPMENT-WORKFLOW.md`.
-3. Refresh live GitHub state before acting: current `main`, open PRs, mergeability, CI, issues, and active execution plans. Live repository state always outranks this snapshot.
+3. Refresh live GitHub state before acting: current `main`, open PRs, mergeability, CI, issues, branches, releases, and active execution plans. Live repository state always outranks this snapshot.
 4. Continue routine reversible work autonomously. If an external dependency blocks one block, record it once and move to the next independent repository-scoped block.
 5. Keep durable policy in its canonical document; keep this file compact.
 
@@ -25,7 +25,8 @@ This file is the compact resume point for a new chat, Codex session, or agent ha
 
 - The private technical MVP exit gate reached `PASS` through the independent-equivalent validation path integrated by PR #119.
 - Operational Readiness V1 passed on the exact clean merge-candidate checkout used for that validation.
-- There are no open pull requests and no active repository implementation mission at this refresh.
+- PR #261 was squash-merged into `main` as `a4f45a3` and closes #168.
+- Open issue #232 (`Benchmark Inmetro PBEV quantitative semantics before publication`) remains as the active external-evidence blocker; the local quantitative benchmark artifact now exists and still needs acceptance review.
 - Issue #112 (`Restore GitHub Actions hosted-runner execution`) remains open as infrastructure/operations debt, not as a private-MVP blocker.
 - GitHub-hosted Actions jobs are still failing before any workflow step is created (`steps=null`, no job logs). Do not add runner or infrastructure workarounds merely to bypass it; ADR-0001 remains in force.
 

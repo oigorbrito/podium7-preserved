@@ -1,6 +1,6 @@
 # Current state
 
-Last verified: 2026-08-25
+Last verified: 2026-08-30
 
 Podium 7 is an evidence-driven automotive knowledge integration system with a working Catalog Identity V2 path: evidence-backed ingestion, conservative identity resolution, canonical persistence/redirects, consumer reads, regression benchmarks, durable review, and batch ingestion.
 
@@ -14,6 +14,7 @@ Podium 7 is an evidence-driven automotive knowledge integration system with a wo
 - Independent explicit structural contradictions take precedence over lexical partial-label overlap; partial-label ambiguity remains `REVIEW` when no independent contradiction establishes `NO_MATCH`.
 - Manufacture year and model year remain separate catalog dimensions, aligned with Senatran/RENAVAM field semantics. Explicit non-overlap in either dimension is a contradiction; incomplete model-year evidence routes an otherwise structural auto-match to `REVIEW` unless stronger identity evidence establishes the match.
 - The historical scientific corpus and decision-relevant benchmark evidence have been reconstructed sufficiently for current engineering decisions; unrecoverable old software-candidate execution details are archived and are not a current development blocker.
+- The current post-MVP reconciliation mission remains active; issue #232 is the remaining external-evidence blocker and does not reopen the completed private technical MVP.
 - Software status is `PRIVATE_PROPRIETARY`: no public license is granted and package/public release remains intentionally blocked until a later explicit owner decision. Development, testing and private operation are not blocked.
 
 ## Volatile facts
