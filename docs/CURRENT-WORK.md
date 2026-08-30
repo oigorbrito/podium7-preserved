@@ -1,16 +1,16 @@
 # Current work
 
-Status: active
+Status: none
 
 ## Active outcome
 
-Advance #232: integrate the now source-bound Inmetro PBEV quantitative benchmark, validate it in CI, and then publish/merge the result before extending the public quantitative-enrichment vocabulary or exposing those facts to BPT2.
+No active repository block remains in this tracker. #232 is completed, merged, and ready for ordinary closure bookkeeping.
 
 The repository-wide post-MVP functional audit #236 remains durably recorded as:
 
 `POST_MVP_FUNCTIONAL_AUDIT = PENDING_EXTERNAL_EVIDENCE`
 
-No known reproducible code/operational defect remains from the audited implementation path. This is not a `100% functional post-MVP` claim because the remaining quantitative benchmark is now implemented locally but still needs GitHub integration/merge.
+No known reproducible code/operational defect remains from the audited implementation path. This is not a `100% functional post-MVP` claim because the audit disposition remains external-evidence pending.
 
 ## Recently completed prerequisites
 
@@ -20,7 +20,7 @@ No known reproducible code/operational defect remains from the audited implement
 
 ## #232 benchmark boundary
 
-Use the retained digest-bound PBEV fixture to benchmark, before publication:
+The retained digest-bound PBEV fixture benchmark has already been merged. The boundary remains documented here for historical reference:
 
 1. `energy_consumption` as source-supplied `MJ/km` scalar semantics;
 2. `electric_range` in `km`, preserving numeric zero versus missing/not-applicable states;
@@ -30,7 +30,7 @@ Use the retained digest-bound PBEV fixture to benchmark, before publication:
 6. identity-first attachment: quantitative facts never participate in catalog matching;
 7. fail-closed conflict/cardinality behavior for same identity/context with incompatible values.
 
-Do not add PBEV quantities to the public enrichment vocabulary until the benchmark is merged and CI-green on the exact head. Do not modify Catalog JSON 2.0. BPT2 remains a consumer; acquisition, evidence and reconciliation remain Podium-owned.
+The benchmark gate for PBEV quantitative vocabulary has already been satisfied on the exact head; any follow-up expansion must preserve the same fail-closed boundary. Do not modify Catalog JSON 2.0. BPT2 remains a consumer; acquisition, evidence and reconciliation remain Podium-owned.
 
 ## Current evidence boundary
 

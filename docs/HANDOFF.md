@@ -28,14 +28,14 @@ This file is the compact resume point for a new chat, Codex session, or agent ha
 - Durable audit disposition: `POST_MVP_FUNCTIONAL_AUDIT = PENDING_EXTERNAL_EVIDENCE`.
 - #214 is completed: the exact Inmetro PBEV PDF bytes are retained as a repository fixture and verify against SHA-256 `cb8ab26789b75a596f75ebf5f6454f30950d31ff8fff1de99ad56a502679db2b`.
 - #168 is completed: after benchmark-discovered parser fixes, pdfplumber and Camelot lattice both reproduced 21/21 authorized gold fields on the retained slice; disposition `NO_MATERIAL_GAIN`, so pdfplumber remains the selected path.
-- #232 is the only open issue and the active remaining scientific/product gate: the source-bound PBEV quantitative benchmark exists locally and now needs GitHub integration, CI on the exact head, and merge/close before the issue can be retired.
+- #232 is completed and closed: the source-bound PBEV quantitative benchmark was integrated with CI-green squash merge and the issue was retired.
 - No known reproducible code/operational defect remains within the audited implementation contracts.
 - This is not authorization to claim `100% functional post-MVP` or universal automotive-data completeness.
 
 ## Resume order
 
 1. Refresh live `main`, PRs, issues, CI, and repository-declared work.
-2. Advance #232 using the retained digest-bound PBEV fixture; the local source-bound benchmark exists, so the remaining work is integration, CI on the exact head, and merge/close before any public enrichment-vocabulary change.
+2. Continue from the remaining open GitHub queue or routine housekeeping; #232 is complete and no longer blocks the repository.
 3. Do not use quantitative equality for identity resolution and do not expose unbenchmarked PBEV quantities to BPT2.
 4. Require repository CI on exact final heads before squash merge.
 
