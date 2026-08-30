@@ -24,19 +24,19 @@ This file is the compact resume point for a new chat, Codex session, or agent ha
 ## Remote state at refresh
 
 - The private technical MVP is complete.
-- Post-MVP source-acquisition and production-scale capability work is substantially integrated.
-- Current `main` includes the bounded Brazil quantitative coverage baseline and the DNS-bound PDF acquisition hardening from PR #238.
-- Hosted GitHub Actions is executing normal workflows with real steps/logs; exact-head CI remains required before merge.
-- The active repository-wide readiness gate is issue #236, `Post-MVP functional audit for production readiness`.
-- Remaining external-evidence/scientific blockers are #214 (reproducible bound PDF bytes), #168 (PDF-to-structured extraction benchmark), and #232 (PBEV quantitative semantic benchmark). These must remain fail-closed and must not be converted into PASS by assumption.
+- The repository-wide post-MVP functional audit #236 completed its code/operational review after fixing its reproducible findings.
+- Durable audit disposition: `POST_MVP_FUNCTIONAL_AUDIT = PENDING_EXTERNAL_EVIDENCE`.
+- No known reproducible code/operational defect remains within the audited implementation contracts.
+- This is not authorization to claim `100% functional post-MVP` or universal automotive-data completeness.
+- Remaining external-evidence/scientific blockers are #214 (reproducible bound PDF bytes), #168 (PDF-to-structured extraction benchmark), and #232 (PBEV quantitative semantic benchmark). These remain fail-closed.
 
 ## Resume order
 
 1. Refresh live `main`, PRs, issues, CI, and repository-declared work.
-2. Continue #236 until all reproducible code/operational defects are fixed or explicitly blocked.
-3. Require repository CI on exact final heads before squash merge.
-4. Keep #214/#168/#232 separate from code-readiness claims: they are evidence/scientific gates, not permission to invent or silently rebind source data.
-5. Do not claim `100% functional post-MVP` until #236 records its explicit final disposition.
+2. Advance #214 using ADR-0001 market-first evaluation of mature durable snapshot/storage mechanisms; never substitute mutable upstream bytes for the bound historical digest.
+3. Advance #232 independently where evidence can be separately acquired, frozen, reuse-reviewed and digest-bound without weakening source semantics.
+4. Run #168 only when the exact source-bound PDF bytes required by its benchmark are reproducibly available; #214 is its direct blocker.
+5. Require repository CI on exact final heads before squash merge.
 
 ## Operating style
 

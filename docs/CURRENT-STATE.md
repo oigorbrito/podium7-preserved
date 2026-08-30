@@ -12,16 +12,19 @@ Podium 7 is an evidence-driven automotive knowledge integration system with a wo
 - Catalog identity evolution is additive over the established evidence/persistence model.
 - Ambiguous identity decisions route to durable `REVIEW`; false merges are treated as more harmful than missed duplicates.
 - Independent explicit structural contradictions take precedence over lexical partial-label overlap; partial-label ambiguity remains `REVIEW` when no independent contradiction establishes `NO_MATCH`.
-- Manufacture year and model year remain separate catalog dimensions, aligned with Senatran/RENAVAM field semantics. Explicit non-overlap in either dimension is a contradiction; incomplete model-year evidence routes an otherwise structural auto-match to `REVIEW` unless stronger identity evidence establishes the match.
-- The historical scientific corpus and decision-relevant benchmark evidence have been reconstructed sufficiently for current engineering decisions; unrecoverable old software-candidate execution details are archived and are not a current development blocker.
+- Manufacture year and model year remain separate catalog dimensions, aligned with Senatran/RENAVAM field semantics.
 - Software status is `PRIVATE_PROPRIETARY`: no public license is granted and package/public release remains intentionally blocked until a later explicit owner decision. Development, testing and private operation are not blocked.
 - Hosted GitHub Actions execution is restored; normal repository CI with real steps/logs is the official merge validation gate.
 
 ## Current readiness boundary
 
-The private technical MVP is complete. Post-MVP functionality is undergoing the repository-wide functional audit tracked by #236 before any `100% functional post-MVP` claim.
+The private technical MVP is complete. The repository-wide post-MVP functional audit #236 found and corrected the reproducible code/operational defects discovered in its scope. Its durable disposition is:
 
-Remaining open evidence/scientific gates are #214, #168, and #232. They concern reproducible historical PDF bytes and evidence-bound extraction/quantitative semantic benchmarking. They must remain fail-closed and are not equivalent to a runtime code failure.
+`POST_MVP_FUNCTIONAL_AUDIT = PENDING_EXTERNAL_EVIDENCE`
+
+Within the audited implementation contracts, no known reproducible code/operational defect remains. This does not authorize a `100% functional post-MVP` or universal-data-completeness claim because the remaining evidence/scientific gates are unresolved.
+
+Open evidence/scientific gates are #214, #168, and #232. #214 blocks the historical PDF extraction benchmark #168; #232 separately gates PBEV quantitative publication semantics. These must remain fail-closed and are not equivalent to a runtime code failure.
 
 ## Volatile facts
 

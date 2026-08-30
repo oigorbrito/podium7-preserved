@@ -1,48 +1,41 @@
 # Current work
 
-Status: active
+Status: blocked
 
-## Active mission
+## Current disposition
 
-Issue #236 — `Post-MVP functional audit for production readiness` — is the current repository-wide implementation/readiness gate.
+The repository-wide post-MVP functional audit #236 completed its code/operational review with:
 
-The audit reviews the integrated product path rather than issue closure alone: runtime/CLI, acquisition/network boundaries, evidence/provenance, normalization/extraction/resolution/fusion/review, SQLite persistence/transactions/reopen behavior, consumer/export/versioning contracts, deterministic replay/benchmarks, exception boundaries, dead/stale pathways, packaging/installability, supported runtime, and repository CI.
+`POST_MVP_FUNCTIONAL_AUDIT = PENDING_EXTERNAL_EVIDENCE`
 
-Concrete audit defects are fixed in focused follow-up PRs and require the normal exact-head GitHub Actions gate before squash merge. Evidence/resolver/provenance/fusion/ambiguity/publication rules must not be weakened to obtain a PASS.
+No known reproducible code/operational defect remains from the audited path. This is not a `100% functional post-MVP` claim because external evidence/scientific gates remain unresolved.
 
-## Current integrated baseline
+## Audit hardening integrated
 
-The private technical MVP is complete. Subsequent post-MVP source acquisition, multi-source evidence controls, provenance-safe operational replay, identity-safety benchmarking, durable review/conflict behavior, quantitative-enrichment contract/baseline work, and bounded source-acquisition controls are substantially integrated.
+The audit fixed concrete defects without weakening evidence, resolver, provenance, fusion, ambiguity or publication rules, including:
 
-Recent audit hardening includes:
+- bounded PDF acquisition now uses validated-IP socket binding;
+- arbitrary HTTP snapshot CLI and public-web benchmark default transport use the bound network path;
+- bound HTTP Host authority handles IPv6 and scheme-specific default ports correctly;
+- domain JSON values must round-trip without silent Python-to-JSON coercion;
+- unresolved/review conflicts cannot carry a selected candidate;
+- live handoff/state/work documents and active checkout URLs reflect the current repository/CI state.
 
-- #237/#238 — bounded PDF acquisition moved to the validated-IP network binding path, closing the documented DNS validation-to-connect rebinding gap without changing source/evidence/publication semantics.
+Repository CI remains the official gate and includes secret hygiene, harness validation, runtime health, package build/install, isolated tests on the configured current and minimum-supported runtimes, and validation artifacts where configured.
 
-Hosted GitHub Actions is operational again and is the official merge validation gate. Historical #112 runner/account blockage must not be treated as current work.
-
-## Remaining external-evidence/scientific gates
-
-These remain open independently of the functional-code audit:
+## Blocking external-evidence/scientific work
 
 1. #214 — make the exact historical Inmetro PBEV benchmark PDF bytes reproducibly retrievable and SHA-verified. Mutable upstream reacquisition must not substitute for the bound historical digest.
-2. #168 — execute the bounded PDF-to-structured current-versus-candidate extraction benchmark once the exact source-bound bytes required by #214 are available.
+2. #168 — execute the bounded PDF-to-structured benchmark after #214 provides the exact source-bound bytes.
 3. #232 — establish evidence-bound semantics for current PBEV quantitative columns before extending the public enrichment vocabulary or exposing those facts to BPT2.
 
-These gates are not permission to infer missing source data, silently rebind evidence, or convert unavailable evidence into a code PASS.
+#214 is the direct blocker for #168. #232 remains an independent evidence-bound quantitative semantics track. Where one external dependency blocks progress, continue any independent evidence-scoped work that does not weaken source binding.
 
 ## Current evidence boundary
 
 Operational measurements and consumer-readiness evidence derived from the retained catalog corpus remain bounded to record sides with defensible provenance. Record sides blocked by missing or ambiguous source attribution remain explicit and excluded rather than silently assigned a source.
 
 Bounded benchmark results are not production-wide completeness claims. Quantitative equality does not drive identity resolution. Manufacture year and model year remain distinct. Ambiguous identity remains `REVIEW`.
-
-## Completion condition
-
-#236 must record an explicit final disposition:
-
-`POST_MVP_FUNCTIONAL_AUDIT = PASS | FAIL | PENDING_EXTERNAL_EVIDENCE`
-
-A functional PASS means the implemented Podium behavior is operationally coherent and validated within documented contracts. It does not claim universal automotive-data completeness or waive #214/#168/#232 evidence requirements.
 
 ## Boundaries
 
