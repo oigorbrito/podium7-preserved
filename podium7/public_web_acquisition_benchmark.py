@@ -8,11 +8,11 @@ from pathlib import Path
 from typing import Callable, Iterable
 from urllib.parse import urlsplit
 
+from .bound_http_acquisition import acquire_bound_http
 from .http_acquisition import (
     DirectHttpAcquisition,
     DirectHttpPolicy,
     HttpAcquisitionError,
-    acquire_http,
 )
 
 
@@ -125,7 +125,7 @@ def evaluate_public_web_acquisition(
     sources: Iterable[PublicWebSource],
     *,
     policy: DirectHttpPolicy = DirectHttpPolicy(),
-    acquire: Callable[[str, DirectHttpPolicy], DirectHttpAcquisition] = acquire_http,
+    acquire: Callable[[str, DirectHttpPolicy], DirectHttpAcquisition] = acquire_bound_http,
     generated_at: datetime | None = None,
     source_dataset_versions: dict[str, str] | None = None,
 ) -> dict[str, object]:
