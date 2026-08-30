@@ -31,7 +31,27 @@ def _require_unique_texts(values: tuple[str, ...], field: str) -> None:
 
 
 def _require_json_value(value: Any, field: str) -> None:
+    def validate(item: Any) -> None:
+        if item is None or type(item) in {bool, str, int}:
+            return
+        if type(item) is float:
+            if not math.isfinite(item):
+                raise ValueError
+            return
+        if type(item) is list:
+            for member in item:
+                validate(member)
+            return
+        if type(item) is dict:
+            for key, member in item.items():
+                if type(key) is not str:
+                    raise ValueError
+                validate(member)
+            return
+        raise ValueError
+
     try:
+        validate(value)
         json.dumps(value, ensure_ascii=False, allow_nan=False)
     except (TypeError, ValueError) as exc:
         raise ValueError(f"{field} must be strict JSON-compatible") from exc

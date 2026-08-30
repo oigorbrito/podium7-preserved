@@ -15,8 +15,8 @@ class UnsafeIdentityPayload:
 
 
 class StrictJsonTests(unittest.TestCase):
-    def test_candidate_fact_rejects_non_standard_json_values(self):
-        base = {
+    def base_candidate(self):
+        return {
             "id": "candidate-1",
             "entity_candidate_id": "entity-1",
             "attribute": "custom_metric",
@@ -26,16 +26,33 @@ class StrictJsonTests(unittest.TestCase):
             "evidence_id": "evidence-1",
             "extraction_method": "test",
         }
+
+    def test_candidate_fact_rejects_non_standard_json_values(self):
+        base = self.base_candidate()
         for field, value in (
             ("raw_value", math.nan),
             ("normalized_value", math.inf),
             ("raw_value", {"not", "json"}),
+            ("raw_value", (1, 2)),
+            ("normalized_value", {1: "coerced-key"}),
         ):
             invalid = dict(base)
             invalid[field] = value
             with self.subTest(field=field, value=value):
                 with self.assertRaises(ValueError):
                     CandidateFact(**invalid)
+
+    def test_candidate_fact_accepts_identity_preserving_nested_json(self):
+        base = self.base_candidate()
+        value = {
+            "range": [1, 2.5, None],
+            "flags": {"verified": True, "label": "ok"},
+        }
+        base["raw_value"] = value
+        base["normalized_value"] = value
+        fact = CandidateFact(**base)
+        self.assertEqual(value, fact.raw_value)
+        self.assertEqual(value, fact.normalized_value)
 
     def test_canonical_fact_rejects_non_standard_json_accepted_value(self):
         provenance = ProvenanceRecord(
