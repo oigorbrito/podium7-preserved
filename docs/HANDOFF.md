@@ -1,6 +1,6 @@
 # Podium 7 handoff
 
-Last refreshed: 2026-08-25
+Last refreshed: 2026-08-29
 
 This file is the compact resume point for a new chat, Codex session, or agent handoff. It does not replace canonical product, architecture, or workflow documents.
 
@@ -19,23 +19,24 @@ This file is the compact resume point for a new chat, Codex session, or agent ha
 - Manufacture year and model year remain distinct under the selected Senatran-aligned semantics.
 - Independent explicit structural contradictions may outrank lexical partial-label overlap; partial overlap remains `REVIEW` without an independent contradiction.
 - Before non-trivial infrastructure experimentation or construction, follow ADR-0001 and evaluate mature market alternatives first.
-- GitHub Actions remains the preferred repository CI evidence, but while #112 blocks hosted-runner execution, a structured independent-equivalent validation artifact on the exact clean candidate is an accepted execution-evidence source for the private MVP gate.
+- GitHub Actions is the official repository CI validation gate. Hosted-runner execution has been restored; #112 is historical/closed and must not be treated as a current blocker.
 
 ## Remote state at refresh
 
-- The private technical MVP exit gate reached `PASS` through the independent-equivalent validation path integrated by PR #119.
-- Operational Readiness V1 passed on the exact clean merge-candidate checkout used for that validation.
-- There are no open pull requests and no active repository implementation mission at this refresh.
-- Issue #112 (`Restore GitHub Actions hosted-runner execution`) remains open as infrastructure/operations debt, not as a private-MVP blocker.
-- GitHub-hosted Actions jobs are still failing before any workflow step is created (`steps=null`, no job logs). Do not add runner or infrastructure workarounds merely to bypass it; ADR-0001 remains in force.
+- The private technical MVP is complete.
+- Post-MVP source-acquisition and production-scale capability work is substantially integrated.
+- Current `main` includes the bounded Brazil quantitative coverage baseline and the DNS-bound PDF acquisition hardening from PR #238.
+- Hosted GitHub Actions is executing normal workflows with real steps/logs; exact-head CI remains required before merge.
+- The active repository-wide readiness gate is issue #236, `Post-MVP functional audit for production readiness`.
+- Remaining external-evidence/scientific blockers are #214 (reproducible bound PDF bytes), #168 (PDF-to-structured extraction benchmark), and #232 (PBEV quantitative semantic benchmark). These must remain fail-closed and must not be converted into PASS by assumption.
 
 ## Resume order
 
 1. Refresh live `main`, PRs, issues, CI, and repository-declared work.
-2. Treat the current private technical MVP as complete unless new evidence invalidates the accepted gate.
-3. If #112 remains open, check for a material account/Actions condition change before re-running CI; do not repeatedly rerun unchanged blocked jobs.
-4. When Actions execution is restored, require a normal hosted workflow to create real steps/logs and be green, then close #112.
-5. Start new repository work only under an explicitly declared post-MVP mission; do not silently expand the completed MVP scope.
+2. Continue #236 until all reproducible code/operational defects are fixed or explicitly blocked.
+3. Require repository CI on exact final heads before squash merge.
+4. Keep #214/#168/#232 separate from code-readiness claims: they are evidence/scientific gates, not permission to invent or silently rebind source data.
+5. Do not claim `100% functional post-MVP` until #236 records its explicit final disposition.
 
 ## Operating style
 
