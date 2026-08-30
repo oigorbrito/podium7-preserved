@@ -50,18 +50,19 @@ class PdfAcquisitionTests(unittest.TestCase):
         self.assertFalse(policy.allow_private_network)
         self.assertNotIn(PDF_MEDIA_TYPE, DirectHttpPolicy().allowed_content_types)
 
-    def test_exact_pdf_acquisition_preserves_existing_http_result(self):
+    def test_exact_pdf_acquisition_uses_bound_network_path(self):
         item = self.acquisition()
-        with patch("podium7.pdf_acquisition.acquire_http", return_value=item) as mocked:
+        with patch("podium7.pdf_acquisition.acquire_bound_http", return_value=item) as mocked:
             result = acquire_pdf(self.contract())
         self.assertEqual(item, result)
         mocked.assert_called_once()
         self.assertEqual((PDF_MEDIA_TYPE,), mocked.call_args.args[1].allowed_content_types)
         self.assertEqual(0, mocked.call_args.args[1].max_redirects)
+        self.assertFalse(mocked.call_args.args[1].allow_private_network)
 
     def test_redirected_final_locator_fails_closed(self):
         item = self.acquisition(final_url="https://www.gov.br/inmetro/other.pdf")
-        with patch("podium7.pdf_acquisition.acquire_http", return_value=item):
+        with patch("podium7.pdf_acquisition.acquire_bound_http", return_value=item):
             with self.assertRaisesRegex(
                 HttpAcquisitionError,
                 "exact requested and final locator identity",
@@ -71,7 +72,7 @@ class PdfAcquisitionTests(unittest.TestCase):
 
     def test_non_pdf_response_fails_closed_even_if_transport_is_stubbed(self):
         item = self.acquisition(content_type="text/html")
-        with patch("podium7.pdf_acquisition.acquire_http", return_value=item):
+        with patch("podium7.pdf_acquisition.acquire_bound_http", return_value=item):
             with self.assertRaisesRegex(
                 HttpAcquisitionError,
                 "expected 'application/pdf'",
@@ -83,7 +84,7 @@ class PdfAcquisitionTests(unittest.TestCase):
         item = self.acquisition()
         with tempfile.TemporaryDirectory() as temp_dir:
             destination = Path(temp_dir) / "pbev.pdf"
-            with patch("podium7.pdf_acquisition.acquire_http", return_value=item):
+            with patch("podium7.pdf_acquisition.acquire_bound_http", return_value=item):
                 frozen = acquire_and_freeze_pdf(self.contract(), destination)
             self.assertEqual(item.body, destination.read_bytes())
             self.assertIn(item.sha256, frozen.content_ref)

@@ -5,13 +5,13 @@ import math
 from pathlib import Path
 from urllib.parse import urlsplit
 
+from .bound_http_acquisition import acquire_bound_http
 from .http_acquisition import (
     DirectHttpAcquisition,
     DirectHttpPolicy,
     FrozenHttpSnapshot,
     HttpAcquisitionError,
     HttpAcquisitionErrorCode,
-    acquire_http,
     freeze_http_snapshot,
 )
 
@@ -63,7 +63,7 @@ def pdf_http_policy(contract: PdfAcquisitionContract) -> DirectHttpPolicy:
 
 def acquire_pdf(contract: PdfAcquisitionContract) -> DirectHttpAcquisition:
     policy = pdf_http_policy(contract)
-    acquisition = acquire_http(contract.locator, policy)
+    acquisition = acquire_bound_http(contract.locator, policy)
     if acquisition.requested_url != contract.locator or acquisition.final_url != contract.locator:
         raise HttpAcquisitionError(
             HttpAcquisitionErrorCode.INVALID_URL,
