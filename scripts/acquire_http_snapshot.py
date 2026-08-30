@@ -3,10 +3,11 @@ from __future__ import annotations
 import argparse
 import json
 
+from podium7.bound_http_acquisition import acquire_bound_http
 from podium7.http_acquisition import (
     DirectHttpPolicy,
     HttpAcquisitionError,
-    acquire_and_freeze_http,
+    freeze_http_snapshot,
 )
 
 
@@ -31,10 +32,10 @@ def main(argv: list[str] | None = None) -> int:
             max_bytes=args.max_bytes,
             max_redirects=args.max_redirects,
         )
-        result = acquire_and_freeze_http(
-            args.url,
+        acquisition = acquire_bound_http(args.url, policy)
+        result = freeze_http_snapshot(
+            acquisition,
             args.snapshot,
-            policy,
             overwrite=args.overwrite,
         )
     except (HttpAcquisitionError, ValueError) as exc:
