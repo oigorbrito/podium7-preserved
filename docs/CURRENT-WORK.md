@@ -1,68 +1,48 @@
 # Current work
 
-Status: none
+Status: active
 
-## Current repository state
+## Active mission
 
-The bounded post-MVP source-acquisition mission is complete for its current scope. Source qualification/contracts, executable NHTSA/EEA adapters, multi-source validation/conflict observability, recurring-source controls, review-provenance retention, provenance eligibility, provenance-gated catalog coverage measurement, fail-closed operational source attribution, bounded PDF acquisition, and source-terms drift checks are integrated.
+Issue #236 — `Post-MVP functional audit for production readiness` — is the current repository-wide implementation/readiness gate.
 
-Recent integration evidence includes:
+The audit reviews the integrated product path rather than issue closure alone: runtime/CLI, acquisition/network boundaries, evidence/provenance, normalization/extraction/resolution/fusion/review, SQLite persistence/transactions/reopen behavior, consumer/export/versioning contracts, deterministic replay/benchmarks, exception boundaries, dead/stale pathways, packaging/installability, supported runtime, and repository CI.
 
-- #147 — explicit multi-source conflict disposition;
-- #167 — explicit operational provenance eligibility, retaining blocked record sides rather than inferring attribution;
-- #171 — deterministic extraction-quality benchmark contract with evidence-bound Inmetro PBEV gold;
-- #174 — bounded exact-locator PDF acquisition completed; the Inmetro PBEV gold carries a bound raw SHA-256;
-- #178 — prospective explicit review-side provenance retention;
-- #196 — catalog identity-field coverage recomputed only on provenance-eligible retained records; historical #176 percentages are superseded as current readiness evidence;
-- #142 — operational replay fails closed on ambiguous source attribution and downstream operational/enrichment/review consumers use provenance-eligible replay;
-- #165 — fail-closed source terms/reuse-artifact drift gate;
-- #207 — bounded ER blocker probes executed on retained automotive corpora; `same-make` shows no measured reduction and `same-make-model` fails blocking-recall/ambiguous-overcommit safety gates, so `CURRENT_BETTER` applies to those probes without claiming global optimality;
-- #208 — controlled heterogeneity baseline recorded: representation variation can reduce recall while a regulatory→retail semantic misprojection is a safety regression;
-- #213 — bounded test-only transmission-representation candidate measured and integrated as `COMPLEMENTARY`, with no production normalizer authorized;
-- #215 — extraction benchmark corrected to fail closed because the bound Inmetro digest is known but exact remote snapshot bytes are not currently reproducibly retrievable.
+Concrete audit defects are fixed in focused follow-up PRs and require the normal exact-head GitHub Actions gate before squash merge. Evidence/resolver/provenance/fusion/ambiguity/publication rules must not be weakened to obtain a PASS.
 
-`docs/TECH-DEBT.md` records acquisition and source-family generalization as `CLOSED / CURRENT BOUNDED PROCESS COMPLETE`.
+## Current integrated baseline
 
-## Active evaluation work
+The private technical MVP is complete. Subsequent post-MVP source acquisition, multi-source evidence controls, provenance-safe operational replay, identity-safety benchmarking, durable review/conflict behavior, quantitative-enrichment contract/baseline work, and bounded source-acquisition controls are substantially integrated.
 
-Two evaluation plans remain active because their acceptance conditions are not yet satisfied:
+Recent audit hardening includes:
 
-1. `docs/exec-plans/active/EXTRACTBENCH-EVALUATION-168.md`
-   - the benchmark/evidence contract is integrated;
-   - the selected first bounded comparison candidate is Camelot `lattice`, but no candidate result is claimed;
-   - exact benchmark snapshot bytes are currently `REMOTE_BYTES_UNRESOLVED` under #214, so current-versus-candidate extraction execution remains blocked until a fresh runner can retrieve bytes that verify to the bound SHA;
-   - `EXTRACTOR_COMPARISON = EXTRACTOR_COMPARISON_PENDING`;
-   - no extractor is declared superior and no replacement is authorized.
+- #237/#238 — bounded PDF acquisition moved to the validated-IP network binding path, closing the documented DNS validation-to-connect rebinding gap without changing source/evidence/publication semantics.
 
-2. `docs/exec-plans/active/HETEROGENEITY-STRESS-170.md`
-   - the heterogeneity measurement contract and current-resolver controlled baseline are integrated;
-   - the bounded transmission-representation probe from #213 is integrated with `HETEROGENEITY_TRANSMISSION_REPRESENTATION_CANDIDATE = COMPLEMENTARY`;
-   - `HETEROGENEITY_MITIGATION_COMPARISON = PENDING_BROADER_CANDIDATE_EVIDENCE`;
-   - no production normalization, mapping, blocking or matching replacement is authorized.
+Hosted GitHub Actions is operational again and is the official merge validation gate. Historical #112 runner/account blockage must not be treated as current work.
 
-The ER blocking/matcher evaluation #169 is closed/completed for its bounded probes. `ER_BLOCKER_MATCHER_COMPARISON = CURRENT_BETTER` applies only to the measured retain-all / same-make / same-make-model comparison; a future broader ER comparison requires a new concrete candidate and the same safety gates rather than treating #169 as active work.
+## Remaining external-evidence/scientific gates
+
+These remain open independently of the functional-code audit:
+
+1. #214 — make the exact historical Inmetro PBEV benchmark PDF bytes reproducibly retrievable and SHA-verified. Mutable upstream reacquisition must not substitute for the bound historical digest.
+2. #168 — execute the bounded PDF-to-structured current-versus-candidate extraction benchmark once the exact source-bound bytes required by #214 are available.
+3. #232 — establish evidence-bound semantics for current PBEV quantitative columns before extending the public enrichment vocabulary or exposing those facts to BPT2.
+
+These gates are not permission to infer missing source data, silently rebind evidence, or convert unavailable evidence into a code PASS.
 
 ## Current evidence boundary
 
-Operational measurements and consumer-readiness evidence derived from the retained catalog corpus are bounded to record sides with defensible provenance. Record sides blocked by missing or ambiguous source attribution remain explicit and are excluded from replay/readiness evidence rather than silently assigned a source.
+Operational measurements and consumer-readiness evidence derived from the retained catalog corpus remain bounded to record sides with defensible provenance. Record sides blocked by missing or ambiguous source attribution remain explicit and excluded rather than silently assigned a source.
 
-The current provenance-safe operational slice is not evidence of production-wide completeness. Historical full-corpus counts, review totals, field percentages, or thresholds that depended on positional source attribution are not current acceptance criteria.
+Bounded benchmark results are not production-wide completeness claims. Quantitative equality does not drive identity resolution. Manufacture year and model year remain distinct. Ambiguous identity remains `REVIEW`.
 
-Likewise, bounded ER and heterogeneity measurements are not production-scale prevalence or candidate-universe claims. `candidateReductionRatio`, latency and peak-memory comparisons remain unavailable until a real candidate-universe experiment supplies those observations.
+## Completion condition
 
-The extraction benchmark's bound SHA is not equivalent to remotely retrievable benchmark bytes. Until #214 supplies a durable locator whose retrieved bytes verify to the bound digest, mutable upstream reacquisition must not be substituted for the bound snapshot.
+#236 must record an explicit final disposition:
 
-## Next valid triggers
+`POST_MVP_FUNCTIONAL_AUDIT = PASS | FAIL | PENDING_EXTERNAL_EVIDENCE`
 
-A new implementation slice requires new decision-relevant evidence. Valid triggers include:
-
-- recovery of the exact Inmetro benchmark snapshot bytes plus digest verification and specific reuse confirmation, allowing #214 to provide a durable snapshot locator and #168 to execute the current-versus-candidate extraction comparison;
-- a concrete blocker/matcher candidate beyond the completed #169 bounded probes, compared without reducing blocking recall or increasing false merges/ambiguous overcommit;
-- broader retained/source-backed paired identity cases that can evaluate a concrete heterogeneity mitigation without increasing false merges or ambiguous overcommit;
-- a new measured production/source/evidence gap that justifies reopening acquisition or enrichment work;
-- an explicit owner decision where an existing boundary requires owner authorization.
-
-Absent one of those triggers, the correct state is a clean checkpoint rather than speculative feature work.
+A functional PASS means the implemented Podium behavior is operationally coherent and validated within documented contracts. It does not claim universal automotive-data completeness or waive #214/#168/#232 evidence requirements.
 
 ## Boundaries
 
@@ -71,4 +51,5 @@ Absent one of those triggers, the correct state is a clean checkpoint rather tha
 - do not infer missing source fields or conflate manufacture/model year;
 - EEA regulatory type/variant/version remains regulatory evidence, not retail-trim identity proof;
 - bounded measurements are not production-wide completeness claims;
-- source terms/hash equality is drift evidence only and is not legal interpretation or proof of permission.
+- source terms/hash equality is drift evidence only and is not legal interpretation or proof of permission;
+- before non-trivial infrastructure experimentation or construction, apply ADR-0001 and evaluate mature market alternatives first.
