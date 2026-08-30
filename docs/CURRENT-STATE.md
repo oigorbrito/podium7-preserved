@@ -30,6 +30,10 @@ The PDF-to-structured benchmark #168 is completed. On the retained page-1 gold s
 
 The source-bound quantitative benchmark for #232 is complete and merged. The retained digest-bound PBEV bytes are still available as the repository fixture, and #232 is now closed after CI-green squash integration on the exact head.
 
+`PRIVATE_PROJECT_ENGINEERING_CLOSURE = PASS`
+
+The current private engineering scope is complete and validated by the documented gates. Public/package release readiness remains intentionally blocked by private/proprietary policy.
+
 ## Volatile facts
 
 Do not maintain test counts, Python/runtime versions, Git SHA, benchmark counters, scientific-reference counts, or release-readiness booleans here. Derive them with:
