@@ -1,7 +1,7 @@
 $ErrorActionPreference = "Stop"
 
 $RepoPath = "C:\Projetos\p7"
-$RepoUrl = "https://github.com/tihotm/podium7.git"
+$RepoUrl = "https://github.com/gestbrito/podium7.git"
 
 if (-not (Test-Path $RepoPath)) {
     git clone $RepoUrl $RepoPath

@@ -5,7 +5,7 @@ Podium 7 is an evidence-driven automotive knowledge acquisition, integration, re
 ## Checkout
 
 ```bash
-git clone https://github.com/tihotm/podium7.git
+git clone https://github.com/gestbrito/podium7.git
 cd podium7
 ```
 
