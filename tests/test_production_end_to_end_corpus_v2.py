@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
+import subprocess
 import unittest
 
 from podium7.catalog import CatalogStore
@@ -26,11 +27,20 @@ class ProductionEndToEndCorpusV2Tests(unittest.TestCase):
         base = json.loads(base_path.read_text(encoding="utf-8"))
         return [*base["records"], *manifest["additionalRecords"]]
 
+    def _tracked_bytes(self, relative_path: str) -> bytes:
+        completed = subprocess.run(
+            ["git", "show", f"HEAD:{relative_path}"],
+            cwd=self._root(),
+            check=True,
+            capture_output=True,
+        )
+        return completed.stdout
+
     def test_manifest_binds_exact_retained_snapshot_without_year_reinterpretation(self) -> None:
         manifest = self._manifest()
         snapshot = manifest["sourceSnapshot"]
         raw_path = self._root() / snapshot["path"]
-        raw = raw_path.read_bytes()
+        raw = self._tracked_bytes(snapshot["path"])
 
         self.assertEqual(
             snapshot["sha256"],

@@ -5,7 +5,7 @@
   "baseCorpus": "benchmarks/production_end_to_end_corpus_v1.json",
   "sourceSnapshot": {
     "path": "data/raw/vehicle-makes-models/artega.json",
-    "sha256": "fa343bfac9ece5b48e84f58ae42b58e7bd5e974d70e33b80a5be10b826a9d4f6",
+    "sha256": "c168127c2a0684cd694fc79a95f1602f48a1b9bf65b1c45716034b0298276614",
     "gitBlobSha": "560e795a8a0a9e97d20b7b201b3537962c7d6824",
     "upstream": "https://github.com/gor3a/vehicle-makes-models/blob/560e795a8a0a9e97d20b7b201b3537962c7d6824/data/json/artega.json",
     "acquisitionDate": "2026-08-19",
@@ -26,7 +26,7 @@
         "locator": "https://github.com/gor3a/vehicle-makes-models/blob/main/data/json/artega.json#/makes/0/models/0/generations/0/engines/0",
         "retrievedAt": "2026-08-19T21:26:04Z",
         "acquisitionMethod": "repository-retained-pinned-github-json-snapshot",
-        "rawContentRef": "sha256:fa343bfac9ece5b48e84f58ae42b58e7bd5e974d70e33b80a5be10b826a9d4f6@data/raw/vehicle-makes-models/artega.json"
+        "rawContentRef": "sha256:c168127c2a0684cd694fc79a95f1602f48a1b9bf65b1c45716034b0298276614@data/raw/vehicle-makes-models/artega.json"
       },
       "vehicle": {
         "make": "Artega",
@@ -48,7 +48,7 @@
         "locator": "https://github.com/gor3a/vehicle-makes-models/blob/main/data/json/artega.json#/makes/0/models/1/generations/0/engines/0",
         "retrievedAt": "2026-08-19T21:26:04Z",
         "acquisitionMethod": "repository-retained-pinned-github-json-snapshot",
-        "rawContentRef": "sha256:fa343bfac9ece5b48e84f58ae42b58e7bd5e974d70e33b80a5be10b826a9d4f6@data/raw/vehicle-makes-models/artega.json"
+        "rawContentRef": "sha256:c168127c2a0684cd694fc79a95f1602f48a1b9bf65b1c45716034b0298276614@data/raw/vehicle-makes-models/artega.json"
       },
       "vehicle": {
         "make": "Artega",
