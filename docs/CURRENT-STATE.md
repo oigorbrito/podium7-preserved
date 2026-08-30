@@ -15,6 +15,7 @@ Podium 7 is an evidence-driven automotive knowledge integration system with a wo
 - Manufacture year and model year remain separate catalog dimensions, aligned with Senatran/RENAVAM field semantics.
 - Software status is `PRIVATE_PROPRIETARY`: no public license is granted and package/public release remains intentionally blocked until a later explicit owner decision. Development, testing and private operation are not blocked.
 - Hosted GitHub Actions execution is restored; normal repository CI with real steps/logs is the official merge validation gate. #112 is historical/closed.
+- Private operator installation and first-run closeout is validated with a clean `pip install .`, `python -m podium7 health`, repository readiness, and the durable review-operator smoke.
 
 ## Current readiness boundary
 

@@ -11,6 +11,20 @@ cd podium7
 
 The implementation currently uses Python and is designed around inspectable evidence, conservative identity reconciliation, canonical persistence, and repeatable validation.
 
+## Installation / First run
+
+Podium 7 requires Python 3.11 or newer.
+
+```bash
+python -m venv .venv
+.venv\Scripts\python -m pip install .
+.venv\Scripts\python -m podium7 health
+python scripts/run_operational_readiness.py --output docs/generated/operational-readiness.json
+```
+
+The operator runbook lives in [`docs/OPERATOR-INSTALLATION-V1.md`](docs/OPERATOR-INSTALLATION-V1.md).
+The durable review CLI is documented in [`docs/CATALOG-REVIEW-OPERATOR-V1.md`](docs/CATALOG-REVIEW-OPERATOR-V1.md).
+
 ## Repository navigation
 
 For development or agent work, start with [`AGENTS.md`](AGENTS.md). The repository knowledge base and product/design documentation are indexed at [`docs/INDEX.md`](docs/INDEX.md).

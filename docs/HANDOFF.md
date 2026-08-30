@@ -20,6 +20,7 @@ This file is the compact resume point for a new chat, Codex session, or agent ha
 - Independent explicit structural contradictions may outrank lexical partial-label overlap; partial overlap remains `REVIEW` without an independent contradiction.
 - Before non-trivial infrastructure experimentation or construction, follow ADR-0001 and evaluate mature market alternatives first.
 - GitHub Actions is the official repository CI validation gate. Hosted-runner execution has been restored; #112 is historical/closed and must not be treated as a current blocker.
+- Private operator installation has a validated runbook in `docs/OPERATOR-INSTALLATION-V1.md`; the smallest self-contained smoke is the review-operator CLI test that seeds a temporary SQLite database and exercises `review list`/`review show`.
 
 ## Remote state at refresh
 
