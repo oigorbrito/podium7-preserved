@@ -59,6 +59,7 @@ def _header_map(rows: list[list[str | None]]) -> tuple[int, dict[str, int]] | No
         "transmission": ("transmissao",),
         "fuel": ("combustivel",),
     }
+    required = frozenset(aliases)
     for start in range(min(len(rows), 8)):
         for span in range(1, min(4, len(rows) - start) + 1):
             window = rows[start : start + span]
@@ -72,7 +73,24 @@ def _header_map(rows: list[list[str | None]]) -> tuple[int, dict[str, int]] | No
                     if any(candidate in text for candidate in candidates):
                         mapping[key] = idx
                         break
-            if all(key in mapping for key in aliases):
+
+            # The bound 2026 Inmetro PDF interleaves glyphs in the Transmissão
+            # header under pdfplumber, while preserving the table cells. Use the
+            # source-specific first-column layout only when the surrounding named
+            # headers prove the exact PBEV schema; otherwise fail closed.
+            if "transmission" not in mapping and (
+                width >= 10
+                and mapping.get("category") == 0
+                and mapping.get("make") == 1
+                and mapping.get("model") == 2
+                and mapping.get("version") == 3
+                and mapping.get("engine") == 4
+                and mapping.get("propulsion") == 5
+                and mapping.get("fuel") == 9
+            ):
+                mapping["transmission"] = 6
+
+            if required <= mapping.keys():
                 return start + span - 1, mapping
     return None
 

@@ -41,6 +41,33 @@ class InmetroPbevTests(unittest.TestCase):
         self.assertEqual(3, records[0].page_number)
         self.assertEqual(3, records[0].row_number)
 
+    def test_table_parser_uses_bound_layout_when_real_transmission_header_is_garbled(self):
+        garbled_transmission = (
+            "TVrealnosc(n midº i )as dseãso\n"
+            "EAmu A tbo A ur C m u te M o o t ( ( aá o Mm C a n g ( t(mM i n A V Tt aec í u nA ) t á T ) ma i a u t z ) ) D i l a c ( a Du d a Cp a lTa)"
+        )
+        table = [
+            [
+                "Categoria", "Marca", "Modelo", "Versão", "Motor", "Tipo de\nPropulsão",
+                garbled_transmission, "CoAnrd.", "ADsisreisçtãidoa", "Combustível",
+            ],
+            ["Sub Compacto", "BYD", "DOLPHIN MINI", "GS EV", "Elétrico", "Elétrico", "N.A.", "S", "E", "E"],
+            ["Sub Compacto", "FIAT", "MOBI", "TREKKING", "1.0-6V", "Combustão", "M-5", "S", "E", "F"],
+        ]
+        records = extract_inmetro_pbev_tables([table], "https://www.gov.br/inmetro/pbev.pdf")
+        self.assertEqual(2, len(records))
+        self.assertEqual("N.A.", records[0].transmission)
+        self.assertEqual("E", records[0].fuel)
+        self.assertEqual("M-5", records[1].transmission)
+        self.assertEqual("F", records[1].fuel)
+
+    def test_table_parser_does_not_guess_transmission_without_bound_layout(self):
+        table = [
+            ["Categoria", "Marca", "Modelo", "Versão", "Motor", "Tipo de Propulsão", "garbled", "Combustível"],
+            ["Compacto", "FIAT", "MOBI", "TREKKING", "1.0-6V", "Combustão", "M-5", "F"],
+        ]
+        self.assertEqual((), extract_inmetro_pbev_tables([table], "https://www.gov.br/inmetro/pbev.pdf"))
+
     def test_table_parser_ignores_unrecognized_tables_and_empty_identity_rows(self):
         noise = [["foo", "bar"], ["x", "y"]]
         table = [
