@@ -25,10 +25,10 @@ class InmetroPbevTests(unittest.TestCase):
 
     def test_table_parser_handles_multiline_header_and_preserves_source_coordinates(self):
         table = [
-            ["Categoria", "Marca", "Modelo", "Versão", "Motor", "Tipo de", "Combustível"],
-            [None, None, None, None, None, "Propulsão", None],
-            ["Sub Compacto", "FIAT", "MOBI", "TREKKING", "1.0-6V", "Combustão", "F"],
-            ["Compacto", "PEUGEOT", "E-208", "GT ELÉTRICO", "Elétrico", "Elétrico", "E"],
+            ["Categoria", "Marca", "Modelo", "Versão", "Motor", "Tipo de", "Transmissão", "Combustível"],
+            [None, None, None, None, None, "Propulsão", "Velocidades (nº)", None],
+            ["Sub Compacto", "FIAT", "MOBI", "TREKKING", "1.0-6V", "Combustão", "M-5", "F"],
+            ["Compacto", "PEUGEOT", "E-208", "GT ELÉTRICO", "Elétrico", "Elétrico", "A-1", "E"],
         ]
         records = extract_inmetro_pbev_tables([table], "https://www.gov.br/inmetro/pbev.pdf", page_number=3)
         self.assertEqual(2, len(records))
@@ -36,6 +36,7 @@ class InmetroPbevTests(unittest.TestCase):
         self.assertEqual("MOBI", records[0].model)
         self.assertEqual("TREKKING", records[0].version)
         self.assertEqual("Combustão", records[0].propulsion)
+        self.assertEqual("M-5", records[0].transmission)
         self.assertEqual("F", records[0].fuel)
         self.assertEqual(3, records[0].page_number)
         self.assertEqual(3, records[0].row_number)
@@ -43,8 +44,8 @@ class InmetroPbevTests(unittest.TestCase):
     def test_table_parser_ignores_unrecognized_tables_and_empty_identity_rows(self):
         noise = [["foo", "bar"], ["x", "y"]]
         table = [
-            ["Categoria", "Marca", "Modelo", "Versão", "Motor", "Tipo de Propulsão", "Combustível"],
-            ["Compacto", "", "", "", "", "", ""],
+            ["Categoria", "Marca", "Modelo", "Versão", "Motor", "Tipo de Propulsão", "Transmissão", "Combustível"],
+            ["Compacto", "", "", "", "", "", "", ""],
         ]
         self.assertEqual((), extract_inmetro_pbev_tables([noise, table], "https://www.gov.br/inmetro/pbev.pdf"))
 

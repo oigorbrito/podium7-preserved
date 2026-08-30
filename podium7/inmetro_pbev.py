@@ -20,6 +20,7 @@ class InmetroPbevRecord:
     version: str
     engine: str
     propulsion: str
+    transmission: str
     fuel: str
     source_url: str
     page_number: int
@@ -55,6 +56,7 @@ def _header_map(rows: list[list[str | None]]) -> tuple[int, dict[str, int]] | No
         "version": ("versao",),
         "engine": ("motor",),
         "propulsion": ("tipo de propulsao", "propulsao"),
+        "transmission": ("transmissao",),
         "fuel": ("combustivel",),
     }
     for start in range(min(len(rows), 8)):
@@ -99,6 +101,7 @@ def extract_inmetro_pbev_tables(tables: list[list[list[str | None]]], source_url
                     version=cell("version"),
                     engine=cell("engine"),
                     propulsion=cell("propulsion"),
+                    transmission=cell("transmission"),
                     fuel=cell("fuel"),
                     source_url=source_url,
                     page_number=page_number,
