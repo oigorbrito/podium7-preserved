@@ -133,8 +133,32 @@ class DomainModelTests(unittest.TestCase):
                 attribute="power",
                 candidate_references=("cf-1", "cf-2"),
                 reason="normalized values disagree",
+                resolution_state=ConflictState.RESOLVED,
                 selected_candidate_id="cf-3",
             )
+
+        resolved = Conflict(
+            id="conflict-4",
+            attribute="power",
+            candidate_references=("cf-1", "cf-2"),
+            reason="normalized values disagree",
+            resolution_state=ConflictState.RESOLVED,
+            selected_candidate_id="cf-1",
+        )
+        self.assertEqual("cf-1", resolved.selected_candidate_id)
+
+    def test_unresolved_or_review_conflict_cannot_select_candidate(self) -> None:
+        for state in (ConflictState.UNRESOLVED, ConflictState.REVIEW):
+            with self.subTest(state=state):
+                with self.assertRaisesRegex(ValueError, "cannot select"):
+                    Conflict(
+                        id=f"conflict-{state.value.lower()}",
+                        attribute="power",
+                        candidate_references=("cf-1", "cf-2"),
+                        reason="normalized values disagree",
+                        resolution_state=state,
+                        selected_candidate_id="cf-1",
+                    )
 
 
 if __name__ == "__main__":

@@ -252,8 +252,11 @@ class Conflict:
         if len(self.candidate_references) < 2:
             raise ValueError("a conflict requires at least two candidate references")
         _require_unique_texts(self.candidate_references, "conflict candidate reference")
-        if self.resolution_state is ConflictState.RESOLVED and self.selected_candidate_id is None:
-            raise ValueError("resolved conflicts require selected_candidate_id")
         _require_optional_text(self.selected_candidate_id, "conflict selected_candidate_id")
+        if self.resolution_state is ConflictState.RESOLVED:
+            if self.selected_candidate_id is None:
+                raise ValueError("resolved conflicts require selected_candidate_id")
+        elif self.selected_candidate_id is not None:
+            raise ValueError("unresolved/review conflicts cannot select a candidate")
         if self.selected_candidate_id is not None and self.selected_candidate_id not in self.candidate_references:
             raise ValueError("selected candidate must belong to candidate_references")
