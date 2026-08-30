@@ -116,6 +116,19 @@ def _request_path(url: str) -> str:
     return path
 
 
+def _host_header(target: BoundNetworkTarget) -> str:
+    try:
+        literal = ipaddress.ip_address(target.host)
+    except ValueError:
+        authority_host = target.host
+    else:
+        authority_host = f"[{target.host}]" if literal.version == 6 else target.host
+    default_port = 443 if target.scheme == "https" else 80
+    if target.port == default_port:
+        return authority_host
+    return f"{authority_host}:{target.port}"
+
+
 def acquire_bound_http(url: str, policy: DirectHttpPolicy = DirectHttpPolicy()) -> DirectHttpAcquisition:
     requested_url = url
     current_url = url
@@ -130,7 +143,7 @@ def acquire_bound_http(url: str, policy: DirectHttpPolicy = DirectHttpPolicy()) 
                 "GET",
                 _request_path(current_url),
                 headers={
-                    "Host": target.host if target.port in {80, 443} else f"{target.host}:{target.port}",
+                    "Host": _host_header(target),
                     "User-Agent": policy.user_agent,
                     "Accept-Encoding": "identity",
                     "Accept": ", ".join(policy.allowed_content_types),

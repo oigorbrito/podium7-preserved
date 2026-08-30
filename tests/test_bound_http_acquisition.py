@@ -6,7 +6,12 @@ import threading
 import unittest
 from unittest.mock import patch
 
-from podium7.bound_http_acquisition import acquire_bound_http, resolve_bound_target
+from podium7.bound_http_acquisition import (
+    BoundNetworkTarget,
+    _host_header,
+    acquire_bound_http,
+    resolve_bound_target,
+)
 from podium7.http_acquisition import DirectHttpPolicy, HttpAcquisitionError, HttpAcquisitionErrorCode
 
 
@@ -73,6 +78,31 @@ class BoundHttpAcquisitionTests(unittest.TestCase):
         result = acquire_bound_http(f"{self.base_url}/redirect", self.policy())
         self.assertEqual(f"{self.base_url}/ok", result.final_url)
         self.assertEqual(1, result.redirect_count)
+
+    def test_host_header_formats_hostname_and_scheme_specific_ports(self) -> None:
+        self.assertEqual(
+            "example.test",
+            _host_header(BoundNetworkTarget("https", "example.test", 443, ("93.184.216.34",))),
+        )
+        self.assertEqual(
+            "example.test:80",
+            _host_header(BoundNetworkTarget("https", "example.test", 80, ("93.184.216.34",))),
+        )
+        self.assertEqual(
+            "example.test:443",
+            _host_header(BoundNetworkTarget("http", "example.test", 443, ("93.184.216.34",))),
+        )
+
+    def test_host_header_brackets_ipv6_literals(self) -> None:
+        address = "2001:4860:4860::8888"
+        self.assertEqual(
+            f"[{address}]",
+            _host_header(BoundNetworkTarget("https", address, 443, (address,))),
+        )
+        self.assertEqual(
+            f"[{address}]:8443",
+            _host_header(BoundNetworkTarget("https", address, 8443, (address,))),
+        )
 
     def test_resolver_rejects_any_non_global_address_by_default(self) -> None:
         mixed = [
