@@ -56,6 +56,24 @@ Current provenance eligibility therefore admits either:
 
 A fully attributed record-side whose fields are validly split across two sources remains `NO_UNIQUE_COMMON_SOURCE`.
 
+## Existing storage capability discovered during Wave 01
+
+The current storage model is already more expressive than the operational input path:
+
+- `catalog_v2_candidate_facts` stores field-level candidate facts with an `evidence_id`;
+- canonical facts can carry multiple `candidate_references`;
+- `catalog_v2_provenance` stores `was_derived_from` as a collection;
+- `catalog_v2_review_field_bindings` already stores `field_name`, `source_id`, and `raw_evidence_id` per review-field binding.
+
+The current limitation is how those structures are populated:
+
+- `_save_observation_candidates` assigns the same single `evidence_id` to every present field in an ingested record;
+- `CatalogReviewQueue.enqueue()` accepts one `evidence_id` and derives every review-field binding from that one evidence/source pair.
+
+Therefore Option B does not currently require evidence for a replacement persistence subsystem. The narrower proven implementation boundary is a versioned operational envelope/parser plus ingestion/review APIs capable of preserving field-to-evidence bindings through CREATE, MATCH, and REVIEW while reusing the existing resolver and storage structures where their invariants remain valid.
+
+This does not prove Option B is low-cost or accepted. It removes one previously open uncertainty: field-level/multi-derived provenance primitives already exist below the current one-evidence ingestion interface.
+
 ## Decision to make
 
 Choose one of two admissible policies.
