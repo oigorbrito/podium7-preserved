@@ -10,6 +10,10 @@ from .catalog_batch import CatalogBatchReport, ingest_catalog_batch, parse_catal
 from .catalog_benchmark import load_catalog_identity_benchmark
 
 
+BLOCK_MULTI_SOURCE_WITHOUT_FIELD_ATTRIBUTION = "MULTI_SOURCE_WITHOUT_EXPLICIT_FIELD_ATTRIBUTION"
+BLOCK_FIELD_ATTRIBUTION_INVALID = "FIELD_ATTRIBUTION_INVALID_OR_INCOMPLETE"
+
+
 def _present_vehicle_fields(vehicle: Mapping[str, Any]) -> tuple[str, ...]:
     return tuple(
         field_name
@@ -71,6 +75,14 @@ def unique_source_for_record(
     return next(iter(common_sources)), "EXPLICIT_FIELD_ATTRIBUTION"
 
 
+def _blocked_reason_code(case: Mapping[str, Any]) -> str:
+    raw_field_sources = case.get("fieldSourceIds")
+    case_sources = case.get("sourceIds")
+    if raw_field_sources is None and isinstance(case_sources, list) and len(case_sources) > 1:
+        return BLOCK_MULTI_SOURCE_WITHOUT_FIELD_ATTRIBUTION
+    return BLOCK_FIELD_ATTRIBUTION_INVALID
+
+
 def measure_operational_provenance_eligibility(paths: Iterable[str | Path]) -> dict[str, Any]:
     records: list[dict[str, Any]] = []
     dataset_versions: list[str] = []
@@ -102,6 +114,7 @@ def measure_operational_provenance_eligibility(paths: Iterable[str | Path]) -> d
                         "replayable": False,
                         "method": None,
                         "sourceId": None,
+                        "reasonCode": _blocked_reason_code(case),
                         "reason": str(exc),
                     })
                 else:
@@ -112,6 +125,7 @@ def measure_operational_provenance_eligibility(paths: Iterable[str | Path]) -> d
                         "replayable": True,
                         "method": method,
                         "sourceId": source_id,
+                        "reasonCode": None,
                         "reason": None,
                     })
 
@@ -130,6 +144,7 @@ def measure_operational_provenance_eligibility(paths: Iterable[str | Path]) -> d
             "blockedRecords": len(blocked),
             "replayableRate": len(replayable) / len(records),
             "replayableByMethod": dict(sorted(Counter(record["method"] for record in replayable).items())),
+            "blockedByReasonCode": dict(sorted(Counter(record["reasonCode"] for record in blocked).items())),
             "blockedByReason": dict(sorted(Counter(record["reason"] for record in blocked).items())),
         },
         "records": records,
@@ -193,6 +208,8 @@ def run_provenance_eligible_operational_corpus(
 
 
 __all__ = [
+    "BLOCK_FIELD_ATTRIBUTION_INVALID",
+    "BLOCK_MULTI_SOURCE_WITHOUT_FIELD_ATTRIBUTION",
     "build_provenance_eligible_operational_records",
     "measure_operational_provenance_eligibility",
     "run_provenance_eligible_operational_corpus",
