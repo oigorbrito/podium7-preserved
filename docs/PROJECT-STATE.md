@@ -26,6 +26,8 @@ Status: current state authority
 - the private technical MVP closeout remains documented as complete.
 - `GATE_2_LOCAL_OPERATIONAL_ACCEPTANCE = PASS`.
 - `GATE_3_PRODUCT_QUALITY_ACCEPTANCE = PASS`.
+- `GATE_4_REPOSITORY_ACCEPTANCE = PASS`.
+- `GATE_5_POST_MVP_TRANSITION = PASS`.
 
 ## Pending external gates
 
@@ -39,8 +41,7 @@ Status: current state authority
 
 ## Active work
 
-- documentation baseline reconstruction and authority consolidation.
-- local documentation branch isolated from `main` as `docs-post-mvp-documentation-baseline`.
+- no internal work remains; remaining blockers are external.
 
 ## Blocker register
 
@@ -50,4 +51,4 @@ Status: current state authority
 
 ## Next transition
 
-Move from the current baseline into `GATE 4 - REPOSITORY ACCEPTANCE`.
+External-only follow-up: hosted certification and remote pruning. Internal baseline closeout is complete.

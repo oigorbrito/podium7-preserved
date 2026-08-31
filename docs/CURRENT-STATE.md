@@ -12,6 +12,8 @@ This legacy snapshot now aliases the current baseline in [`PROJECT-STATE.md`](PR
 - hosted certification remains externally pending.
 - `GATE_2_LOCAL_OPERATIONAL_ACCEPTANCE = PASS`.
 - `GATE_3_PRODUCT_QUALITY_ACCEPTANCE = PASS`.
+- `GATE_4_REPOSITORY_ACCEPTANCE = PASS`.
+- `GATE_5_POST_MVP_TRANSITION = PASS`.
 - this file is legacy and defers to [`PROJECT-STATE.md`](PROJECT-STATE.md) for current truth.
 
 ## Navigation

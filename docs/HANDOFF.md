@@ -13,6 +13,8 @@ This file is a compact resume point, not a second authority layer.
 - working branch: `docs-post-mvp-documentation-baseline`.
 - local baseline status: `GATE_2_LOCAL_OPERATIONAL_ACCEPTANCE = PASS`.
 - quality status: `GATE_3_PRODUCT_QUALITY_ACCEPTANCE = PASS`.
+- repository acceptance: `GATE_4_REPOSITORY_ACCEPTANCE = PASS`.
+- post-MVP transition: `GATE_5_POST_MVP_TRANSITION = PASS`.
 
 ## Active blockers
 

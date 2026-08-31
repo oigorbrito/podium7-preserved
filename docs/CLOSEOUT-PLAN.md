@@ -64,7 +64,7 @@ Pass when:
 - hosted CI status is represented as pending external or pass with evidence;
 - no stale tracker contradicts the current state.
 
-Status: `NEXT`.
+Status: `PASS`.
 
 ### GATE 5 - Post-MVP transition
 
@@ -74,6 +74,8 @@ Pass when:
 - internal blockers are zero;
 - external blockers are explicitly segregated;
 - roadmap for the next phase is defined.
+
+Status: `PASS`.
 
 ## Verification
 
