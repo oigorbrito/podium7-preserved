@@ -8,11 +8,11 @@ Status: current state authority
 
 ## Reference SHA
 
-`63887c5d1df352a62f83e70abec1f1b3b2ee2816`
+`8f302bb29cdb049a0680248d11fde4fcd22a59d8`
 
 ## Remote baseline
 
-`origin/main = 6a804b9b8751515283146f402312f458985fc25b`
+`origin/main = 8f302bb29cdb049a0680248d11fde4fcd22a59d8`
 
 ## Lifecycle phase
 
@@ -48,7 +48,8 @@ Status: current state authority
 
 ## Active work
 
-- no internal work remains; remaining blockers are external.
+- no internal baseline-closeout work remains; remaining baseline blockers are external.
+- controlled product evolution may proceed under current authority after a fresh evidence-based wave definition.
 
 ## Blocker register
 
@@ -59,13 +60,12 @@ Status: current state authority
 - remote branch pruning is deferred maintenance, not an active product blocker;
 - the protected delete allowlist and the 29 remaining `backup/*` refs are preserved in `TECH-DEBT.md`;
 - `main` is never a deletion target;
-- `PR #274` remains the authoritative integration line until the local closeout is reconciled with the remote tracker.
+- `PR #274` is merged and is historical integration evidence for this baseline.
 
 ## Superseded integration line
 
-`PR #272` is superseded by `PR #274` and remains only as historical
-integration bookkeeping.
+`PR #272` is superseded by merged `PR #274` and remains only as historical integration bookkeeping.
 
 ## Next transition
 
-External-only follow-up: hosted certification and durable pruning traceability. Internal baseline closeout is complete; remote branch pruning is deferred maintenance, not a blocker.
+External-only baseline follow-up: hosted certification and durable pruning traceability. Internal baseline closeout is complete. New product evolution requires a separately defined, evidence-based wave and does not reopen the accepted baseline.
