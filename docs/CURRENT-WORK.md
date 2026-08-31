@@ -1,24 +1,94 @@
 # Current work
 
-Status: active
+Status: `DECISION_REQUIRED`
 
-Active closure wave:
+Active controlled product-evolution wave:
 
 `PODIUM7-PRODUCTIVE-COVERAGE-WAVE-01`
 
-Authority and frozen measurement plan:
+Authority and measurement/decision record:
 
-[`PODIUM7-PRODUCTIVE-COVERAGE-WAVE-01.md`](PODIUM7-PRODUCTIVE-COVERAGE-WAVE-01.md)
+- [`PODIUM7-PRODUCTIVE-COVERAGE-WAVE-01.md`](PODIUM7-PRODUCTIVE-COVERAGE-WAVE-01.md)
+- [`ADR-0002-OPERATIONAL-MULTISOURCE-PROVENANCE.md`](ADR-0002-OPERATIONAL-MULTISOURCE-PROVENANCE.md)
+- [`PODIUM7-PRODUCTIVE-COVERAGE-WAVE-01-SINGLE-SOURCE-PATCH-PLAN.md`](PODIUM7-PRODUCTIVE-COVERAGE-WAVE-01-SINGLE-SOURCE-PATCH-PLAN.md)
 
-Current objective:
+## Current measured baseline
 
-- classify and reduce the 48 blocked record-sides in the retained three-dataset coverage scope without synthetic attribution or weakened provenance semantics;
-- attack one frozen root cause at a time;
-- do not add a new source family until existing retained evidence is shown insufficient.
+Three-dataset wave scope:
 
-Current first root cause:
+- 60 retained record-sides;
+- 12 replayable;
+- 48 blocked;
+- current executed blocker: `MULTI_SOURCE_WITHOUT_EXPLICIT_FIELD_ATTRIBUTION = 48`.
 
-`MULTI_SOURCE_WITHOUT_EXPLICIT_FIELD_ATTRIBUTION = 48`
+No benchmark mutation has been applied by PR #278, so these executed counts remain authoritative until measurements are rerun on a later evidence-mutation change.
+
+## Completed classification work in PR #278
+
+The 48 blocked record-sides are now classified against retained evidence as:
+
+- `COMPOSITE_SUPPORT = 36`;
+- `VERIFIED_SINGLE_SOURCE = 10`;
+- `INSUFFICIENT_SINGLE_SOURCE_SUPPORT = 2`.
+
+The classification establishes:
+
+`FIELD_ATTRIBUTION_COMPLETE != OPERATIONAL_REPLAYABLE`
+
+and
+
+`MULTI_SOURCE_EVIDENCE != INVALID_EVIDENCE`
+
+A material majority of blocked observations are validly composite under the retained source contract. The current requirement for one unique source common to every present field is therefore the dominant replay limiter, not only missing attribution metadata.
+
+## Immediate bounded data lane
+
+The 10 verified single-source sides can be explicitly attributed without a replay redesign, but that mutation belongs in a separate evidence-mutation PR after the classification change is authoritative.
+
+Prepared planning expectation after that separate mutation, subject to validation:
+
+- replayable: `12 -> 22`;
+- blocked: `48 -> 38`;
+- newly replayable via `EXPLICIT_FIELD_ATTRIBUTION = 10`;
+- remaining `MULTI_SOURCE_WITHOUT_EXPLICIT_FIELD_ATTRIBUTION = 36`;
+- `MISSING_SIDE_FIELD_ATTRIBUTION = 2` for the two intentionally unpatched insufficient sides in partially attributed cases.
+
+These are planning expectations, not executed results.
+
+## Decision boundary
+
+`DECISION_REQUIRED = OPERATIONAL_REPLAY_PROVENANCE_MODEL`
+
+Two admissible policies are documented in ADR-0002:
+
+1. `KEEP_UNIQUE_SOURCE_REPLAY`
+   - complete only the verified single-source lane;
+   - leave valid composite evidence non-replayable by design.
+
+2. `PRESERVE_FIELD_LEVEL_MULTI_SOURCE_REPLAY`
+   - introduce a versioned operational provenance contract that preserves per-field evidence from multiple qualified sources;
+   - retain conflict handling, source qualification, determinism, traceability and fail-closed behavior.
+
+Do not implement multi-source replay before ADR-0002 is accepted with one policy.
+
+## Validation state
+
+Hosted GitHub Actions remains externally blocked before repository execution. Recent PR #278 runs continue to terminate both required jobs with `steps=null` / no repository logs.
+
+Therefore:
+
+- do not interpret hosted failures as Podium test failures;
+- do not spend repeated reruns while the runner cannot execute steps;
+- do not merge PR #278 without applicable exact-head validation evidence;
+- keep the existing Actions recovery monitor active.
+
+## Work allowed while decision/CI is pending
+
+- keep PR #278 focused on blocker taxonomy, evidence classification, decision framing and prepared patch plan;
+- review the final PR diff for internal consistency;
+- refresh exact-head CI when the branch changes, but do not manually rerun repeated pre-step failures;
+- once #278 is validated/integrated, create the separate 10-side evidence-mutation change;
+- if multi-source replay is selected, implement ADR-0002 in a separate architecture/runtime change with contract-first negative tests.
 
 Current baseline-closeout state remains authoritative in [`PROJECT-STATE.md`](PROJECT-STATE.md) and is not reopened by this controlled product-evolution wave.
 
