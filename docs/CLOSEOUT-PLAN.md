@@ -11,7 +11,7 @@ Status: authoritative closeout plan
 - private/proprietary project status remains in force;
 - local private operation and operator installation are already validated;
 - the repository contains overlapping state, history, evidence, and closeout documents that need consolidation;
-- the accepted remote baseline is `origin/main = 8f302bb29cdb049a0680248d11fde4fcd22a59d8`.
+- baseline integration is anchored by merged `PR #274`; current repository `HEAD` is derived, not manually frozen here.
 
 ## Gates
 
@@ -82,7 +82,8 @@ Status: `PASS`.
 - documentation inventory and matrix review;
 - link and reference validation;
 - repository state validation via existing scripts;
-- focused test or script evidence only where needed to confirm that documentation matches code.
+- focused test or script evidence only where needed to confirm that documentation matches code;
+- volatile repository facts, including current Git commit, are derived with `python scripts/project_facts.py` rather than copied into this plan.
 
 ## Blocking semantics
 
