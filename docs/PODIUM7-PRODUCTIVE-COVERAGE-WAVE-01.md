@@ -66,9 +66,47 @@ Before and after each mutation, record:
 - vehicles with N known quantitative fields;
 - market and source-family distribution.
 
+## Evidence-review finding 01
+
+The retained corpus contains at least two materially different situations inside the current `MULTI_SOURCE_WITHOUT_EXPLICIT_FIELD_ATTRIBUTION` bucket.
+
+1. `ATTRIBUTION_METADATA_MISSING_BUT_SINGLE_SOURCE_PER_RECORD_SIDE_PLAUSIBLE`
+   - example: `no-match-toyota-corolla-10g-vs-12g` in `catalog_identity_golden_v1.json`;
+   - each record-side is associated with a distinct declared source whose retained support statement covers the corresponding generation/product context;
+   - this class is a candidate for explicit attribution only after every present field is verified against the retained evidence.
+
+2. `GENUINELY_COMPOSITE_RECORD_SIDE`
+   - examples appear in the Mustang, Porsche, Brazil generation/configuration, and adjacent/incomplete slices;
+   - retained source-support statements intentionally distribute generation, variant, model-year, or mechanical facts across different sources;
+   - no `fieldSourceIds` value may be invented merely to make the record replayable.
+
+The second class exposes an operational-replay boundary: the benchmark/provenance model can represent valid field-level attribution from multiple sources, while `unique_source_for_record` currently requires exactly one source common to every present field before operational replay.
+
+A focused test on the current wave branch freezes this boundary: a synthetically valid field-attributed record with `make/model` from one source and `generation` from another remains blocked as `NO_UNIQUE_COMMON_SOURCE`.
+
+Therefore:
+
+`FIELD_ATTRIBUTION_COMPLETE != OPERATIONAL_REPLAYABLE`
+
+and
+
+`MULTI_SOURCE_EVIDENCE != INVALID_EVIDENCE`
+
+This prevents the wave from treating all 48 blocked record-sides as a data-cleanup task.
+
 ## First implementation question
 
 For each of the 48 blocked record-sides, determine whether the retained evidence can support explicit field attribution without inference. A case may become replayable only if its present fields have a valid unique common source under the existing operational-replay contract. If evidence is genuinely multi-source with no single source supporting every present field, it remains blocked unless a separately justified replay design can preserve per-field provenance without collapsing evidence semantics.
+
+## Decision boundary
+
+Do not redesign operational replay until the 48 record-sides are classified into:
+
+- evidence-valid single-source-per-side candidates;
+- genuinely composite, correctly multi-source observations;
+- insufficiently supported observations that must remain blocked.
+
+If a material portion of valid observations is genuinely composite, the limiting factor is replay design rather than missing attribution metadata. At that point the wave transitions to `DECISION_REQUIRED` before implementation of any multi-source replay path.
 
 ## Exit states
 
