@@ -94,6 +94,60 @@ and
 
 This prevents the wave from treating all 48 blocked record-sides as a data-cleanup task.
 
+## Support-statement triage 01
+
+This triage uses only the retained benchmark `sources[].supports` statements and the present fields on each record-side. It is a review ledger, not a corpus mutation and not a replacement for source-level field verification.
+
+Categories:
+
+- `SINGLE_SOURCE_CANDIDATE`: one declared retained source plausibly covers the present fields on that side; every field still requires source-level verification before any `fieldSourceIds` mutation.
+- `COMPOSITE_SUPPORT`: retained support is intentionally split across multiple declared sources; assigning one source to every field would collapse provenance semantics.
+- `INSUFFICIENT_SUPPORT_SUMMARY`: the retained support summaries do not safely establish all present fields or the exact label semantics; the side remains blocked pending deeper source review.
+
+| Dataset | Case | Left | Right |
+| --- | --- | --- | --- |
+| `catalog_identity_golden_v1.json` | `match-ford-mustang-dark-horse` | `COMPOSITE_SUPPORT` | `COMPOSITE_SUPPORT` |
+| `catalog_identity_golden_v1.json` | `match-porsche-911-992-carrera-4s` | `COMPOSITE_SUPPORT` | `COMPOSITE_SUPPORT` |
+| `catalog_identity_golden_v1.json` | `no-match-toyota-corolla-10g-vs-12g` | `SINGLE_SOURCE_CANDIDATE` | `SINGLE_SOURCE_CANDIDATE` |
+| `catalog_identity_golden_v1.json` | `no-match-ford-mustang-gt-vs-dark-horse` | `COMPOSITE_SUPPORT` | `COMPOSITE_SUPPORT` |
+| `catalog_identity_golden_v1.json` | `no-match-porsche-911-991-vs-992` | `INSUFFICIENT_SUPPORT_SUMMARY` | `COMPOSITE_SUPPORT` |
+| `catalog_identity_golden_v1.json` | `review-porsche-911-partial-variant-label` | `SINGLE_SOURCE_CANDIDATE` | `INSUFFICIENT_SUPPORT_SUMMARY` |
+| `catalog_identity_golden_br_v1.json` | `br-match-corolla-cross-xrx-hybrid-my25` | `COMPOSITE_SUPPORT` | `COMPOSITE_SUPPORT` |
+| `catalog_identity_golden_br_v1.json` | `br-match-onix-premier-turbo-my25` | `COMPOSITE_SUPPORT` | `COMPOSITE_SUPPORT` |
+| `catalog_identity_golden_br_v1.json` | `br-match-tcross-highline-250-tsi` | `COMPOSITE_SUPPORT` | `COMPOSITE_SUPPORT` |
+| `catalog_identity_golden_br_v1.json` | `br-match-strada-ranch-13-cvt` | `COMPOSITE_SUPPORT` | `COMPOSITE_SUPPORT` |
+| `catalog_identity_golden_br_v1.json` | `br-no-match-corolla-cross-xrx-hybrid-vs-xrx-flex` | `COMPOSITE_SUPPORT` | `COMPOSITE_SUPPORT` |
+| `catalog_identity_golden_br_v1.json` | `br-no-match-tcross-highline-vs-comfortline` | `COMPOSITE_SUPPORT` | `COMPOSITE_SUPPORT` |
+| `catalog_identity_golden_br_v1.json` | `br-no-match-strada-volcano-manual-vs-cvt` | `COMPOSITE_SUPPORT` | `COMPOSITE_SUPPORT` |
+| `catalog_identity_golden_br_v1.json` | `br-no-match-corsa-shared-fipe-different-model-year` | `SINGLE_SOURCE_CANDIDATE` | `SINGLE_SOURCE_CANDIDATE` |
+| `catalog_identity_golden_br_v1.json` | `br-review-corolla-cross-xrx-hybrid-missing-variant` | `COMPOSITE_SUPPORT` | `COMPOSITE_SUPPORT` |
+| `catalog_identity_golden_br_v1.json` | `br-review-onix-premier-missing-variant` | `COMPOSITE_SUPPORT` | `COMPOSITE_SUPPORT` |
+| `catalog_identity_golden_br_v1.json` | `br-review-tcross-250-tsi-missing-variant` | `COMPOSITE_SUPPORT` | `COMPOSITE_SUPPORT` |
+| `catalog_identity_golden_br_v1.json` | `br-review-shared-fipe-code-alone` | `SINGLE_SOURCE_CANDIDATE` | `SINGLE_SOURCE_CANDIDATE` |
+| `catalog_identity_br_adjacent_incomplete_v1.json` | `br-hard-control-match-tcross-highline-complete-official-sources` | `COMPOSITE_SUPPORT` | `COMPOSITE_SUPPORT` |
+| `catalog_identity_br_adjacent_incomplete_v1.json` | `br-hard-no-match-corolla-altis-hybrid-my25-vs-my26` | `SINGLE_SOURCE_CANDIDATE` | `SINGLE_SOURCE_CANDIDATE` |
+| `catalog_identity_br_adjacent_incomplete_v1.json` | `br-hard-no-match-onix-premier-my26-vs-my27` | `SINGLE_SOURCE_CANDIDATE` | `SINGLE_SOURCE_CANDIDATE` |
+| `catalog_identity_br_adjacent_incomplete_v1.json` | `br-hard-review-onix-my26-premier-incomplete-mechanical-mapping` | `COMPOSITE_SUPPORT` | `COMPOSITE_SUPPORT` |
+| `catalog_identity_br_adjacent_incomplete_v1.json` | `br-hard-review-tcross-highline-current-page-missing-transmission-mapping` | `COMPOSITE_SUPPORT` | `COMPOSITE_SUPPORT` |
+| `catalog_identity_br_adjacent_incomplete_v1.json` | `br-hard-review-tcross-highline-model-year-present-one-side` | `COMPOSITE_SUPPORT` | `COMPOSITE_SUPPORT` |
+
+Triage totals across the 48 blocked record-sides:
+
+- `COMPOSITE_SUPPORT = 35`
+- `SINGLE_SOURCE_CANDIDATE = 11`
+- `INSUFFICIENT_SUPPORT_SUMMARY = 2`
+
+These are review counts, not a replacement for the executed operational blocker count. The measured blocker remains `MULTI_SOURCE_WITHOUT_EXPLICIT_FIELD_ATTRIBUTION = 48` until benchmark attribution is actually changed and measurements are re-executed.
+
+The triage materially narrows the next evidence work:
+
+1. verify the 11 `SINGLE_SOURCE_CANDIDATE` sides field by field against their retained sources;
+2. resolve the two `INSUFFICIENT_SUPPORT_SUMMARY` Porsche sides by source-level review;
+3. verify representative `COMPOSITE_SUPPORT` sides deeply enough to establish that the apparent source split is real rather than an artifact of coarse support summaries;
+4. only then decide whether the wave can improve replayability through data completion alone or must enter `DECISION_REQUIRED` for replay-contract design.
+
+No `fieldSourceIds` are added by this triage.
+
 ## First implementation question
 
 For each of the 48 blocked record-sides, determine whether the retained evidence can support explicit field attribution without inference. A case may become replayable only if its present fields have a valid unique common source under the existing operational-replay contract. If evidence is genuinely multi-source with no single source supporting every present field, it remains blocked unless a separately justified replay design can preserve per-field provenance without collapsing evidence semantics.
