@@ -12,6 +12,7 @@ This file is a compact resume point, not a second authority layer.
 - navigation: [`INDEX.md`](INDEX.md).
 - working branch: `docs-post-mvp-documentation-baseline`.
 - local baseline status: `GATE_2_LOCAL_OPERATIONAL_ACCEPTANCE = PASS`.
+- quality status: `GATE_3_PRODUCT_QUALITY_ACCEPTANCE = PASS`.
 
 ## Active blockers
 

@@ -53,7 +53,7 @@ Pass when:
 - evidence/provenance integrity is preserved;
 - reliability, operability, maintainability, security, and testing gates are explicit.
 
-Status: `NEXT`.
+Status: `PASS`.
 
 ### GATE 4 - Repository acceptance
 
@@ -63,6 +63,8 @@ Pass when:
 - issues and branches are reconciled;
 - hosted CI status is represented as pending external or pass with evidence;
 - no stale tracker contradicts the current state.
+
+Status: `NEXT`.
 
 ### GATE 5 - Post-MVP transition
 

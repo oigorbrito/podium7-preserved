@@ -25,6 +25,7 @@ Status: current state authority
 - evidence-backed catalog identity contracts and benchmarks are in place;
 - the private technical MVP closeout remains documented as complete.
 - `GATE_2_LOCAL_OPERATIONAL_ACCEPTANCE = PASS`.
+- `GATE_3_PRODUCT_QUALITY_ACCEPTANCE = PASS`.
 
 ## Pending external gates
 
@@ -49,4 +50,4 @@ Status: current state authority
 
 ## Next transition
 
-Move from the current baseline into `GATE 3 - PRODUCT QUALITY ACCEPTANCE`.
+Move from the current baseline into `GATE 4 - REPOSITORY ACCEPTANCE`.
