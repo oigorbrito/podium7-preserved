@@ -6,13 +6,11 @@ Status: current state authority
 
 `POST_MVP_OPERATIONAL_BASELINE_V1`
 
-## Reference SHA
+## Baseline integration anchor
 
-`8f302bb29cdb049a0680248d11fde4fcd22a59d8`
+`PR #274` merged as `8f302bb29cdb049a0680248d11fde4fcd22a59d8`.
 
-## Remote baseline
-
-`origin/main = 8f302bb29cdb049a0680248d11fde4fcd22a59d8`
+The current repository `HEAD` is a volatile fact and must be derived with `python scripts/project_facts.py`; it is not maintained manually in this authority document.
 
 ## Lifecycle phase
 
