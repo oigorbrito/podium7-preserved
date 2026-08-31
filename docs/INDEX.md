@@ -1,77 +1,78 @@
 # Podium 7 documentation index
 
-`docs/` is the repository system of record. This index is the progressive-disclosure entry point after `AGENTS.md` and the compact resume handoff.
+`docs/` is the repository system of record. Use this index to distinguish current authority, decision records, evidence, and historical material.
 
-## Always-read operating context
+## Current authority
 
-- [`HANDOFF.md`](HANDOFF.md) — compact resume point for a new chat/session; refresh live repository state before acting.
-- [`CURRENT-STATE.md`](CURRENT-STATE.md) — current factual repository/product state; short, no history dump.
-- [`CURRENT-WORK.md`](CURRENT-WORK.md) — the active outcome, boundaries, acceptance criteria, and blockers only.
-- [`DEVELOPMENT-WORKFLOW.md`](DEVELOPMENT-WORKFLOW.md) — the single canonical source for autonomy, approvals, Git/PR/CI, validation, self-review, done, and stopping rules.
-- [`INVARIANTS.md`](INVARIANTS.md) — product and evidence invariants that every change must preserve.
-- [`TECH-DEBT.md`](TECH-DEBT.md) — durable known debt and external blockers.
-- [`CANDIDATE-EVALUATION-LEDGER.md`](CANDIDATE-EVALUATION-LEDGER.md) — recovered external candidate/source evaluation evidence, gaps, and retest policy.
-- [`exec-plans/README.md`](exec-plans/README.md) — when and how to version execution plans.
+- [`PROJECT-CHARTER.md`](PROJECT-CHARTER.md) - mission, scope, non-scope, and product limits.
+- [`PROJECT-STATE.md`](PROJECT-STATE.md) - single source of truth for the current baseline, phase, blockers, and next transition.
+- [`ARCHITECTURE.md`](ARCHITECTURE.md) - current assembled architecture.
+- [`REQUIREMENTS.md`](REQUIREMENTS.md) - current requirement baseline and traceability.
+- [`QUALITY-GATES.md`](QUALITY-GATES.md) - measurable acceptance and quality gates.
+- [`OPERATIONS.md`](OPERATIONS.md) - install, first run, operation, recovery, and troubleshooting.
+- [`CLOSEOUT-PLAN.md`](CLOSEOUT-PLAN.md) - finite gate model for closing the current baseline.
+- [`ROADMAP.md`](ROADMAP.md) - approved future work only.
+- [`DOCUMENTATION-AUTHORITY-MATRIX.md`](DOCUMENTATION-AUTHORITY-MATRIX.md) - current classification of documentation authority and disposition.
 
-## Architecture and scientific foundation
+## Operating context
 
-- [`ARCHITECTURE-PRINCIPLES.md`](ARCHITECTURE-PRINCIPLES.md) — architecture principles and decision classification.
-- [`ADR-0001-MARKET-FIRST-INFRASTRUCTURE.md`](ADR-0001-MARKET-FIRST-INFRASTRUCTURE.md) — requires mature-market evaluation before non-trivial infrastructure experimentation or construction and documents adopt/adapt/build decisions.
-- [`DONOR-CAPABILITY-EVALUATION-V1.md`](DONOR-CAPABILITY-EVALUATION-V1.md) — evidence-backed donor capability matrix and adopt/adapt/reference dispositions; no donor code, data, schema, or policy import.
-- [`SCIENTIFIC-FOUNDATION.md`](SCIENTIFIC-FOUNDATION.md) — scientific baseline and canonical research references.
-- [`PERSISTENCE-AND-EVIDENCE-STORE.md`](PERSISTENCE-AND-EVIDENCE-STORE.md) — persistence/provenance design.
-- [`ENTITY-RESOLUTION-V1.md`](ENTITY-RESOLUTION-V1.md) — V1 entity-resolution design record.
-- [`DATA-FUSION-AND-CONFLICTS-V1.md`](DATA-FUSION-AND-CONFLICTS-V1.md) — fusion/conflict design record.
-- [`NORMALIZATION-V1.md`](NORMALIZATION-V1.md) — normalization design record.
+- [`HANDOFF.md`](HANDOFF.md) - compact resume point derived from the current baseline.
+- [`CURRENT-STATE.md`](CURRENT-STATE.md) - legacy alias for the current state snapshot.
+- [`CURRENT-WORK.md`](CURRENT-WORK.md) - legacy active-work tracker; only meaningful if an active block exists.
+- [`DEVELOPMENT-WORKFLOW.md`](DEVELOPMENT-WORKFLOW.md) - autonomy, validation, Git/PR/CI, self-review, and done rules.
+- [`INVARIANTS.md`](INVARIANTS.md) - cross-cutting product invariants.
+- [`TECH-DEBT.md`](TECH-DEBT.md) - durable unresolved work and external blockers.
+- [`LICENSING-STATUS.md`](LICENSING-STATUS.md) - private/proprietary release boundary.
 
-## Catalog product contracts
+## Decisions
+
+- [`ADR-0001-MARKET-FIRST-INFRASTRUCTURE.md`](ADR-0001-MARKET-FIRST-INFRASTRUCTURE.md)
+- [`ARCHITECTURE-PRINCIPLES.md`](ARCHITECTURE-PRINCIPLES.md)
+- [`DONOR-CAPABILITY-EVALUATION-V1.md`](DONOR-CAPABILITY-EVALUATION-V1.md)
+- [`CANDIDATE-EVALUATION-LEDGER.md`](CANDIDATE-EVALUATION-LEDGER.md)
+
+## Product contracts
 
 - [`CATALOG-IDENTITY-V2.md`](CATALOG-IDENTITY-V2.md)
 - [`CATALOG-EVIDENCE-POLICY-V2.md`](CATALOG-EVIDENCE-POLICY-V2.md)
 - [`CATALOG-JSON-CONTRACT-V2.md`](CATALOG-JSON-CONTRACT-V2.md)
 - [`CATALOG-CONSUMER-API-V2.md`](CATALOG-CONSUMER-API-V2.md)
-- [`QUANTITATIVE-ENRICHMENT-CONSUMER-CONTRACT-V1.md`](QUANTITATIVE-ENRICHMENT-CONSUMER-CONTRACT-V1.md) — separate versioned technical-fact publication envelope with explicit knowledge state, value shape, unit, revision and provenance; does not mutate Catalog JSON 2.0.
+- [`QUANTITATIVE-ENRICHMENT-CONSUMER-CONTRACT-V1.md`](QUANTITATIVE-ENRICHMENT-CONSUMER-CONTRACT-V1.md)
+- [`CATALOG-BATCH-INGESTION-V1.md`](CATALOG-BATCH-INGESTION-V1.md)
+- [`CATALOG-REVIEW-OPERATOR-V1.md`](CATALOG-REVIEW-OPERATOR-V1.md)
+- [`OPERATOR-INSTALLATION-V1.md`](OPERATOR-INSTALLATION-V1.md)
+- [`BOM-PRATICHE-CONTRACT-V2.md`](BOM-PRATICHE-CONTRACT-V2.md)
+- [`PERSISTENCE-AND-EVIDENCE-STORE.md`](PERSISTENCE-AND-EVIDENCE-STORE.md)
+- [`ENTITY-RESOLUTION-V1.md`](ENTITY-RESOLUTION-V1.md)
+- [`DATA-FUSION-AND-CONFLICTS-V1.md`](DATA-FUSION-AND-CONFLICTS-V1.md)
+- [`NORMALIZATION-V1.md`](NORMALIZATION-V1.md)
+
+## Evidence
+
 - [`CATALOG-IDENTITY-BENCHMARK-V1.md`](CATALOG-IDENTITY-BENCHMARK-V1.md)
 - [`CATALOG-YEAR-SEMANTICS-CHALLENGE-V1.md`](CATALOG-YEAR-SEMANTICS-CHALLENGE-V1.md)
-- [`CATALOG-BATCH-INGESTION-V1.md`](CATALOG-BATCH-INGESTION-V1.md)
-- [`CATALOG-REVIEW-OPERATOR-V1.md`](CATALOG-REVIEW-OPERATOR-V1.md) — canonical private operator CLI, existing-database safety boundary, review context, and audited mutation contract.
-- [`OPERATOR-INSTALLATION-V1.md`](OPERATOR-INSTALLATION-V1.md) — private operator installation, first-run validation, update, persistence, backup/restore boundary, troubleshooting, and cleanup.
-- [`BOM-PRATICHE-CONTRACT-V2.md`](BOM-PRATICHE-CONTRACT-V2.md)
-
-## Acquisition, extraction, review, export, and operational readiness
-
+- [`MEASURED-OPERATIONAL-DISPOSITION-V1.md`](MEASURED-OPERATIONAL-DISPOSITION-V1.md)
+- [`MVP-EXIT-GATE-V1.md`](MVP-EXIT-GATE-V1.md)
+- [`OPERATIONAL-READINESS-V1.md`](OPERATIONAL-READINESS-V1.md)
 - [`FIRST-REAL-STRUCTURED-INGESTION.md`](FIRST-REAL-STRUCTURED-INGESTION.md)
-- [`SOURCE-EVIDENCE-GAP-MATRIX-V1.md`](SOURCE-EVIDENCE-GAP-MATRIX-V1.md) — reconstructed qualified-source coverage and decision-critical evidence gaps for the post-MVP acquisition mission.
-- [`SOURCE-QUALIFICATION-V1.md`](SOURCE-QUALIFICATION-V1.md) — targeted primary-source qualification against measured post-MVP identity/evidence gaps.
-- [`NHTSA-VPIC-EVIDENCE-CONTRACT-V1.md`](NHTSA-VPIC-EVIDENCE-CONTRACT-V1.md) — source-specific discovery/VIN-backed evidence, provenance, nonclaims and fail-closed boundaries.
-- [`EEA-EVIDENCE-CONTRACT-V2.md`](EEA-EVIDENCE-CONTRACT-V2.md) — regulatory identity/support evidence and provenance refinement without retail-trim/year semantic widening.
-- [`DIRECT-HTTP-ACQUISITION-V1.md`](DIRECT-HTTP-ACQUISITION-V1.md) — bounded fail-closed direct HTTP transport and snapshot contract.
-- [`PDF-ACQUISITION-MARKET-EVALUATION-V1.md`](PDF-ACQUISITION-MARKET-EVALUATION-V1.md) — market-first evaluation for the bounded source-specific PDF acquisition path.
-- [`NETWORK-TARGET-BINDING-V1.md`](NETWORK-TARGET-BINDING-V1.md) — DNS-rebinding-resistant acquisition path that binds validated resolution to the actual socket connection while preserving hostname TLS verification.
-- [`INMETRO-PBEV-DOCUMENT-PATH-V1.md`](INMETRO-PBEV-DOCUMENT-PATH-V1.md) — source-specific current PBEV PDF acquisition and ruled-table extraction path without widening global HTTP media policy.
-- [`PRODUCTION-SOURCE-DISTRIBUTION-V1.md`](PRODUCTION-SOURCE-DISTRIBUTION-V1.md) — bounded regression gate for independently inspected source-family and regional diversity without a production-completeness claim.
-- [`PRODUCTION-CORPUS-RUN-V2.md`](PRODUCTION-CORPUS-RUN-V2.md) — expanded source-backed replay through batch ingestion, identity resolution, evidence persistence and consumer reads.
-- [`PRODUCTION-OPERATIONAL-MEASUREMENT-V1.md`](PRODUCTION-OPERATIONAL-MEASUREMENT-V1.md) — measured action distribution, review load and durable review causes for the expanded source-backed replay.
-- [`PRODUCTION-OPERATIONAL-GAP-PRIORITY-V1.md`](PRODUCTION-OPERATIONAL-GAP-PRIORITY-V1.md) — fail-closed prioritization of measured ingestion and review gaps, selecting evidence enrichment before resolver changes.
-- [`MEASURED-OPERATIONAL-DISPOSITION-V1.md`](MEASURED-OPERATIONAL-DISPOSITION-V1.md) — assigns measured review gaps to evidence enrichment or durable human review without resolver-policy changes.
-- [`PRODUCTION-EVIDENCE-ENRICHMENT-V1.md`](PRODUCTION-EVIDENCE-ENRICHMENT-V1.md) — source-backed review work queue and bounded evidence-enrichment cycle without resolver-policy weakening.
-- [`PRODUCTION-EVIDENCE-ENRICHMENT-V2.md`](PRODUCTION-EVIDENCE-ENRICHMENT-V2.md) — strengthens sparse Onix MY26 evidence before ingestion and reduces the bounded replay while keeping enrichment provenance case-bound.
-- [`PRODUCTION-EVIDENCE-ENRICHMENT-V3.md`](PRODUCTION-EVIDENCE-ENRICHMENT-V3.md) — uses case-bound Volkswagen MY26 mechanical evidence while retaining the one-sided-model-year abstention.
-- [`PRODUCTION-QUALITY-GATE-V1.md`](PRODUCTION-QUALITY-GATE-V1.md) — integrated bounded product-operation gate over end-to-end ingestion, consumer reads, identity precision/recall, and review dispositions.
-- [`PRODUCTION-QUALITY-GATE-V2.md`](PRODUCTION-QUALITY-GATE-V2.md) — closes the pre-enrichment bounded operation cycle with measured review priorities.
-- [`PRODUCTION-QUALITY-GATE-V3.md`](PRODUCTION-QUALITY-GATE-V3.md) — closes the evidence-enrichment cycle with preserved identity safety metrics.
-- [`OPERATIONAL-READINESS-V1.md`](OPERATIONAL-READINESS-V1.md) — deterministic private-operation preflight spanning runtime, harness, packaging, identity benchmark, repository facts, and sequential tests.
-- [`MVP-EXIT-GATE-V1.md`](MVP-EXIT-GATE-V1.md) — formal private-MVP exit criteria requiring repository readiness plus independently verified executable green CI.
-- [`PUBLIC-WEB-ACQUISITION-CHARACTERIZATION-V1.md`](PUBLIC-WEB-ACQUISITION-CHARACTERIZATION-V1.md) — one live operational compatibility measurement across retained public source URLs.
-- [`BROWSER-ACQUISITION-CHARACTERIZATION-V1.md`](BROWSER-ACQUISITION-CHARACTERIZATION-V1.md) — controlled Chromium measurement; generic browser fallback was not selected.
-- [`COMPLIANT-ALTERNATIVE-SOURCES-V1.md`](COMPLIANT-ALTERNATIVE-SOURCES-V1.md) — current primary-source evaluation and selected official-source paths.
-- [`EEA-SOURCE-FAMILY-V1.md`](EEA-SOURCE-FAMILY-V1.md) — frozen official EEA passenger-car monitoring source family.
-- [`EEA-SEMANTIC-EXPANSION-V2.md`](EEA-SEMANTIC-EXPANSION-V2.md) — source-backed fuel semantics plus regulatory identity nonclaims.
-- [`OFFICIAL-SOURCE-DISCOVERY-V1.md`](OFFICIAL-SOURCE-DISCOVERY-V1.md) — bounded official-source candidate discovery with explicit non-identity-proof contract.
-- [`RECURRING-SOURCE-POLICY-V1.md`](RECURRING-SOURCE-POLICY-V1.md) — fail-closed robots interpretation and per-host pacing gate required before repeated live acquisition.
-- [`SOURCE-TERMS-DRIFT-GATE-V1.md`](SOURCE-TERMS-DRIFT-GATE-V1.md) — bounded source-origin terms drift gate for recurring acquisition.
-- [`POST-MVP-SOURCE-ACQUISITION-OUTCOME-V1.md`](POST-MVP-SOURCE-ACQUISITION-OUTCOME-V1.md) — synchronized outcome and integration order for the post-MVP source acquisition stack.
-- [`MULTISOURCE-CONFLICT-DISPOSITION-V1.md`](MULTISOURCE-CONFLICT-DISPOSITION-V1.md) — explicit persisted conflict-state observability for bounded multi-source validation.
+- [`SOURCE-EVIDENCE-GAP-MATRIX-V1.md`](SOURCE-EVIDENCE-GAP-MATRIX-V1.md)
+- [`SOURCE-QUALIFICATION-V1.md`](SOURCE-QUALIFICATION-V1.md)
+- [`NHTSA-VPIC-EVIDENCE-CONTRACT-V1.md`](NHTSA-VPIC-EVIDENCE-CONTRACT-V1.md)
+- [`EEA-EVIDENCE-CONTRACT-V2.md`](EEA-EVIDENCE-CONTRACT-V2.md)
+- [`DIRECT-HTTP-ACQUISITION-V1.md`](DIRECT-HTTP-ACQUISITION-V1.md)
+- [`PDF-ACQUISITION-MARKET-EVALUATION-V1.md`](PDF-ACQUISITION-MARKET-EVALUATION-V1.md)
+- [`NETWORK-TARGET-BINDING-V1.md`](NETWORK-TARGET-BINDING-V1.md)
+- [`INMETRO-PBEV-DOCUMENT-PATH-V1.md`](INMETRO-PBEV-DOCUMENT-PATH-V1.md)
+- [`PRODUCTION-CORPUS-RUN-V2.md`](PRODUCTION-CORPUS-RUN-V2.md)
+- [`PUBLIC-WEB-ACQUISITION-CHARACTERIZATION-V1.md`](PUBLIC-WEB-ACQUISITION-CHARACTERIZATION-V1.md)
+- [`BROWSER-ACQUISITION-CHARACTERIZATION-V1.md`](BROWSER-ACQUISITION-CHARACTERIZATION-V1.md)
+- [`COMPLIANT-ALTERNATIVE-SOURCES-V1.md`](COMPLIANT-ALTERNATIVE-SOURCES-V1.md)
+- [`EEA-SOURCE-FAMILY-V1.md`](EEA-SOURCE-FAMILY-V1.md)
+- [`EEA-SEMANTIC-EXPANSION-V2.md`](EEA-SEMANTIC-EXPANSION-V2.md)
+- [`OFFICIAL-SOURCE-DISCOVERY-V1.md`](OFFICIAL-SOURCE-DISCOVERY-V1.md)
+- [`RECURRING-SOURCE-POLICY-V1.md`](RECURRING-SOURCE-POLICY-V1.md)
+- [`SOURCE-TERMS-DRIFT-GATE-V1.md`](SOURCE-TERMS-DRIFT-GATE-V1.md)
+- [`MULTISOURCE-CONFLICT-DISPOSITION-V1.md`](MULTISOURCE-CONFLICT-DISPOSITION-V1.md)
 - [`REPEATABLE-WEB-EXTRACTION-V1.md`](REPEATABLE-WEB-EXTRACTION-V1.md)
 - [`DOCUMENT-EXTRACTION-V1.md`](DOCUMENT-EXTRACTION-V1.md)
 - [`SELECTIVE-REVIEW-V1.md`](SELECTIVE-REVIEW-V1.md)
@@ -79,11 +80,28 @@
 - [`AI-DISCOVERY-V1.md`](AI-DISCOVERY-V1.md)
 - [`EXPORT-V1.md`](EXPORT-V1.md)
 - [`END-TO-END-ACCEPTANCE-V1.md`](END-TO-END-ACCEPTANCE-V1.md)
+- [`PUBLIC-WEB-ACQUISITION-CHARACTERIZATION-V1.md`](PUBLIC-WEB-ACQUISITION-CHARACTERIZATION-V1.md)
+- [`REPEATABLE-WEB-EXTRACTION-V1.md`](REPEATABLE-WEB-EXTRACTION-V1.md)
+- [`SCIENTIFIC-FOUNDATION.md`](SCIENTIFIC-FOUNDATION.md)
+- [`SOURCE-TERMS-DRIFT-GATE-V1.md`](SOURCE-TERMS-DRIFT-GATE-V1.md)
+- [`TECH-DEBT.md`](TECH-DEBT.md)
+- [`POST-MVP-SOURCE-ACQUISITION-OUTCOME-V1.md`](POST-MVP-SOURCE-ACQUISITION-OUTCOME-V1.md)
+- [`PRODUCTION-EVIDENCE-ENRICHMENT-V1.md`](PRODUCTION-EVIDENCE-ENRICHMENT-V1.md)
+- [`PRODUCTION-EVIDENCE-ENRICHMENT-V2.md`](PRODUCTION-EVIDENCE-ENRICHMENT-V2.md)
+- [`PRODUCTION-EVIDENCE-ENRICHMENT-V3.md`](PRODUCTION-EVIDENCE-ENRICHMENT-V3.md)
+- [`PRODUCTION-OPERATIONAL-GAP-PRIORITY-V1.md`](PRODUCTION-OPERATIONAL-GAP-PRIORITY-V1.md)
+- [`PRODUCTION-OPERATIONAL-MEASUREMENT-V1.md`](PRODUCTION-OPERATIONAL-MEASUREMENT-V1.md)
+- [`PRODUCTION-QUALITY-GATE-V1.md`](PRODUCTION-QUALITY-GATE-V1.md)
+- [`PRODUCTION-QUALITY-GATE-V2.md`](PRODUCTION-QUALITY-GATE-V2.md)
+- [`PRODUCTION-QUALITY-GATE-V3.md`](PRODUCTION-QUALITY-GATE-V3.md)
+- [`PRODUCTION-SOURCE-DISTRIBUTION-V1.md`](PRODUCTION-SOURCE-DISTRIBUTION-V1.md)
 
-## Reference and generated material
+## Generated and archive
 
-- [`references/OPENAI-CODEX-HARNESS.md`](references/OPENAI-CODEX-HARNESS.md) — normative external references used for this harness.
-- [`generated/README.md`](generated/README.md) — policy for derived/generated repository facts.
-- [`LICENSING-STATUS.md`](LICENSING-STATUS.md) — private/proprietary software status and the explicit gate for any future public-license decision.
+- [`generated/README.md`](generated/README.md) - generated artifact policy.
+- [`exec-plans/README.md`](exec-plans/README.md) - execution-plan policy.
+- [`exec-plans/completed/README.md`](exec-plans/completed/README.md) - completed execution-plan archive.
+- [`archive/README.md`](archive/README.md) - archive boundary for superseded documentation.
+- [`references/OPENAI-CODEX-HARNESS.md`](references/OPENAI-CODEX-HARNESS.md) - harness reference.
 
-Historical design records may describe the work unit in which they were created; they are not current-state trackers unless explicitly named above. Volatile facts come from `python scripts/project_facts.py`.
+Historical records may remain useful for traceability, but they are not current authority unless they are named in the current-authority section above.

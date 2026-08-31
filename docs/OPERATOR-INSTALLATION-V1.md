@@ -11,14 +11,17 @@ Podium 7 requires Python `3.11` or newer.
 
 ## Installation
 
-Validated install path:
+Validated offline install path:
 
 ```bash
-python -m venv .venv
-.venv\Scripts\python -m pip install .
+python -m venv --system-site-packages .venv
+.venv\Scripts\python -m ensurepip --upgrade
+.venv\Scripts\python -m pip install --no-build-isolation .
 ```
 
-The direct install path above was validated in a clean virtual environment.
+The direct install path above was validated in a fresh virtual environment that
+exposes the system site packages so the local `setuptools.build_meta` backend
+is available without network access.
 For a repository-owned install check that also builds sdist and wheel and then
 installs the wheel into a fresh venv, run:
 
