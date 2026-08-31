@@ -4,7 +4,7 @@ Status: evidence classification, no corpus mutation
 
 Scope: the 48 blocked record-sides from the three-dataset coverage scope frozen in `PODIUM7-PRODUCTIVE-COVERAGE-WAVE-01.md`.
 
-This artifact classifies only what the retained benchmark `sources[].supports`, case fields, case rationales, and retained review-disposition evidence establish without adding external evidence or inferring source ownership from `sourceIds` order.
+This artifact classifies only what the retained benchmark `sources[].supports`, case fields, case rationales, retained review-disposition evidence, and current ingestion contracts establish without adding external evidence or inferring source ownership from `sourceIds` order.
 
 ## Classification semantics
 
@@ -117,6 +117,29 @@ Total composite count:
 
 For these 38 sides, simply adding truthful per-field attribution cannot satisfy the current replay requirement for one unique source common to all present fields.
 
+## Current ingestion architecture boundary
+
+The composite limitation is not isolated to `unique_source_for_record`.
+
+Current `CatalogBatchEnvelope` contains exactly one `Source` and one `RawEvidence` for a whole vehicle record. `catalog_batch_envelope_from_payload` binds `RawEvidence.source_id` to that single source, and `ingest_catalog_batch` forwards one `(vehicle, source, evidence)` tuple to `ingest_catalog_record`.
+
+Current `ingest_catalog_record` enforces `evidence.source_id == source.id`. When a record is attached to a vehicle, `_save_observation_candidates` emits every present attribute as a `CandidateFact` carrying the same record-level `evidence_id`.
+
+Therefore:
+
+`FIELD_ATTRIBUTION_COMPLETE != CURRENT_INGESTION_REPRESENTABLE`
+
+for genuinely composite observations.
+
+A truthful composite replay cannot be obtained merely by relaxing `unique_source_for_record`, because the downstream ingestion contract would still collapse all fields of the record onto one evidence/source pair.
+
+The currently evidence-supported architectural choices are therefore limited to:
+
+1. split a composite benchmark side into multiple source-specific observations before ingestion and let the existing catalog/evidence machinery reconcile them; or
+2. explicitly extend batch/ingestion contracts so one logical observation can carry multiple evidence objects with field-to-evidence binding.
+
+No choice is authorized yet. Option 1 has lower contract surface but must prove that splitting does not change identity/review semantics through ordering or partial-observation effects. Option 2 preserves a logical composite record but is a larger contract and persistence evolution. A general one-source bypass is rejected because it would destroy provenance fidelity.
+
 ## Classification closure
 
 Frozen blocked scope: `48` record-sides.
@@ -127,7 +150,7 @@ Retained-summary classification:
 - `GENUINELY_COMPOSITE_MULTI_SOURCE = 38`;
 - `UNRESOLVED_FROM_RETAINED_SUMMARY = 0`.
 
-This closes classification at the retained-summary level, not field-attribution mutation. The ten candidates still require field-by-field encoding and validation against the declared source evidence before they can become replayable.
+This closes classification at the retained-summary level, not field-attribution mutation. The ten candidates still require field-by-field encoding and executed validation against the declared source evidence before they can become replayable.
 
 ## Falsified hypothesis
 
@@ -140,13 +163,17 @@ Therefore a bulk attribution operation would be scientifically invalid and opera
 
 ## Next experiment
 
-Apply explicit field attribution only to the 10 candidate record-sides, one case family at a time, and rerun the frozen measurements.
+The mutation-free experiment is encoded in PR #280 across all 10 candidate record-sides.
 
-Success for that experiment means:
+Frozen expected result under the existing contract:
 
-- candidate sides become `EXPLICIT_FIELD_ATTRIBUTION` replayable without changing source semantics;
-- the 38 composite sides remain blocked, expected to move from `MULTI_SOURCE_WITHOUT_EXPLICIT_FIELD_ATTRIBUTION` to `NO_UNIQUE_COMMON_SOURCE` once truthful per-field attribution exists;
-- no resolver threshold, source qualification, identity precedence, or conflict semantics changes;
-- no increase is counted as valid if provenance completeness regresses.
+- total record-sides remain `60`;
+- replayable rises `12 → 22`;
+- blocked falls `48 → 38`;
+- `EXPLICIT_FIELD_ATTRIBUTION = 10`;
+- `SOLE_CASE_SOURCE = 12`;
+- original retained benchmark bytes remain unchanged.
 
-If the 10 candidates validate, the theoretical replayable upper bound under the current one-source-per-record contract becomes `22/60 = 36.67%` for the active three-dataset scope before any replay redesign. The remaining 38 blocked sides would then be evidence of an architectural replay limitation rather than missing attribution data.
+The hosted runner currently fails before creating repository steps, so this expected result is not yet execution evidence and must not be presented as measured.
+
+If the 10 candidates execute successfully, the replayable upper bound under the current one-source-per-record contract becomes `22/60 = 36.67%` for the active three-dataset scope before any composite replay redesign. The remaining 38 blocked sides would then be evidence of an architectural replay limitation rather than missing attribution data.
