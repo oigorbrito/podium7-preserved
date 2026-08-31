@@ -5,6 +5,7 @@ import unittest
 
 from podium7.operational_provenance import (
     BLOCK_MULTI_SOURCE_WITHOUT_FIELD_ATTRIBUTION,
+    BLOCK_NO_UNIQUE_COMMON_SOURCE,
     measure_operational_provenance_eligibility,
 )
 
@@ -85,6 +86,40 @@ class OperationalProvenanceEligibilityTests(unittest.TestCase):
         self.assertEqual([item["sourceId"] for item in explicit], ["source-a", "source-b"])
         blocked = [item for item in report["records"] if item["caseId"] == "blocked"]
         self.assertTrue(all(item["reasonCode"] == BLOCK_MULTI_SOURCE_WITHOUT_FIELD_ATTRIBUTION for item in blocked))
+
+    def test_valid_per_field_multisource_provenance_remains_blocked_without_common_source(self) -> None:
+        payload = {
+            "schema": "podium7.catalog-identity-golden.v1",
+            "datasetVersion": "operational-provenance-multisource-1",
+            "sources": [
+                {"id": "source-a", "url": "https://example.com/a"},
+                {"id": "source-b", "url": "https://example.com/b"},
+            ],
+            "cases": [
+                {
+                    "id": "well-attributed-composite",
+                    "expected": "MATCH",
+                    "left": {"make": "Example", "model": "Road", "generation": "G1"},
+                    "right": {"make": "Example", "model": "Road", "generation": "G1"},
+                    "sourceIds": ["source-a", "source-b"],
+                    "fieldSourceIds": {
+                        "left": {"make": ["source-a"], "model": ["source-a"], "generation": ["source-b"]},
+                        "right": {"make": ["source-a"], "model": ["source-a"], "generation": ["source-b"]},
+                    },
+                    "rationale": "valid field-level provenance intentionally has no single common source",
+                }
+            ],
+        }
+        path = _write(payload)
+        self.addCleanup(path.unlink, missing_ok=True)
+
+        report = measure_operational_provenance_eligibility((path,))
+        self.assertEqual(report["summary"]["replayableRecords"], 0)
+        self.assertEqual(report["summary"]["blockedRecords"], 2)
+        self.assertEqual(
+            report["summary"]["blockedByReasonCode"],
+            {BLOCK_NO_UNIQUE_COMMON_SOURCE: 2},
+        )
 
     def test_retained_v3_reports_12_of_72_replayable_without_inference(self) -> None:
         report = measure_operational_provenance_eligibility(V3_DATASETS)
