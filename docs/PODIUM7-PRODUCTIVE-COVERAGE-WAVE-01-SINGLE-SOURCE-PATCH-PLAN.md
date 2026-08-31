@@ -21,12 +21,18 @@ Current executed baseline:
 
 - 60 retained record-sides;
 - 12 replayable;
-- 48 blocked.
+- 48 blocked;
+- `MULTI_SOURCE_WITHOUT_EXPLICIT_FIELD_ATTRIBUTION = 48`.
 
 If and only if all 10 patches below validate under the unchanged replay contract, the planning expectation is:
 
 - 22 replayable;
-- 38 blocked.
+- 38 blocked;
+- `EXPLICIT_FIELD_ATTRIBUTION = 10` newly replayable sides;
+- `MULTI_SOURCE_WITHOUT_EXPLICIT_FIELD_ATTRIBUTION = 36` blocked sides;
+- `MISSING_SIDE_FIELD_ATTRIBUTION = 2` blocked sides.
+
+Why two sides move to `MISSING_SIDE_FIELD_ATTRIBUTION`: the Toyota 10g/12g and Porsche 991/992 cases receive a `fieldSourceIds` object for only the verified right side. Their unpatched left side then correctly fails at the explicit missing-side attribution gate instead of the original no-field-attribution gate.
 
 This is not an executed result.
 
@@ -314,11 +320,30 @@ Planned mapping:
 
 ## Expected blocker transition after application
 
-Because `fieldSourceIds` is case-scoped, partial case attribution must be intentional.
+Because `fieldSourceIds` is case-scoped, partial case attribution is intentional in exactly two cases.
 
-For cases where only one side is patched, the patched side should become replayable via `EXPLICIT_FIELD_ATTRIBUTION`, while the unpatched side should remain fail-closed, likely moving from `MULTI_SOURCE_WITHOUT_EXPLICIT_FIELD_ATTRIBUTION` to `MISSING_SIDE_FIELD_ATTRIBUTION` once a `fieldSourceIds` object exists for the case.
+Expected post-mutation distribution under the current implementation:
 
-Therefore validation must assert both replay count and blocker-code distribution; checking only the aggregate blocked count is insufficient.
+```text
+records = 60
+replayable = 22
+blocked = 38
+
+replayableByMethod:
+  SOLE_CASE_SOURCE = 12
+  EXPLICIT_FIELD_ATTRIBUTION = 10
+
+blockedByReasonCode:
+  MULTI_SOURCE_WITHOUT_EXPLICIT_FIELD_ATTRIBUTION = 36
+  MISSING_SIDE_FIELD_ATTRIBUTION = 2
+```
+
+The two `MISSING_SIDE_FIELD_ATTRIBUTION` sides are:
+
+- `no-match-toyota-corolla-10g-vs-12g:left`;
+- `no-match-porsche-911-991-vs-992:left`.
+
+Any different distribution requires inspection before the patch can be accepted. Do not rewrite attribution merely to force these expected counts.
 
 ## Mandatory validation for the separate mutation PR
 
@@ -328,12 +353,13 @@ At minimum:
 2. run `measure_operational_provenance_eligibility` on the three-dataset wave scope;
 3. assert total record-sides remain 60;
 4. assert exactly 10 new sides become replayable via `EXPLICIT_FIELD_ATTRIBUTION` if the planned mappings are accepted;
-5. assert no previously replayable side becomes blocked;
-6. assert unpatched sides remain fail-closed with explicit blocker codes;
-7. run catalog identity golden tests unchanged;
-8. run field-provenance validation;
-9. run operational replay/corpus tests;
-10. remeasure published vehicle/field coverage and conflicts before claiming product coverage improvement;
-11. require exact-head hosted CI when GitHub Actions is capable of executing repository steps.
+5. assert `SOLE_CASE_SOURCE = 12` remains unchanged;
+6. assert no previously replayable side becomes blocked;
+7. assert blocker distribution is exactly 36 multi-source-without-attribution + 2 missing-side-attribution;
+8. run catalog identity golden tests unchanged;
+9. run field-provenance validation;
+10. run operational replay/corpus tests;
+11. remeasure published vehicle/field coverage and conflicts before claiming product coverage improvement;
+12. require exact-head hosted CI when GitHub Actions is capable of executing repository steps.
 
 Any failure that shows a planned source does not support a present field invalidates that side's patch; do not substitute another source merely to retain the expected count.
