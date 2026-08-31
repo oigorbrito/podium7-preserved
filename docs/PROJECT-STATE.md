@@ -18,6 +18,14 @@ Status: current state authority
 
 `MAINTENANCE / CONTROLLED_PRODUCT_EVOLUTION`
 
+## Data mode
+
+`FIXTURE_OPERATIONAL`
+
+`LIVE_ACQUISITION_REQUIRED_FOR_BASELINE = NO`
+
+`BASELINE_DATA_MODE_ACCEPTANCE = PASS`
+
 ## Accepted gates
 
 - local private operation and operator installation are validated;
@@ -32,8 +40,7 @@ Status: current state authority
 ## Pending external gates
 
 - hosted certification / GitHub-hosted runner evidence;
-- remote branch pruning reconciliation;
-- documentation reconciliation awaiting hosted CI evidence.
+- remote branch pruning reconciliation.
 
 ## Open blockers
 
@@ -47,7 +54,11 @@ Status: current state authority
 
 - `BLK-EXT-001 | Hosted certification | PENDING_EXTERNAL_CI | #270`
 - `BLK-EXT-002 | Remote branch pruning | PENDING_EXTERNAL_TOOLING | #271`
-- `BLK-EXT-003 | Documentation/hosted integration overlap | PENDING_EXTERNAL_CI | #272`
+
+## Superseded integration line
+
+`PR #272` is superseded by `PR #274` and remains only as historical
+integration bookkeeping.
 
 ## Next transition
 

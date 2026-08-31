@@ -10,6 +10,9 @@ This legacy snapshot now aliases the current baseline in [`PROJECT-STATE.md`](PR
 - private/proprietary release status remains in force;
 - local private operation is validated;
 - hosted certification remains externally pending.
+- data mode: `FIXTURE_OPERATIONAL`; live acquisition is not required for
+  the current baseline.
+- `PR #272` is superseded by `PR #274`.
 - `GATE_2_LOCAL_OPERATIONAL_ACCEPTANCE = PASS`.
 - `GATE_3_PRODUCT_QUALITY_ACCEPTANCE = PASS`.
 - `GATE_4_REPOSITORY_ACCEPTANCE = PASS`.

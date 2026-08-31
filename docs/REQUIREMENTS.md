@@ -37,6 +37,9 @@ Status: current requirement baseline
 - weakening conservative identity resolution;
 - product changes imported from other repositories without Podium7 evidence;
 - hosted certification as a replacement for local baseline acceptance.
+- live acquisition as a requirement for the current private baseline;
+  fixture-backed operation is acceptable while validation remains
+  repeatable and evidence-backed.
 
 ## Traceability
 

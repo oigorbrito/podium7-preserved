@@ -15,6 +15,9 @@ This file is a compact resume point, not a second authority layer.
 - quality status: `GATE_3_PRODUCT_QUALITY_ACCEPTANCE = PASS`.
 - repository acceptance: `GATE_4_REPOSITORY_ACCEPTANCE = PASS`.
 - post-MVP transition: `GATE_5_POST_MVP_TRANSITION = PASS`.
+- data mode: `FIXTURE_OPERATIONAL`; live acquisition is not required for
+  the current baseline.
+- `PR #272` is superseded by `PR #274`.
 
 ## Active blockers
 
