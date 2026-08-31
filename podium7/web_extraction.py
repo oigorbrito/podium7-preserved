@@ -6,6 +6,10 @@ import re
 from .normalization import normalize_bounded_fact, normalize_fact
 
 
+from dataclasses import field
+from typing import Pattern
+
+
 @dataclass(frozen=True)
 class WebFieldRule:
     label: str
@@ -14,6 +18,25 @@ class WebFieldRule:
     source_unit: str | None
     label_aliases: tuple[str, ...] = ()
     range_parser: str | None = None
+    compiled_parser: Pattern[str] = field(init=False, repr=False, compare=False)
+    compiled_range_parser: Pattern[str] | None = field(init=False, repr=False, compare=False)
+
+    def __post_init__(self) -> None:
+        # Pre-compile regex patterns at instantiation time to avoid repeatedly compiling
+        # or searching with string patterns during web extraction loops.
+        object.__setattr__(
+            self,
+            "compiled_parser",
+            re.compile(self.parser, flags=re.IGNORECASE),
+        )
+        if self.range_parser is not None:
+            object.__setattr__(
+                self,
+                "compiled_range_parser",
+                re.compile(self.range_parser, flags=re.IGNORECASE),
+            )
+        else:
+            object.__setattr__(self, "compiled_range_parser", None)
 
 
 @dataclass(frozen=True)
@@ -217,7 +240,7 @@ def extract_with_rules_report(
             continue
 
         source_label, raw = matches[0]
-        match = re.search(rule.parser, raw, flags=re.IGNORECASE)
+        match = rule.compiled_parser.search(raw)
         if match is not None:
             parsed = _coerce(match.group(1))
             normalized = normalize_fact(rule.attribute, parsed, rule.source_unit)
@@ -235,8 +258,8 @@ def extract_with_rules_report(
             )
             continue
 
-        if rule.range_parser is not None:
-            range_match = re.search(rule.range_parser, raw, flags=re.IGNORECASE)
+        if rule.compiled_range_parser is not None:
+            range_match = rule.compiled_range_parser.search(raw)
             if range_match is not None:
                 fact, issue = _bounded_fact(
                     rule,
