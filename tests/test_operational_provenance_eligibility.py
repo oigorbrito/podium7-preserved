@@ -6,7 +6,10 @@ import unittest
 from podium7.operational_provenance import (
     BLOCK_MULTI_SOURCE_WITHOUT_FIELD_ATTRIBUTION,
     BLOCK_NO_UNIQUE_COMMON_SOURCE,
+    BLOCK_UNKNOWN_CASE_SOURCE,
+    OperationalProvenanceBlock,
     measure_operational_provenance_eligibility,
+    unique_source_for_record,
 )
 
 
@@ -86,6 +89,20 @@ class OperationalProvenanceEligibilityTests(unittest.TestCase):
         self.assertEqual([item["sourceId"] for item in explicit], ["source-a", "source-b"])
         blocked = [item for item in report["records"] if item["caseId"] == "blocked"]
         self.assertTrue(all(item["reasonCode"] == BLOCK_MULTI_SOURCE_WITHOUT_FIELD_ATTRIBUTION for item in blocked))
+
+    def test_reason_code_does_not_depend_on_case_id_punctuation(self) -> None:
+        case = {
+            "id": "case.with.dot",
+            "left": {"make": "Example", "model": "Road"},
+            "right": {"make": "Example", "model": "Road"},
+            "sourceIds": ["unknown-source"],
+        }
+
+        with self.assertRaises(OperationalProvenanceBlock) as caught:
+            unique_source_for_record(case, side="left", known_sources={"source-a"})
+
+        self.assertEqual(caught.exception.reason_code, BLOCK_UNKNOWN_CASE_SOURCE)
+        self.assertEqual(str(caught.exception), "case 'case.with.dot' references unknown source ids")
 
     def test_valid_per_field_multisource_provenance_remains_blocked_without_common_source(self) -> None:
         payload = {
