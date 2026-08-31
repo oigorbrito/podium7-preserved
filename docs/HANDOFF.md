@@ -22,7 +22,8 @@ This file is a compact resume point, not a second authority layer.
 ## Active blockers
 
 - no known internal blocker;
-- hosted certification and remote reconciliation remain external.
+- hosted certification remains external;
+- remote pruning is deferred maintenance and its durable procedure lives in [`TECH-DEBT.md`](TECH-DEBT.md).
 
 ## Resume order
 

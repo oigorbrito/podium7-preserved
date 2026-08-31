@@ -40,7 +40,7 @@ Status: current state authority
 ## Pending external gates
 
 - hosted certification / GitHub-hosted runner evidence;
-- remote branch pruning reconciliation.
+- remote branch pruning has been reduced to deferred maintenance and is preserved durably in `TECH-DEBT.md`.
 
 ## Open blockers
 
@@ -52,8 +52,14 @@ Status: current state authority
 
 ## Blocker register
 
-- `BLK-EXT-001 | Hosted certification | PENDING_EXTERNAL_CI | #270`
-- `BLK-EXT-002 | Remote branch pruning | PENDING_EXTERNAL_TOOLING | #271`
+- `BLK-EXT-001 | Hosted certification | PENDING_EXTERNAL_CI`
+
+## Maintenance follow-up
+
+- remote branch pruning is deferred maintenance, not an active product blocker;
+- the protected delete allowlist and the 29 remaining `backup/*` refs are preserved in `TECH-DEBT.md`;
+- `main` is never a deletion target;
+- `PR #274` remains the authoritative integration line until the local closeout is reconciled with the remote tracker.
 
 ## Superseded integration line
 
@@ -62,4 +68,4 @@ integration bookkeeping.
 
 ## Next transition
 
-External-only follow-up: hosted certification and remote pruning. Internal baseline closeout is complete.
+External-only follow-up: hosted certification and durable pruning traceability. Internal baseline closeout is complete; remote branch pruning is deferred maintenance, not a blocker.

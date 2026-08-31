@@ -72,3 +72,49 @@ Future review-load reduction must be reopened only when new source-backed eviden
 ## Harness debt
 
 No known harness blocker after Agent Harness V1 beyond normal documentation gardening. Add future durable items here with status and a plan link when work starts.
+
+## Remote blockers and maintenance disposals
+
+### Hosted certification
+
+Status: `PENDING_EXTERNAL_CI`
+
+`#270` is retained here as a knowledge-preservation record for hosted certification. The durable facts to preserve are:
+
+- GitHub-hosted execution has not yet produced repository-step evidence on the exact merge candidate;
+- the failure is external to the local Podium 7 codebase;
+- `tests` and `minimum-python` are the checks that must pass once hosted execution is available;
+- `steps=null` or missing workflow logs are not certification evidence;
+- billing/quota is only a hypothesis until confirmed by the hosted environment;
+- local private baseline acceptance is already complete and does not depend on this issue.
+
+Closure condition:
+
+- hosted runner executes repository steps on the exact SHA under certification;
+- the required checks pass;
+- the run is tied to the merge candidate head with reproducible evidence.
+
+Reopen condition:
+
+- future hosted runs regress after the project changes in a way that is attributable to repository behavior rather than external runner state.
+
+### Remote branch pruning
+
+Status: `PENDING_EXTERNAL_TOOLING`
+
+`#271` is retained here as a deferred-maintenance record for remote branch cleanup. The durable facts to preserve are:
+
+- the historical Phase-A prune is already complete for the bulk of stale refs;
+- the remaining scope is the 29 `backup/*` refs;
+- `main` is never a deletion target;
+- the authoritative PR head must remain protected while `#274` is open;
+- physical cleanup must use a real delete-ref operation, not a force-move or metadata rewrite;
+- the remaining refs are maintenance-only and do not affect the private local baseline, runtime, or current documentation authority.
+
+Closure recommendation:
+
+- `#271` can be closed as deferred maintenance once the durable allowlist and the protected-prune procedure are preserved in the repository.
+
+Reopen condition:
+
+- if a future policy requires the physical removal to be completed on a new maintenance cycle, or if the protected allowlist changes.
