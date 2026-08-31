@@ -11,7 +11,7 @@ Status: authoritative closeout plan
 - private/proprietary project status remains in force;
 - local private operation and operator installation are already validated;
 - the repository contains overlapping state, history, evidence, and closeout documents that need consolidation;
-- the remote baseline is refreshed to `origin/main = 6a804b9b8751515283146f402312f458985fc25b`.
+- the accepted remote baseline is `origin/main = 8f302bb29cdb049a0680248d11fde4fcd22a59d8`.
 
 ## Gates
 
@@ -96,4 +96,4 @@ The baseline closes when Gates 0 through 5 are satisfied for the current private
 
 ## Transition
 
-After closeout, the project operates from the accepted baseline under controlled product evolution and maintenance.
+The baseline is closed internally. The project now operates under controlled product evolution and maintenance; hosted certification remains an external follow-up rather than repo-internal baseline work.
