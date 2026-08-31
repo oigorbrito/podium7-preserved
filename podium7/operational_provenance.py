@@ -11,7 +11,13 @@ from .catalog_benchmark import load_catalog_identity_benchmark
 
 
 BLOCK_MULTI_SOURCE_WITHOUT_FIELD_ATTRIBUTION = "MULTI_SOURCE_WITHOUT_EXPLICIT_FIELD_ATTRIBUTION"
-BLOCK_FIELD_ATTRIBUTION_INVALID = "FIELD_ATTRIBUTION_INVALID_OR_INCOMPLETE"
+BLOCK_MISSING_SIDE_FIELD_ATTRIBUTION = "MISSING_SIDE_FIELD_ATTRIBUTION"
+BLOCK_MISSING_PRESENT_FIELD_ATTRIBUTION = "MISSING_PRESENT_FIELD_ATTRIBUTION"
+BLOCK_NO_UNIQUE_COMMON_SOURCE = "NO_UNIQUE_COMMON_SOURCE"
+BLOCK_INVALID_CASE_SOURCE_ATTRIBUTION = "INVALID_CASE_SOURCE_ATTRIBUTION"
+BLOCK_UNKNOWN_CASE_SOURCE = "UNKNOWN_CASE_SOURCE"
+BLOCK_INVALID_FIELD_ATTRIBUTION = "INVALID_FIELD_ATTRIBUTION"
+BLOCK_UNKNOWN_FIELD_SOURCE = "UNKNOWN_FIELD_SOURCE"
 
 
 def _present_vehicle_fields(vehicle: Mapping[str, Any]) -> tuple[str, ...]:
@@ -75,12 +81,24 @@ def unique_source_for_record(
     return next(iter(common_sources)), "EXPLICIT_FIELD_ATTRIBUTION"
 
 
-def _blocked_reason_code(case: Mapping[str, Any]) -> str:
+def _blocked_reason_code(case: Mapping[str, Any], reason: str) -> str:
     raw_field_sources = case.get("fieldSourceIds")
     case_sources = case.get("sourceIds")
     if raw_field_sources is None and isinstance(case_sources, list) and len(case_sources) > 1:
         return BLOCK_MULTI_SOURCE_WITHOUT_FIELD_ATTRIBUTION
-    return BLOCK_FIELD_ATTRIBUTION_INVALID
+    if "lacks explicit field-level source attribution for " in reason:
+        return BLOCK_MISSING_SIDE_FIELD_ATTRIBUTION
+    if "lacks explicit source attribution" in reason:
+        return BLOCK_MISSING_PRESENT_FIELD_ATTRIBUTION
+    if "has no unique source common to every present field" in reason:
+        return BLOCK_NO_UNIQUE_COMMON_SOURCE
+    if "references unknown source ids" in reason and "." not in reason:
+        return BLOCK_UNKNOWN_CASE_SOURCE
+    if "references unknown source ids" in reason:
+        return BLOCK_UNKNOWN_FIELD_SOURCE
+    if "case-level source attribution" in reason or "duplicate case-level source attribution" in reason:
+        return BLOCK_INVALID_CASE_SOURCE_ATTRIBUTION
+    return BLOCK_INVALID_FIELD_ATTRIBUTION
 
 
 def measure_operational_provenance_eligibility(paths: Iterable[str | Path]) -> dict[str, Any]:
@@ -114,7 +132,7 @@ def measure_operational_provenance_eligibility(paths: Iterable[str | Path]) -> d
                         "replayable": False,
                         "method": None,
                         "sourceId": None,
-                        "reasonCode": _blocked_reason_code(case),
+                        "reasonCode": _blocked_reason_code(case, str(exc)),
                         "reason": str(exc),
                     })
                 else:
@@ -208,7 +226,13 @@ def run_provenance_eligible_operational_corpus(
 
 
 __all__ = [
-    "BLOCK_FIELD_ATTRIBUTION_INVALID",
+    "BLOCK_INVALID_CASE_SOURCE_ATTRIBUTION",
+    "BLOCK_INVALID_FIELD_ATTRIBUTION",
+    "BLOCK_MISSING_PRESENT_FIELD_ATTRIBUTION",
+    "BLOCK_MISSING_SIDE_FIELD_ATTRIBUTION",
+    "BLOCK_NO_UNIQUE_COMMON_SOURCE",
+    "BLOCK_UNKNOWN_CASE_SOURCE",
+    "BLOCK_UNKNOWN_FIELD_SOURCE",
     "BLOCK_MULTI_SOURCE_WITHOUT_FIELD_ATTRIBUTION",
     "build_provenance_eligible_operational_records",
     "measure_operational_provenance_eligibility",
