@@ -1,6 +1,7 @@
 # Current work
 
-Status: active evidence rollout
+Status: active
+Mode: evidence rollout
 Decision: `ACCEPTED = PRESERVE_FIELD_LEVEL_MULTI_SOURCE_REPLAY`
 Active wave: `PODIUM7-PRODUCTIVE-COVERAGE-WAVE-01`
 
