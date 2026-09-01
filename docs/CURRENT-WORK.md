@@ -2,7 +2,7 @@
 
 Status: active
 
-Decision status: `DECISION_REQUIRED = OPERATIONAL_REPLAY_PROVENANCE_MODEL`
+Decision status: `ACCEPTED = PRESERVE_FIELD_LEVEL_MULTI_SOURCE_REPLAY`
 
 Active wave: `PODIUM7-PRODUCTIVE-COVERAGE-WAVE-01`
 
@@ -10,8 +10,8 @@ Authority:
 
 - [`PODIUM7-PRODUCTIVE-COVERAGE-WAVE-01.md`](PODIUM7-PRODUCTIVE-COVERAGE-WAVE-01.md) — frozen pre-mutation baseline and evidence classification.
 - [`PODIUM7-PRODUCTIVE-COVERAGE-WAVE-01-POST-ATTRIBUTION.md`](PODIUM7-PRODUCTIVE-COVERAGE-WAVE-01-POST-ATTRIBUTION.md) — current executed coverage state after PR #284.
-- [`ADR-0002-OPERATIONAL-MULTISOURCE-PROVENANCE.md`](ADR-0002-OPERATIONAL-MULTISOURCE-PROVENANCE.md).
-- [`PODIUM7-OPERATIONAL-MULTISOURCE-CONTRACT-V2-DRAFT.md`](PODIUM7-OPERATIONAL-MULTISOURCE-CONTRACT-V2-DRAFT.md) — evaluation-only Option B contract.
+- [`ADR-0002-DECISION-ACCEPTANCE.md`](ADR-0002-DECISION-ACCEPTANCE.md) — accepted Option B decision.
+- [`PODIUM7-OPERATIONAL-MULTISOURCE-CONTRACT-V2-DRAFT.md`](PODIUM7-OPERATIONAL-MULTISOURCE-CONTRACT-V2-DRAFT.md) — evaluation specification that seeded the executable v2 contract.
 
 ## Current executed state
 
@@ -25,13 +25,11 @@ Active three-dataset scope:
 - `MULTI_SOURCE_WITHOUT_EXPLICIT_FIELD_ATTRIBUTION = 36`;
 - `MISSING_SIDE_FIELD_ATTRIBUTION = 2`.
 
-The bounded single-source attribution lane is complete and integrated by PR #284. Exact-head CI passed the complete isolated suite in both supported CI runtime lanes.
-
 V3 scope is 72 record-sides: 22 replayable / 50 blocked.
 
 Executed operational effects include 22 replayed records, 7 created, 7 matched, 8 review, 0 failed, and 7 published consumer vehicles.
 
-## Residual evidence state
+Residual evidence state:
 
 - `COMPOSITE_SUPPORT = 36` blocked active sides;
 - `INSUFFICIENT_SINGLE_SOURCE_SUPPORT = 2` blocked active sides;
@@ -42,30 +40,53 @@ The two insufficient sides remain intentionally fail-closed:
 - `no-match-toyota-corolla-10g-vs-12g:left`;
 - `no-match-porsche-911-991-vs-992:left`.
 
+## Architecture evidence and decision
+
+PR #282 rejected naive source-specific sequential splitting because publication/review behavior depends on ingestion order.
+
+PR #286 established that existing candidate/evidence persistence can preserve field-level multi-evidence bindings independent of insertion order and roll them back atomically. A replacement persistence subsystem is therefore not the demonstrated blocker.
+
+PR #287 accepted ADR-0002 Option B: `PRESERVE_FIELD_LEVEL_MULTI_SOURCE_REPLAY`.
+
+PR #288 completed the first implementation phase:
+
+- versioned `podium7.catalog-operational.v2` parser/domain layer;
+- deterministic source/evidence/field-binding canonicalization;
+- stable structured fail-closed errors;
+- focused negative contract tests;
+- no v1 or runtime ingestion behavior changed.
+
 Established boundaries:
 
 `FIELD_ATTRIBUTION_COMPLETE != OPERATIONAL_REPLAYABLE`
 
 `MULTI_SOURCE_EVIDENCE != INVALID_EVIDENCE`
 
-`FIELD_ATTRIBUTION_COMPLETE != CURRENT_INGESTION_REPRESENTABLE`
+`PERSISTENCE_CAPABLE != CURRENT_INGESTION_REPRESENTABLE`
 
-## Architecture decision
+## Current implementation gap
 
-ADR-0002 remains undecided. The dominant remaining limiter is the operational replay provenance model for the 36 valid composite sides, not missing single-source metadata.
+`MULTISOURCE_IMPLEMENTATION = PARTIAL`
 
-PR #282 executed and rejected naive source-specific sequential splitting because publication/review behavior depends on ingestion order.
+The remaining gap is runtime ingress/reconciliation and end-to-end field binding:
 
-The evaluation-only multi-evidence v2 contract documents an admissible fail-closed design surface but does not authorize implementation.
+1. resolve one complete logical v2 identity once, never as sequential source-specific partial records;
+2. persist source/evidence objects and CandidateFacts according to explicit `fieldEvidence`;
+3. preserve equivalent v1 behavior for single-source records;
+4. evolve REVIEW enqueue/identity/idempotency so true per-field evidence survives review;
+5. evolve review resolution so CREATE/MATCH attaches CandidateFacts to their actual evidence instead of one task-level evidence;
+6. prove CREATE, MATCH, and REVIEW provenance reconstruction and input-order invariance;
+7. migrate one representative composite fixture only after those gates pass.
 
-Do not implement multi-source runtime behavior before ADR-0002 selects a policy.
+Do not migrate the 36 composite retained sides before the representative runtime path is green.
 
 ## Next sequence
 
-1. Preserve the integrated 22/38 state and the two insufficient fail-closed sides.
-2. Compare admissible multi-source designs against provenance fidelity, order independence, conflict behavior, v1 equivalence, source qualification, review semantics, and fail-closed rejection.
-3. Select ADR-0002 only from executed/static evidence; do not choose by preference.
-4. Implement the selected policy separately with exact contract and regression gates.
-5. Reassess `DATA_READY` and `PRODUCT_READY` only after the architecture lane closes; do not infer product readiness from 22/60 alone.
+1. Add a bounded v2 ingestion/reconciliation path for CREATE and MATCH using the existing resolver and storage primitives.
+2. Freeze v1-to-v2 semantic equivalence for single-source observations.
+3. Treat REVIEW as a separate schema/API boundary; do not collapse multi-evidence review to one evidence id.
+4. Add end-to-end provenance reconstruction tests.
+5. Run one representative composite fixture and remeasure replayability/conflicts/publication before broad corpus migration.
+6. Reassess `DATA_READY` and `PRODUCT_READY` only after the multi-source implementation lane and representative replay close.
 
 Current baseline closeout in [`PROJECT-STATE.md`](PROJECT-STATE.md) remains authoritative outside this controlled product-evolution wave.
