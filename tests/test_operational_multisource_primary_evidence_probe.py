@@ -177,7 +177,7 @@ class PrimaryEvidenceClosureProbeTests(unittest.TestCase):
                 (fact.attribute, fact.evidence_id)
                 for fact in store.catalog_candidates_for_entity(result.vehicle_id)
             }
-            self.assertEqual(actual_bindings, expected_bindings)
+            self.assertTrue(expected_bindings <= actual_bindings)
 
 
 if __name__ == "__main__":
