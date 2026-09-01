@@ -18,13 +18,14 @@
 
 - [`HANDOFF.md`](HANDOFF.md) - compact resume point derived from the current baseline.
 - [`CURRENT-STATE.md`](CURRENT-STATE.md) - legacy alias for the current state snapshot.
-- [`CURRENT-WORK.md`](CURRENT-WORK.md) - legacy active-work tracker; only meaningful if an active block exists.
+- [`CURRENT-WORK.md`](CURRENT-WORK.md) - active controlled product-evolution tracker while Wave 01 is open.
 - [`DEVELOPMENT-WORKFLOW.md`](DEVELOPMENT-WORKFLOW.md) - autonomy, validation, Git/PR/CI, self-review, and done rules.
 - [`INVARIANTS.md`](INVARIANTS.md) - cross-cutting product invariants.
 - [`TECH-DEBT.md`](TECH-DEBT.md) - durable unresolved work and external blockers.
 - [`LICENSING-STATUS.md`](LICENSING-STATUS.md) - private/proprietary release boundary.
-- [`PODIUM7-PRODUCTIVE-COVERAGE-WAVE-01.md`](PODIUM7-PRODUCTIVE-COVERAGE-WAVE-01.md) - active controlled product-evolution wave and frozen pre-mutation measurement boundary.
-- [`PODIUM7-PRODUCTIVE-COVERAGE-WAVE-01-POST-ATTRIBUTION.md`](PODIUM7-PRODUCTIVE-COVERAGE-WAVE-01-POST-ATTRIBUTION.md) - current executed coverage state after the verified single-source attribution lane.
+- [`PODIUM7-PRODUCTIVE-COVERAGE-WAVE-01.md`](PODIUM7-PRODUCTIVE-COVERAGE-WAVE-01.md) - frozen pre-mutation Wave 01 measurement and retained-evidence classification.
+- [`PODIUM7-PRODUCTIVE-COVERAGE-WAVE-01-POST-ATTRIBUTION.md`](PODIUM7-PRODUCTIVE-COVERAGE-WAVE-01-POST-ATTRIBUTION.md) - executed state after the verified single-source attribution lane.
+- [`PODIUM7-PRODUCTIVE-COVERAGE-WAVE-01-MULTISOURCE-ROLLOUT.md`](PODIUM7-PRODUCTIVE-COVERAGE-WAVE-01-MULTISOURCE-ROLLOUT.md) - current executed multi-source rollout state, operational effects, and blocker register.
 - [`PODIUM7-PRODUCTIVE-COVERAGE-WAVE-01-SINGLE-SOURCE-PATCH-PLAN.md`](PODIUM7-PRODUCTIVE-COVERAGE-WAVE-01-SINGLE-SOURCE-PATCH-PLAN.md) - historical patch plan applied by PR #284.
 
 ## Decisions
@@ -44,7 +45,7 @@
 - [`CATALOG-CONSUMER-API-V2.md`](CATALOG-CONSUMER-API-V2.md)
 - [`QUANTITATIVE-ENRICHMENT-CONSUMER-CONTRACT-V1.md`](QUANTITATIVE-ENRICHMENT-CONSUMER-CONTRACT-V1.md)
 - [`CATALOG-BATCH-INGESTION-V1.md`](CATALOG-BATCH-INGESTION-V1.md)
-- [`PODIUM7-OPERATIONAL-MULTISOURCE-CONTRACT-V2-DRAFT.md`](PODIUM7-OPERATIONAL-MULTISOURCE-CONTRACT-V2-DRAFT.md) - evaluation-only fail-closed contract draft for ADR-0002 Option B.
+- [`PODIUM7-OPERATIONAL-MULTISOURCE-CONTRACT-V2-DRAFT.md`](PODIUM7-OPERATIONAL-MULTISOURCE-CONTRACT-V2-DRAFT.md) - design/evaluation record that seeded the implemented v2 runtime contract.
 - [`CATALOG-REVIEW-OPERATOR-V1.md`](CATALOG-REVIEW-OPERATOR-V1.md)
 - [`OPERATOR-INSTALLATION-V1.md`](OPERATOR-INSTALLATION-V1.md)
 - [`BOM-PRATICHE-CONTRACT-V2.md`](BOM-PRATICHE-CONTRACT-V2.md)
