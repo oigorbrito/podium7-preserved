@@ -2,40 +2,5 @@
   "schema": "podium7.catalog-operational-field-attribution.v1",
   "datasetVersion": "onix-1.0",
   "createdAt": "2026-09-01",
-  "mappings": [
-    {
-      "benchmark": "catalog_identity_br_adjacent_incomplete_v1.json",
-      "benchmarkDatasetVersion": "br-adjacent-incomplete-1.0",
-      "caseId": "br-hard-review-onix-my26-premier-incomplete-mechanical-mapping",
-      "side": "left",
-      "fieldSourceIds": {"make":["chevrolet-onix-my26-price-list"],"model":["chevrolet-onix-my26-price-list"],"generation":["chevrolet-onix-second-generation"],"variant":["chevrolet-onix-my26-price-list"],"powertrain":["chevrolet-onix-my26-price-list"],"transmission":["chevrolet-onix-my26-price-list"],"body_style":["chevrolet-onix-my26-price-list"],"market":["chevrolet-onix-my26-price-list"],"model_year_from":["chevrolet-onix-my26-price-list"],"model_year_to":["chevrolet-onix-my26-price-list"]},
-      "evidenceBasis": {"chevrolet-onix-second-generation":"Retained Chevrolet product-history evidence establishes the current Onix as the second generation.","chevrolet-onix-my26-price-list":"Retained Chevrolet MY26 price list establishes Onix Premier 1.0 Turbo hatch, model year 2026 and six-speed automatic transmission.","chevrolet-onix-line-2026-engineering":"Retained Chevrolet engineering article establishes the 2026 Onix line, hatch body and Premier configuration while intentionally not mapping Premier mechanical fields."},
-      "status":"PROBE_303_VALIDATED_RETAINED_ROLLOUT"
-    },
-    {
-      "benchmark":"catalog_identity_br_adjacent_incomplete_v1.json","benchmarkDatasetVersion":"br-adjacent-incomplete-1.0","caseId":"br-hard-review-onix-my26-premier-incomplete-mechanical-mapping","side":"right",
-      "fieldSourceIds":{"make":["chevrolet-onix-second-generation"],"model":["chevrolet-onix-second-generation"],"generation":["chevrolet-onix-second-generation"],"variant":["chevrolet-onix-line-2026-engineering"],"body_style":["chevrolet-onix-line-2026-engineering"],"market":["chevrolet-onix-line-2026-engineering"],"model_year_from":["chevrolet-onix-line-2026-engineering"],"model_year_to":["chevrolet-onix-line-2026-engineering"]},
-      "evidenceBasis":{"chevrolet-onix-second-generation":"Retained Chevrolet product-history evidence establishes the current Onix as the second generation.","chevrolet-onix-my26-price-list":"Retained Chevrolet MY26 price list establishes Onix Premier 1.0 Turbo hatch, model year 2026 and six-speed automatic transmission.","chevrolet-onix-line-2026-engineering":"Retained Chevrolet engineering article establishes the 2026 Onix line, hatch body and Premier configuration while intentionally not mapping Premier mechanical fields."},"status":"PROBE_303_VALIDATED_RETAINED_ROLLOUT"
-    },
-    {
-      "benchmark":"catalog_identity_golden_br_v1.json","benchmarkDatasetVersion":"br-1.0","caseId":"br-match-onix-premier-turbo-my25","side":"left",
-      "fieldSourceIds":{"make":["chevrolet-onix-my25-price-list"],"model":["chevrolet-onix-my25-price-list"],"generation":["chevrolet-onix-second-generation"],"variant":["chevrolet-onix-my25-price-list"],"powertrain":["chevrolet-onix-2025-owner-manual"],"transmission":["chevrolet-onix-my25-price-list"],"body_style":["chevrolet-onix-my25-price-list"],"market":["chevrolet-onix-my25-price-list"],"model_year_from":["chevrolet-onix-my25-price-list"],"model_year_to":["chevrolet-onix-my25-price-list"]},
-      "evidenceBasis":{"chevrolet-onix-second-generation":"Retained Chevrolet product history establishes the current Onix as the second generation.","chevrolet-onix-my25-price-list":"Retained Chevrolet MY25 price material establishes Onix Premier Turbo 116cv, hatch body, MY2025 and six-speed automatic transmission.","chevrolet-onix-2025-owner-manual":"Official Chevrolet Onix 2025 owner manual identifies the 1.0 T engine, Etanol/Gasolina fuel capability and automatic-transmission configuration, supporting the benchmark's 1.0 turbo flex powertrain semantics without inference."},"status":"PROBE_303_VALIDATED_RETAINED_ROLLOUT"
-    },
-    {
-      "benchmark":"catalog_identity_golden_br_v1.json","benchmarkDatasetVersion":"br-1.0","caseId":"br-match-onix-premier-turbo-my25","side":"right",
-      "fieldSourceIds":{"make":["chevrolet-onix-my25-price-list"],"model":["chevrolet-onix-my25-price-list"],"generation":["chevrolet-onix-second-generation"],"variant":["chevrolet-onix-my25-price-list"],"powertrain":["chevrolet-onix-2025-owner-manual"],"transmission":["chevrolet-onix-my25-price-list"],"body_style":["chevrolet-onix-my25-price-list"],"market":["chevrolet-onix-my25-price-list"],"model_year_from":["chevrolet-onix-my25-price-list"],"model_year_to":["chevrolet-onix-my25-price-list"]},
-      "evidenceBasis":{"chevrolet-onix-second-generation":"Retained Chevrolet product history establishes the current Onix as the second generation.","chevrolet-onix-my25-price-list":"Retained Chevrolet MY25 price material establishes Onix Premier Turbo 116cv, hatch body, MY2025 and six-speed automatic transmission.","chevrolet-onix-2025-owner-manual":"Official Chevrolet Onix 2025 owner manual identifies the 1.0 T engine, Etanol/Gasolina fuel capability and automatic-transmission configuration, supporting the benchmark's 1.0 turbo flex powertrain semantics without inference."},"status":"PROBE_303_VALIDATED_RETAINED_ROLLOUT"
-    },
-    {
-      "benchmark":"catalog_identity_golden_br_v1.json","benchmarkDatasetVersion":"br-1.0","caseId":"br-review-onix-premier-missing-variant","side":"left",
-      "fieldSourceIds":{"make":["chevrolet-onix-my25-price-list"],"model":["chevrolet-onix-my25-price-list"],"generation":["chevrolet-onix-second-generation"],"variant":["chevrolet-onix-my25-price-list"],"powertrain":["chevrolet-onix-2025-owner-manual"],"transmission":["chevrolet-onix-my25-price-list"],"body_style":["chevrolet-onix-my25-price-list"],"market":["chevrolet-onix-my25-price-list"],"model_year_from":["chevrolet-onix-my25-price-list"],"model_year_to":["chevrolet-onix-my25-price-list"]},
-      "evidenceBasis":{"chevrolet-onix-second-generation":"Retained Chevrolet product history establishes the current Onix as the second generation.","chevrolet-onix-my25-price-list":"Retained Chevrolet MY25 price material establishes Onix Premier Turbo 116cv, hatch body, MY2025 and six-speed automatic transmission.","chevrolet-onix-2025-owner-manual":"Official Chevrolet Onix 2025 owner manual identifies the 1.0 T engine, Etanol/Gasolina fuel capability and automatic-transmission configuration, supporting the benchmark's 1.0 turbo flex powertrain semantics without inference."},"status":"PROBE_303_VALIDATED_RETAINED_ROLLOUT"
-    },
-    {
-      "benchmark":"catalog_identity_golden_br_v1.json","benchmarkDatasetVersion":"br-1.0","caseId":"br-review-onix-premier-missing-variant","side":"right",
-      "fieldSourceIds":{"make":["chevrolet-onix-my25-price-list"],"model":["chevrolet-onix-my25-price-list"],"generation":["chevrolet-onix-second-generation"],"powertrain":["chevrolet-onix-2025-owner-manual"],"transmission":["chevrolet-onix-my25-price-list"],"body_style":["chevrolet-onix-my25-price-list"],"market":["chevrolet-onix-my25-price-list"],"model_year_from":["chevrolet-onix-my25-price-list"],"model_year_to":["chevrolet-onix-my25-price-list"]},
-      "evidenceBasis":{"chevrolet-onix-second-generation":"Retained Chevrolet product history establishes the current Onix as the second generation.","chevrolet-onix-my25-price-list":"Retained Chevrolet MY25 price material establishes Onix Premier Turbo 116cv, hatch body, MY2025 and six-speed automatic transmission.","chevrolet-onix-2025-owner-manual":"Official Chevrolet Onix 2025 owner manual identifies the 1.0 T engine, Etanol/Gasolina fuel capability and automatic-transmission configuration, supporting the benchmark's 1.0 turbo flex powertrain semantics without inference."},"status":"PROBE_303_VALIDATED_RETAINED_ROLLOUT"
-    }
-  ]
+  "mappings": []
 }
