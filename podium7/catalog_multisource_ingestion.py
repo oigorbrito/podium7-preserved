@@ -140,27 +140,27 @@ def ingest_catalog_multisource_v2(
         if comparison.outcome is CatalogMatchOutcome.REVIEW
     )
 
-    if len(matches) > 1 or reviews:
+    if len(matches) == 1:
+        action = CatalogIngestionAction.MATCHED
+        vehicle_id = matches[0]
+    elif len(matches) > 1 or reviews:
         raise CatalogMultisourceIngestionError(
             MULTISOURCE_REVIEW_NOT_IMPLEMENTED,
             "multi-evidence REVIEW requires the dedicated review field-binding path",
         )
-
-    evidence_ids = tuple(item.id for item in envelope.evidence)
-    if len(matches) == 1:
-        action = CatalogIngestionAction.MATCHED
-        vehicle_id = matches[0]
     else:
+        evidence_ids_for_publication = tuple(item.id for item in envelope.evidence)
         validate_catalog_publication_change(
             None,
             identity,
             action=CatalogPublicationAction.CREATE,
             decision_status=DecisionStatus.EVIDENCE_BACKED,
-            evidence_ids=evidence_ids,
+            evidence_ids=evidence_ids_for_publication,
         )
         action = CatalogIngestionAction.CREATED
         vehicle_id = ""
 
+    evidence_ids = tuple(item.id for item in envelope.evidence)
     with store.transaction():
         for source in envelope.sources:
             _ensure_source(store, source)
