@@ -4,6 +4,7 @@ import tempfile
 import unittest
 
 from podium7.operational_provenance import (
+    BLOCK_MISSING_SIDE_FIELD_ATTRIBUTION,
     BLOCK_MULTI_SOURCE_WITHOUT_FIELD_ATTRIBUTION,
     BLOCK_NO_UNIQUE_COMMON_SOURCE,
     BLOCK_UNKNOWN_CASE_SOURCE,
@@ -138,21 +139,61 @@ class OperationalProvenanceEligibilityTests(unittest.TestCase):
             {BLOCK_NO_UNIQUE_COMMON_SOURCE: 2},
         )
 
-    def test_retained_v3_reports_12_of_72_replayable_without_inference(self) -> None:
+    def test_retained_v3_reports_verified_single_source_attribution_without_inference(self) -> None:
         report = measure_operational_provenance_eligibility(V3_DATASETS)
         summary = report["summary"]
         self.assertEqual(summary["cases"], 36)
         self.assertEqual(summary["records"], 72)
-        self.assertEqual(summary["replayableRecords"], 12)
-        self.assertEqual(summary["blockedRecords"], 60)
-        self.assertEqual(summary["replayableRate"], 12 / 72)
-        self.assertEqual(summary["replayableByMethod"], {"SOLE_CASE_SOURCE": 12})
+        self.assertEqual(summary["replayableRecords"], 22)
+        self.assertEqual(summary["blockedRecords"], 50)
+        self.assertEqual(summary["replayableRate"], 22 / 72)
+        self.assertEqual(
+            summary["replayableByMethod"],
+            {"EXPLICIT_FIELD_ATTRIBUTION": 10, "SOLE_CASE_SOURCE": 12},
+        )
         self.assertEqual(
             summary["blockedByReasonCode"],
-            {BLOCK_MULTI_SOURCE_WITHOUT_FIELD_ATTRIBUTION: 60},
+            {
+                BLOCK_MISSING_SIDE_FIELD_ATTRIBUTION: 2,
+                BLOCK_MULTI_SOURCE_WITHOUT_FIELD_ATTRIBUTION: 48,
+            },
         )
-        self.assertTrue(all(item["method"] == "SOLE_CASE_SOURCE" for item in report["records"] if item["replayable"]))
-        self.assertTrue(all("multiple sourceIds" in item["reason"] for item in report["records"] if not item["replayable"]))
+
+        explicit = [
+            item
+            for item in report["records"]
+            if item["replayable"] and item["method"] == "EXPLICIT_FIELD_ATTRIBUTION"
+        ]
+        sole_source = [
+            item
+            for item in report["records"]
+            if item["replayable"] and item["method"] == "SOLE_CASE_SOURCE"
+        ]
+        self.assertEqual(len(explicit), 10)
+        self.assertEqual(len(sole_source), 12)
+
+        missing_side = {
+            (item["caseId"], item["side"])
+            for item in report["records"]
+            if item["reasonCode"] == BLOCK_MISSING_SIDE_FIELD_ATTRIBUTION
+        }
+        self.assertEqual(
+            missing_side,
+            {
+                ("no-match-toyota-corolla-10g-vs-12g", "left"),
+                ("no-match-porsche-911-991-vs-992", "left"),
+            },
+        )
+
+        multisource_without_attribution = [
+            item
+            for item in report["records"]
+            if item["reasonCode"] == BLOCK_MULTI_SOURCE_WITHOUT_FIELD_ATTRIBUTION
+        ]
+        self.assertEqual(len(multisource_without_attribution), 48)
+        self.assertTrue(
+            all("multiple sourceIds" in item["reason"] for item in multisource_without_attribution)
+        )
 
 
 if __name__ == "__main__":
