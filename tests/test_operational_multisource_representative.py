@@ -25,30 +25,51 @@ COROLLA_CROSS_KEYS = (
     ("br-1.0", "br-review-corolla-cross-xrx-hybrid-missing-variant", "left"),
     ("br-1.0", "br-review-corolla-cross-xrx-hybrid-missing-variant", "right"),
 )
+TCROSS_KEYS = (
+    ("br-1.0", "br-match-tcross-highline-250-tsi", "left"),
+    ("br-1.0", "br-match-tcross-highline-250-tsi", "right"),
+    ("br-1.0", "br-no-match-tcross-highline-vs-comfortline", "left"),
+    ("br-1.0", "br-no-match-tcross-highline-vs-comfortline", "right"),
+    ("br-1.0", "br-review-tcross-250-tsi-missing-variant", "left"),
+    ("br-1.0", "br-review-tcross-250-tsi-missing-variant", "right"),
+)
+OVERLAY_KEYS = COROLLA_CROSS_KEYS + TCROSS_KEYS
 COROLLA_CROSS_SOURCES = {
     "toyota-corolla-cross-global-launch",
     "toyota-corolla-cross-my25-br",
 }
+TCROSS_SOURCES = {
+    "vw-tcross-2019-br-generation",
+    "vw-tcross-current-config",
+}
+
+
+def _record_key(record: dict) -> tuple[str, str, str]:
+    return (record["datasetVersion"], record["caseId"], record["side"])
+
+
+def _expected_sources(record: dict) -> set[str]:
+    return TCROSS_SOURCES if _record_key(record) in TCROSS_KEYS else COROLLA_CROSS_SOURCES
 
 
 class OperationalMultisourceRolloutTests(unittest.TestCase):
-    def test_combined_measurement_promotes_exact_corolla_cross_family(self) -> None:
+    def test_combined_measurement_promotes_exact_two_source_families(self) -> None:
         measurement = measure_combined_operational_provenance_eligibility(
             ACTIVE_PATHS,
             ATTRIBUTION_PATH,
         )
         summary = measurement["summary"]
         self.assertEqual(summary["records"], 60)
-        self.assertEqual(summary["replayableRecords"], 28)
-        self.assertEqual(summary["blockedRecords"], 32)
+        self.assertEqual(summary["replayableRecords"], 34)
+        self.assertEqual(summary["blockedRecords"], 26)
         self.assertEqual(summary["replayableByMethod"]["SOLE_CASE_SOURCE"], 12)
         self.assertEqual(summary["replayableByMethod"]["EXPLICIT_FIELD_ATTRIBUTION"], 10)
-        self.assertEqual(summary["replayableByMethod"][MULTISOURCE_REPLAY_METHOD], 6)
+        self.assertEqual(summary["replayableByMethod"][MULTISOURCE_REPLAY_METHOD], 12)
         self.assertEqual(
             summary["blockedByReasonCode"],
             {
                 "MISSING_SIDE_FIELD_ATTRIBUTION": 2,
-                "MULTI_SOURCE_WITHOUT_EXPLICIT_FIELD_ATTRIBUTION": 30,
+                "MULTI_SOURCE_WITHOUT_EXPLICIT_FIELD_ATTRIBUTION": 24,
             },
         )
 
@@ -57,28 +78,15 @@ class OperationalMultisourceRolloutTests(unittest.TestCase):
             for record in measurement["records"]
             if record["method"] == MULTISOURCE_REPLAY_METHOD
         ]
-        self.assertEqual(len(promoted), 6)
-        self.assertEqual(
-            tuple(
-                (record["datasetVersion"], record["caseId"], record["side"])
-                for record in promoted
-            ),
-            COROLLA_CROSS_KEYS,
-        )
-        self.assertTrue(
-            all(set(record["sourceIds"]) == COROLLA_CROSS_SOURCES for record in promoted)
-        )
+        self.assertEqual(len(promoted), 12)
+        self.assertEqual({_record_key(record) for record in promoted}, set(OVERLAY_KEYS))
+        for record in promoted:
+            self.assertEqual(set(record["sourceIds"]), _expected_sources(record))
 
-    def test_every_corolla_cross_overlay_replays_in_isolation_with_exact_provenance(self) -> None:
+    def test_every_overlay_replays_in_isolation_with_exact_provenance(self) -> None:
         records = build_multisource_operational_records(ACTIVE_PATHS, ATTRIBUTION_PATH)
-        self.assertEqual(len(records), 6)
-        self.assertEqual(
-            tuple(
-                (record["datasetVersion"], record["caseId"], record["side"])
-                for record in records
-            ),
-            COROLLA_CROSS_KEYS,
-        )
+        self.assertEqual(len(records), 12)
+        self.assertEqual(tuple(_record_key(record) for record in records), OVERLAY_KEYS)
 
         for record in records:
             with self.subTest(caseId=record["caseId"], side=record["side"]):
@@ -98,16 +106,17 @@ class OperationalMultisourceRolloutTests(unittest.TestCase):
                     actual_bindings = {(fact.attribute, fact.evidence_id) for fact in facts}
                     self.assertEqual(actual_bindings, expected_bindings)
 
+                    expected_sources = _expected_sources(record)
                     for fact in facts:
                         evidence = store.get_raw_evidence(fact.evidence_id)
                         self.assertIsNotNone(evidence)
                         source = store.get_source(evidence.source_id)
                         self.assertIsNotNone(source)
-                        self.assertIn(source.id, COROLLA_CROSS_SOURCES)
+                        self.assertIn(source.id, expected_sources)
                 finally:
                     store.close()
 
-    def test_corolla_cross_family_replays_after_existing_v1_corpus_with_expected_dispositions(self) -> None:
+    def test_two_families_replay_after_existing_v1_corpus_with_expected_dispositions(self) -> None:
         records = build_multisource_operational_records(ACTIVE_PATHS, ATTRIBUTION_PATH)
         store = CatalogStore()
         self.addCleanup(store.close)
@@ -118,20 +127,20 @@ class OperationalMultisourceRolloutTests(unittest.TestCase):
         self.assertEqual(len(store.catalog_vehicle_ids_page(after_id=None, limit=100)), 7)
 
         results = run_multisource_operational_records(store, records)
-        self.assertEqual(
-            tuple(result.action for result in results),
-            (
-                CatalogIngestionAction.CREATED,
-                CatalogIngestionAction.MATCHED,
-                CatalogIngestionAction.MATCHED,
-                CatalogIngestionAction.CREATED,
-                CatalogIngestionAction.MATCHED,
-                CatalogIngestionAction.REVIEW,
-            ),
+        family_actions = (
+            CatalogIngestionAction.CREATED,
+            CatalogIngestionAction.MATCHED,
+            CatalogIngestionAction.MATCHED,
+            CatalogIngestionAction.CREATED,
+            CatalogIngestionAction.MATCHED,
+            CatalogIngestionAction.REVIEW,
         )
-        self.assertEqual(len(store.catalog_vehicle_ids_page(after_id=None, limit=100)), 9)
-        self.assertIsNotNone(results[-1].review_id)
-        self.assertIsNone(results[-1].vehicle_id)
+        self.assertEqual(tuple(result.action for result in results), family_actions + family_actions)
+        self.assertEqual(len(store.catalog_vehicle_ids_page(after_id=None, limit=100)), 11)
+        self.assertIsNotNone(results[5].review_id)
+        self.assertIsNone(results[5].vehicle_id)
+        self.assertIsNotNone(results[11].review_id)
+        self.assertIsNone(results[11].vehicle_id)
 
         for record, result in zip(records, results):
             if result.vehicle_id is None:
