@@ -16,20 +16,20 @@ ENRICHMENT_V3 = ROOT / "benchmarks" / "source_backed_enrichment_v3.json"
 DISPOSITIONS = ROOT / "benchmarks" / "review_disposition_v2.json"
 EXPECTED_OPERATIONAL_REVIEW_KEYS = {
     ("review-ford-mustang-variant-missing", "right"),
-    ("review-bmw-g20-generic-vs-330i-label", "left"),
-    ("review-bmw-g20-generic-vs-330i-label", "right"),
-}
-EXPECTED_PROVENANCE_BLOCKED_DISPOSITION_KEYS = {
     ("review-porsche-911-partial-variant-label", "left"),
     ("review-porsche-911-partial-variant-label", "right"),
+    ("review-bmw-g20-generic-vs-330i-label", "left"),
+    ("review-bmw-g20-generic-vs-330i-label", "right"),
+    ("br-hard-no-match-corolla-altis-hybrid-my25-vs-my26", "left"),
+    ("br-hard-no-match-corolla-altis-hybrid-my25-vs-my26", "right"),
+}
+EXPECTED_PROVENANCE_BLOCKED_DISPOSITION_KEYS = {
     ("br-review-corolla-cross-xrx-hybrid-missing-variant", "right"),
     ("br-review-onix-premier-missing-variant", "right"),
     ("br-review-tcross-250-tsi-missing-variant", "right"),
     ("br-review-shared-fipe-code-alone", "left"),
     ("br-review-shared-fipe-code-alone", "right"),
     ("br-hard-review-tcross-highline-model-year-present-one-side", "right"),
-    ("br-hard-no-match-corolla-altis-hybrid-my25-vs-my26", "left"),
-    ("br-hard-no-match-corolla-altis-hybrid-my25-vs-my26", "right"),
 }
 
 
@@ -42,16 +42,17 @@ class ProductionReviewExhaustionV2Tests(unittest.TestCase):
         if report["unassessedItems"]:
             self.fail(json.dumps(report["unassessedItems"], sort_keys=True))
         self.assertEqual(eligibility["records"], 60)
+        self.assertEqual(eligibility["replayableRecords"], 22)
+        self.assertEqual(eligibility["blockedRecords"], 38)
         self.assertEqual(
             eligibility["records"],
             eligibility["replayableRecords"] + eligibility["blockedRecords"],
         )
-        self.assertGreater(eligibility["blockedRecords"], 0)
-        self.assertEqual(summary["openReviews"], 3)
+        self.assertEqual(summary["openReviews"], 7)
         self.assertEqual(summary["durableHumanReview"], summary["openReviews"])
         self.assertEqual(summary["unassessed"], 0)
         self.assertEqual(summary["unusedDispositions"], 0)
-        self.assertEqual(summary["provenanceBlockedDispositions"], 10)
+        self.assertEqual(summary["provenanceBlockedDispositions"], 6)
         self.assertEqual(summary["blocked"], 0)
         self.assertEqual(summary["resolverPolicyChanges"], 0)
         self.assertEqual(report["unassessedCaseIds"], [])
