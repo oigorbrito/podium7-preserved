@@ -3,7 +3,7 @@ from __future__ import annotations
 from copy import deepcopy
 import unittest
 
-from podium7.catalog import CatalogStore, CatalogVehicleIdentity
+from podium7.catalog import CatalogMatchOutcome, CatalogStore, CatalogVehicleIdentity
 from podium7.catalog_ingestion import CatalogIngestionAction
 from podium7.catalog_multisource_ingestion import (
     MULTISOURCE_REVIEW_NOT_IMPLEMENTED,
@@ -187,6 +187,31 @@ class CatalogMultisourceIngestionTests(unittest.TestCase):
             for evidence_id in evidence_ids
         }
         self.assertEqual(actual_bindings, expected_bindings)
+
+    def test_one_exact_match_preserves_v1_precedence_over_other_review_candidate(self) -> None:
+        exact_id = self.store.create_catalog_vehicle(expected_identity())
+        partial_id = self.store.create_catalog_vehicle(
+            CatalogVehicleIdentity(
+                make="Toyota",
+                model="Corolla Cross",
+                generation="2020 global generation",
+                powertrain="1.8 hybrid flex",
+                transmission="Hybrid Transaxle CVT",
+                body_style="SUV",
+                market="BR",
+                model_year_from=2025,
+                model_year_to=2025,
+            )
+        )
+        envelope = parse_catalog_multisource_v2_record(payload())
+
+        result = ingest_catalog_multisource_v2(self.store, envelope)
+
+        self.assertEqual(result.action, CatalogIngestionAction.MATCHED)
+        self.assertEqual(result.vehicle_id, exact_id)
+        outcomes = {item.vehicle_id: item.outcome for item in result.comparisons}
+        self.assertEqual(outcomes[exact_id], CatalogMatchOutcome.MATCH)
+        self.assertEqual(outcomes[partial_id], CatalogMatchOutcome.REVIEW)
 
     def test_review_fails_closed_before_multisource_evidence_is_persisted(self) -> None:
         existing_id = self.store.create_catalog_vehicle(expected_identity())
