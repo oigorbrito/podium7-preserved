@@ -183,6 +183,11 @@ def ingest_catalog_multisource_v2(
 
     evidence_ids = tuple(item.id for item in envelope.evidence)
     review_id: str | None = None
+    review_queue = (
+        CatalogMultisourceReviewQueue(store)
+        if action is CatalogIngestionAction.REVIEW
+        else None
+    )
     with store.transaction():
         for source in envelope.sources:
             _ensure_source(store, source)
@@ -192,7 +197,8 @@ def ingest_catalog_multisource_v2(
         if action is CatalogIngestionAction.CREATED:
             vehicle_id = store.create_catalog_vehicle(identity)
         elif action is CatalogIngestionAction.REVIEW:
-            task = CatalogMultisourceReviewQueue(store).enqueue(
+            assert review_queue is not None
+            task = review_queue.enqueue(
                 evidence_ids=evidence_ids,
                 identity=identity,
                 candidate_vehicle_ids=review_vehicle_ids,
