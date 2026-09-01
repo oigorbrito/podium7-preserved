@@ -23,6 +23,10 @@ from .catalog_multisource_review import (
     CatalogMultisourceReviewQueue,
     CatalogMultisourceReviewTask,
 )
+from .catalog_multisource_review_cause import (
+    CatalogMultisourceReviewCauseStore,
+    snapshot_multisource_review_causes,
+)
 from .catalog_multisource_v2 import CatalogMultisourceV2Envelope
 from .catalog_resolution_precedence import resolve_catalog_pair_with_structural_precedence
 from .catalog_review import CatalogReviewComparison, CatalogReviewResolutionAction, CatalogReviewState
@@ -188,6 +192,11 @@ def ingest_catalog_multisource_v2(
         if action is CatalogIngestionAction.REVIEW
         else None
     )
+    review_cause_store = (
+        CatalogMultisourceReviewCauseStore(store)
+        if action is CatalogIngestionAction.REVIEW
+        else None
+    )
     with store.transaction():
         for source in envelope.sources:
             _ensure_source(store, source)
@@ -198,12 +207,21 @@ def ingest_catalog_multisource_v2(
             vehicle_id = store.create_catalog_vehicle(identity)
         elif action is CatalogIngestionAction.REVIEW:
             assert review_queue is not None
+            assert review_cause_store is not None
+            review_comparisons = _review_comparisons(comparisons)
             task = review_queue.enqueue(
                 evidence_ids=evidence_ids,
                 identity=identity,
                 candidate_vehicle_ids=review_vehicle_ids,
-                comparisons=_review_comparisons(comparisons),
+                comparisons=review_comparisons,
                 field_evidence=envelope.field_evidence,
+            )
+            snapshot_multisource_review_causes(
+                store,
+                review_id=task.id,
+                comparisons=review_comparisons,
+                candidate_vehicle_ids=review_vehicle_ids,
+                cause_store=review_cause_store,
             )
             review_id = task.id
 
