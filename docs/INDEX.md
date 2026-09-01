@@ -23,10 +23,13 @@
 - [`INVARIANTS.md`](INVARIANTS.md) - cross-cutting product invariants.
 - [`TECH-DEBT.md`](TECH-DEBT.md) - durable unresolved work and external blockers.
 - [`LICENSING-STATUS.md`](LICENSING-STATUS.md) - private/proprietary release boundary.
+- [`PODIUM7-PRODUCTIVE-COVERAGE-WAVE-01.md`](PODIUM7-PRODUCTIVE-COVERAGE-WAVE-01.md) - active controlled product-evolution wave and frozen measurement boundary.
+- [`PODIUM7-PRODUCTIVE-COVERAGE-WAVE-01-SINGLE-SOURCE-PATCH-PLAN.md`](PODIUM7-PRODUCTIVE-COVERAGE-WAVE-01-SINGLE-SOURCE-PATCH-PLAN.md) - prepared, unapplied field-attribution plan for verified single-source sides.
 
 ## Decisions
 
 - [`ADR-0001-MARKET-FIRST-INFRASTRUCTURE.md`](ADR-0001-MARKET-FIRST-INFRASTRUCTURE.md)
+- [`ADR-0002-OPERATIONAL-MULTISOURCE-PROVENANCE.md`](ADR-0002-OPERATIONAL-MULTISOURCE-PROVENANCE.md) - proposed decision record for operational multi-source provenance.
 - [`ARCHITECTURE-PRINCIPLES.md`](ARCHITECTURE-PRINCIPLES.md)
 - [`DONOR-CAPABILITY-EVALUATION-V1.md`](DONOR-CAPABILITY-EVALUATION-V1.md)
 - [`CANDIDATE-EVALUATION-LEDGER.md`](CANDIDATE-EVALUATION-LEDGER.md)
