@@ -30,7 +30,8 @@
 ## Decisions
 
 - [`ADR-0001-MARKET-FIRST-INFRASTRUCTURE.md`](ADR-0001-MARKET-FIRST-INFRASTRUCTURE.md)
-- [`ADR-0002-OPERATIONAL-MULTISOURCE-PROVENANCE.md`](ADR-0002-OPERATIONAL-MULTISOURCE-PROVENANCE.md) - proposed decision record for operational multi-source provenance.
+- [`ADR-0002-OPERATIONAL-MULTISOURCE-PROVENANCE.md`](ADR-0002-OPERATIONAL-MULTISOURCE-PROVENANCE.md) - original decision analysis for operational multi-source provenance.
+- [`ADR-0002-DECISION-ACCEPTANCE.md`](ADR-0002-DECISION-ACCEPTANCE.md) - accepted decision selecting field-level multi-source replay while preserving v1 compatibility and fail-closed provenance semantics.
 - [`ARCHITECTURE-PRINCIPLES.md`](ARCHITECTURE-PRINCIPLES.md)
 - [`DONOR-CAPABILITY-EVALUATION-V1.md`](DONOR-CAPABILITY-EVALUATION-V1.md)
 - [`CANDIDATE-EVALUATION-LEDGER.md`](CANDIDATE-EVALUATION-LEDGER.md)
