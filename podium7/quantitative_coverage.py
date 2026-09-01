@@ -197,6 +197,65 @@ def run_coverage_benchmark(path: str | Path) -> dict[str, Any]:
     return material
 
 
+def summarize_coverage_result(result: dict[str, Any]) -> dict[str, Any]:
+    records = result["records"]
+    total_records = len(records)
+    known = sum(row["knowledgeState"] == "known" for row in records)
+    unknown = sum(row["knowledgeState"] == "unknown" for row in records)
+    not_applicable = sum(row["knowledgeState"] == "not_applicable" for row in records)
+    publication_ready = sum(row["knowledgeState"] == "known" and row["publicationEligible"] for row in records)
+    normalized = sum(row["knowledgeState"] == "known" and row["value"] is not None and row["unit"] is not None for row in records)
+    provenance_complete = sum(bool(row["provenanceRef"]) for row in records)
+    blocked = total_records - publication_ready
+    blocked_by_reason = Counter(row["reason"] or "publication_ready" for row in records if not row["publicationEligible"])
+
+    by_vehicle: dict[str, list[dict[str, Any]]] = defaultdict(list)
+    by_source: Counter[str] = Counter()
+    for record in records:
+        by_vehicle[record["vehicleId"]].append(record)
+        by_source[record["provenanceRef"]] += 1
+
+    vehicle_coverage = []
+    fully_publication_ready = 0
+    partially_publication_ready = 0
+    for vehicle_id, rows in sorted(by_vehicle.items()):
+        vehicle_ready = sum(row["knowledgeState"] == "known" and row["publicationEligible"] for row in rows)
+        if vehicle_ready == len(rows):
+            fully_publication_ready += 1
+        elif vehicle_ready:
+            partially_publication_ready += 1
+        vehicle_coverage.append(
+            {
+                "vehicleId": vehicle_id,
+                "totalFields": len(rows),
+                "publicationReadyFields": vehicle_ready,
+                "blockedFields": len(rows) - vehicle_ready,
+            }
+        )
+
+    return {
+        "schema": "podium7.quantitative-coverage-summary.v1",
+        "corpusVersion": result["corpusVersion"],
+        "source": result["source"],
+        "contentSha256": result["contentSha256"],
+        "totalVehicles": len(by_vehicle),
+        "totalCandidateQuantitativeFacts": total_records,
+        "known": known,
+        "unknown": unknown,
+        "notApplicable": not_applicable,
+        "normalized": normalized,
+        "provenanceComplete": provenance_complete,
+        "publicationReady": publication_ready,
+        "blocked": blocked,
+        "blockedByReason": dict(sorted(blocked_by_reason.items())),
+        "perFieldCoverage": result["fields"],
+        "perSourceCoverage": dict(sorted(by_source.items())),
+        "perVehicleCoverage": vehicle_coverage,
+        "fullyPublicationReadyVehicles": fully_publication_ready,
+        "partiallyPublicationReadyVehicles": partially_publication_ready,
+    }
+
+
 def render_coverage_result(path: str | Path) -> str:
     return json.dumps(run_coverage_benchmark(path), ensure_ascii=False, allow_nan=False, sort_keys=True, indent=2) + "\n"
 
@@ -208,4 +267,5 @@ __all__ = [
     "records_comparable",
     "render_coverage_result",
     "run_coverage_benchmark",
+    "summarize_coverage_result",
 ]
