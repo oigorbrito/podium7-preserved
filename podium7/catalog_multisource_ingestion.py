@@ -19,12 +19,14 @@ from .catalog_ingestion import (
     _catalog_entries,
     catalog_identity_from_record,
 )
+from .catalog_multisource_review import (
+    CatalogMultisourceReviewQueue,
+    CatalogMultisourceReviewTask,
+)
 from .catalog_multisource_v2 import CatalogMultisourceV2Envelope
 from .catalog_resolution_precedence import resolve_catalog_pair_with_structural_precedence
+from .catalog_review import CatalogReviewComparison, CatalogReviewResolutionAction, CatalogReviewState
 from .domain import CandidateFact, DecisionStatus, RawEvidence, Source
-
-
-MULTISOURCE_REVIEW_NOT_IMPLEMENTED = "MULTISOURCE_REVIEW_NOT_IMPLEMENTED"
 
 
 class CatalogMultisourceIngestionError(ValueError):
@@ -38,8 +40,10 @@ class CatalogMultisourceIngestionResult:
     action: CatalogIngestionAction
     identity: CatalogVehicleIdentity
     evidence_ids: tuple[str, ...]
-    vehicle_id: str
+    vehicle_id: str | None
     comparisons: tuple[CatalogIngestionComparison, ...]
+    review_vehicle_ids: tuple[str, ...] = ()
+    review_id: str | None = None
 
 
 def _ensure_source(store: CatalogStore, source: Source) -> None:
@@ -114,6 +118,19 @@ def _save_field_evidence_candidates(
                 )
 
 
+def _review_comparisons(
+    comparisons: tuple[CatalogIngestionComparison, ...],
+) -> tuple[CatalogReviewComparison, ...]:
+    return tuple(
+        CatalogReviewComparison(
+            vehicle_id=item.vehicle_id,
+            outcome=item.outcome.value,
+            reason=item.reason,
+        )
+        for item in comparisons
+    )
+
+
 def ingest_catalog_multisource_v2(
     store: CatalogStore,
     envelope: CatalogMultisourceV2Envelope,
@@ -140,14 +157,18 @@ def ingest_catalog_multisource_v2(
         if comparison.outcome is CatalogMatchOutcome.REVIEW
     )
 
+    review_vehicle_ids: tuple[str, ...] = ()
     if len(matches) == 1:
         action = CatalogIngestionAction.MATCHED
-        vehicle_id = matches[0]
-    elif len(matches) > 1 or reviews:
-        raise CatalogMultisourceIngestionError(
-            MULTISOURCE_REVIEW_NOT_IMPLEMENTED,
-            "multi-evidence REVIEW requires the dedicated review field-binding path",
-        )
+        vehicle_id: str | None = matches[0]
+    elif len(matches) > 1:
+        action = CatalogIngestionAction.REVIEW
+        vehicle_id = None
+        review_vehicle_ids = matches
+    elif reviews:
+        action = CatalogIngestionAction.REVIEW
+        vehicle_id = None
+        review_vehicle_ids = reviews
     else:
         evidence_ids_for_publication = tuple(item.id for item in envelope.evidence)
         validate_catalog_publication_change(
@@ -158,9 +179,15 @@ def ingest_catalog_multisource_v2(
             evidence_ids=evidence_ids_for_publication,
         )
         action = CatalogIngestionAction.CREATED
-        vehicle_id = ""
+        vehicle_id = None
 
     evidence_ids = tuple(item.id for item in envelope.evidence)
+    review_id: str | None = None
+    review_queue = (
+        CatalogMultisourceReviewQueue(store)
+        if action is CatalogIngestionAction.REVIEW
+        else None
+    )
     with store.transaction():
         for source in envelope.sources:
             _ensure_source(store, source)
@@ -169,13 +196,24 @@ def ingest_catalog_multisource_v2(
 
         if action is CatalogIngestionAction.CREATED:
             vehicle_id = store.create_catalog_vehicle(identity)
+        elif action is CatalogIngestionAction.REVIEW:
+            assert review_queue is not None
+            task = review_queue.enqueue(
+                evidence_ids=evidence_ids,
+                identity=identity,
+                candidate_vehicle_ids=review_vehicle_ids,
+                comparisons=_review_comparisons(comparisons),
+                field_evidence=envelope.field_evidence,
+            )
+            review_id = task.id
 
-        _save_field_evidence_candidates(
-            store,
-            vehicle_id,
-            identity,
-            envelope.field_evidence,
-        )
+        if vehicle_id is not None:
+            _save_field_evidence_candidates(
+                store,
+                vehicle_id,
+                identity,
+                envelope.field_evidence,
+            )
 
     return CatalogMultisourceIngestionResult(
         action=action,
@@ -183,12 +221,116 @@ def ingest_catalog_multisource_v2(
         evidence_ids=evidence_ids,
         vehicle_id=vehicle_id,
         comparisons=comparisons,
+        review_vehicle_ids=review_vehicle_ids,
+        review_id=review_id,
     )
 
 
+def _require_review_task(
+    queue: CatalogMultisourceReviewQueue,
+    review_id: str,
+) -> CatalogMultisourceReviewTask:
+    task = queue.get(review_id)
+    if task is None:
+        raise ValueError("catalog multisource review task does not exist")
+    return task
+
+
+def resolve_catalog_multisource_review_match(
+    store: CatalogStore,
+    review_id: str,
+    vehicle_id: str,
+    *,
+    actor_id: str,
+    reason: str,
+) -> CatalogMultisourceReviewTask:
+    queue = CatalogMultisourceReviewQueue(store)
+    task = _require_review_task(queue, review_id)
+    canonical_target = store.resolve_catalog_id(vehicle_id)
+
+    if task.state is CatalogReviewState.RESOLVED:
+        if (
+            task.resolution_action is CatalogReviewResolutionAction.MATCHED
+            and task.resolution_vehicle_id == canonical_target
+            and task.resolved_by == actor_id.strip()
+            and task.resolution_reason == reason.strip()
+        ):
+            return task
+        raise ValueError("catalog multisource review task is already resolved")
+
+    candidates = {
+        store.resolve_catalog_id(candidate)
+        for candidate in task.candidate_vehicle_ids
+    }
+    if canonical_target not in candidates:
+        raise ValueError("selected vehicle is not a candidate for this review")
+    if store.get_catalog_vehicle(canonical_target) is None:
+        raise ValueError("selected catalog vehicle does not exist")
+
+    with store.transaction():
+        _save_field_evidence_candidates(
+            store,
+            canonical_target,
+            task.identity,
+            task.field_evidence,
+        )
+        return queue.resolve(
+            review_id,
+            action=CatalogReviewResolutionAction.MATCHED,
+            vehicle_id=canonical_target,
+            actor_id=actor_id,
+            reason=reason,
+        )
+
+
+def resolve_catalog_multisource_review_create(
+    store: CatalogStore,
+    review_id: str,
+    *,
+    actor_id: str,
+    reason: str,
+) -> CatalogMultisourceReviewTask:
+    queue = CatalogMultisourceReviewQueue(store)
+    task = _require_review_task(queue, review_id)
+
+    if task.state is CatalogReviewState.RESOLVED:
+        if (
+            task.resolution_action is CatalogReviewResolutionAction.CREATED
+            and task.resolved_by == actor_id.strip()
+            and task.resolution_reason == reason.strip()
+        ):
+            return task
+        raise ValueError("catalog multisource review task is already resolved")
+
+    validate_catalog_publication_change(
+        None,
+        task.identity,
+        action=CatalogPublicationAction.CREATE,
+        decision_status=DecisionStatus.EVIDENCE_BACKED,
+        evidence_ids=task.evidence_ids,
+    )
+
+    with store.transaction():
+        vehicle_id = store.create_catalog_vehicle(task.identity)
+        _save_field_evidence_candidates(
+            store,
+            vehicle_id,
+            task.identity,
+            task.field_evidence,
+        )
+        return queue.resolve(
+            review_id,
+            action=CatalogReviewResolutionAction.CREATED,
+            vehicle_id=vehicle_id,
+            actor_id=actor_id,
+            reason=reason,
+        )
+
+
 __all__ = [
-    "MULTISOURCE_REVIEW_NOT_IMPLEMENTED",
     "CatalogMultisourceIngestionError",
     "CatalogMultisourceIngestionResult",
     "ingest_catalog_multisource_v2",
+    "resolve_catalog_multisource_review_create",
+    "resolve_catalog_multisource_review_match",
 ]
