@@ -33,6 +33,13 @@
       "supports": "Dark Horse belongs to the seventh-generation 2024 Mustang and uses a 5.0-liter Coyote V8."
     },
     {
+      "id": "ford-mustang-gt-performance-2024-br",
+      "publisher": "Ford Motor Company",
+      "title": "Ford inicia a venda do Mustang GT Performance de sétima geração no Brasil",
+      "url": "https://media.ford.com/content/fordmedia/fsa/br/pt/news/2024/03/ford-inicia-a-venda-do-mustang-gt-performance-de-setima-geracao-.html",
+      "supports": "Ford Brasil explicitly identifies Mustang GT Performance as seventh generation, coupe and Coyote V8 5.0."
+    },
+    {
       "id": "porsche-911-generations-2019",
       "publisher": "Porsche AG",
       "title": "For eternity - Porsche 911 generations",
@@ -215,7 +222,7 @@
         "powertrain": "5.0 V8",
         "body_style": "coupe"
       },
-      "sourceIds": ["ford-mustang-2024-eu-spec", "ford-mustang-dark-horse-2022"],
+      "sourceIds": ["ford-mustang-2024-eu-spec", "ford-mustang-dark-horse-2022", "ford-mustang-gt-performance-2024-br"],
       "rationale": "GT and Dark Horse are distinct trims despite sharing generation and engine family."
     },
     {

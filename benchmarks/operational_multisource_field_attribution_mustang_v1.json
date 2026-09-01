@@ -1,0 +1,87 @@
+{
+  "schema": "podium7.catalog-operational-field-attribution.v1",
+  "datasetVersion": "mustang-1.0",
+  "createdAt": "2026-09-01",
+  "mappings": [
+    {
+      "benchmark": "catalog_identity_golden_v1.json",
+      "benchmarkDatasetVersion": "1.0",
+      "caseId": "match-ford-mustang-dark-horse",
+      "side": "left",
+      "fieldSourceIds": {
+        "make": ["ford-mustang-2024-eu-spec"],
+        "model": ["ford-mustang-2024-eu-spec"],
+        "generation": ["ford-mustang-dark-horse-2022"],
+        "variant": ["ford-mustang-2024-eu-spec"],
+        "powertrain": ["ford-mustang-2024-eu-spec"],
+        "body_style": ["ford-mustang-2024-eu-spec"]
+      },
+      "evidenceBasis": {
+        "ford-mustang-2024-eu-spec": "Retained Ford technical specification establishes Mustang GT and Dark Horse trim labels, coupe body and 5.0 V8 configurations.",
+        "ford-mustang-dark-horse-2022": "Retained Ford Dark Horse material explicitly places Dark Horse in the seventh-generation 2024 Mustang family.",
+        "ford-mustang-gt-performance-2024-br": "Ford Brasil explicitly describes the Mustang GT Performance as seventh generation and a coupe with a Coyote V8 5.0."
+      },
+      "status": "PROBE_304_VALIDATED_RETAINED_ROLLOUT"
+    },
+    {
+      "benchmark": "catalog_identity_golden_v1.json",
+      "benchmarkDatasetVersion": "1.0",
+      "caseId": "match-ford-mustang-dark-horse",
+      "side": "right",
+      "fieldSourceIds": {
+        "make": ["ford-mustang-2024-eu-spec"],
+        "model": ["ford-mustang-2024-eu-spec"],
+        "generation": ["ford-mustang-dark-horse-2022"],
+        "variant": ["ford-mustang-2024-eu-spec"],
+        "powertrain": ["ford-mustang-2024-eu-spec"],
+        "body_style": ["ford-mustang-2024-eu-spec"]
+      },
+      "evidenceBasis": {
+        "ford-mustang-2024-eu-spec": "Retained Ford technical specification establishes Mustang GT and Dark Horse trim labels, coupe body and 5.0 V8 configurations.",
+        "ford-mustang-dark-horse-2022": "Retained Ford Dark Horse material explicitly places Dark Horse in the seventh-generation 2024 Mustang family.",
+        "ford-mustang-gt-performance-2024-br": "Ford Brasil explicitly describes the Mustang GT Performance as seventh generation and a coupe with a Coyote V8 5.0."
+      },
+      "status": "PROBE_304_VALIDATED_RETAINED_ROLLOUT"
+    },
+    {
+      "benchmark": "catalog_identity_golden_v1.json",
+      "benchmarkDatasetVersion": "1.0",
+      "caseId": "no-match-ford-mustang-gt-vs-dark-horse",
+      "side": "left",
+      "fieldSourceIds": {
+        "make": ["ford-mustang-2024-eu-spec"],
+        "model": ["ford-mustang-2024-eu-spec"],
+        "generation": ["ford-mustang-gt-performance-2024-br"],
+        "variant": ["ford-mustang-2024-eu-spec"],
+        "powertrain": ["ford-mustang-2024-eu-spec"],
+        "body_style": ["ford-mustang-2024-eu-spec"]
+      },
+      "evidenceBasis": {
+        "ford-mustang-2024-eu-spec": "Retained Ford technical specification establishes Mustang GT and Dark Horse trim labels, coupe body and 5.0 V8 configurations.",
+        "ford-mustang-dark-horse-2022": "Retained Ford Dark Horse material explicitly places Dark Horse in the seventh-generation 2024 Mustang family.",
+        "ford-mustang-gt-performance-2024-br": "Ford Brasil explicitly describes the Mustang GT Performance as seventh generation and a coupe with a Coyote V8 5.0."
+      },
+      "status": "PROBE_304_VALIDATED_RETAINED_ROLLOUT"
+    },
+    {
+      "benchmark": "catalog_identity_golden_v1.json",
+      "benchmarkDatasetVersion": "1.0",
+      "caseId": "no-match-ford-mustang-gt-vs-dark-horse",
+      "side": "right",
+      "fieldSourceIds": {
+        "make": ["ford-mustang-2024-eu-spec"],
+        "model": ["ford-mustang-2024-eu-spec"],
+        "generation": ["ford-mustang-dark-horse-2022"],
+        "variant": ["ford-mustang-2024-eu-spec"],
+        "powertrain": ["ford-mustang-2024-eu-spec"],
+        "body_style": ["ford-mustang-2024-eu-spec"]
+      },
+      "evidenceBasis": {
+        "ford-mustang-2024-eu-spec": "Retained Ford technical specification establishes Mustang GT and Dark Horse trim labels, coupe body and 5.0 V8 configurations.",
+        "ford-mustang-dark-horse-2022": "Retained Ford Dark Horse material explicitly places Dark Horse in the seventh-generation 2024 Mustang family.",
+        "ford-mustang-gt-performance-2024-br": "Ford Brasil explicitly describes the Mustang GT Performance as seventh generation and a coupe with a Coyote V8 5.0."
+      },
+      "status": "PROBE_304_VALIDATED_RETAINED_ROLLOUT"
+    }
+  ]
+}
