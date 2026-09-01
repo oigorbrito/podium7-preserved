@@ -55,10 +55,10 @@ Retained Chevrolet evidence supports Premier Turbo 116cv, hatch, MY2025 and six-
 FIPE official evidence supplies lookup/model-year semantics, while concrete code/year enumeration is retained from a secondary supporting source. Do not elevate that source to sole identity authority merely to increase coverage.
 
 `TOOLING_NOTE / LARGE_PDF_RENDER`
-The Fiat Strada handbook exceeded the visual-render path size limit, but its retained official text is available and explicitly enumerates Volcano 1.3 Flex, Volcano 1.3 CVT Flex and Ranch 1.3 CVT Flex configurations. This does not block the Strada source-family wave.
+The Fiat Strada handbook exceeded the visual-render path size limit, but retained official text explicitly enumerates Volcano 1.3 Flex, Volcano 1.3 CVT Flex and Ranch 1.3 CVT Flex configurations. This does not block the Strada source-family wave.
 
 `HOSTED_CI = AVAILABLE`
-PR #299 exact head `58ec8cb0f39ae448a0c47c8099dfbc846939e80a` passed both required jobs and was squash-merged.
+PR #299 passed both required jobs and was squash-merged after exact-head validation.
 
 ## Next source-family waves
 1. Strada: integrate retained Stellantis generation + Fiat handbook evidence.
