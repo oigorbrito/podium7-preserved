@@ -21,7 +21,7 @@ class CatalogIdentityBenchmarkTests(unittest.TestCase):
         dataset = load_catalog_identity_benchmark(DATASET)
 
         self.assertEqual(dataset.version, "1.0")
-        self.assertEqual(len(dataset.source_ids), 8)
+        self.assertEqual(len(dataset.source_ids), 10)
         self.assertEqual(len(dataset.cases), 12)
         self.assertEqual(
             Counter(case.expected for case in dataset.cases),
