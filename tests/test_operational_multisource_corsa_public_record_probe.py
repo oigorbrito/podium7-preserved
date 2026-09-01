@@ -23,11 +23,13 @@ FIPE_SOURCE = "fipe-official-vehicle-index"
 TCE_MODEL_SOURCE = "tce-pr-fipe-model-table-2015"
 DETRAN_1995_SOURCE = "detran-rr-leilao-004-2025-corsa-1995"
 DETRAN_1997_SOURCE = "detran-rr-leilao-003-2025-corsa-1997"
+YEAR_CASE = "br-no-match-corsa-shared-fipe-different-model-year"
+REVIEW_CASE = "br-review-shared-fipe-code-alone"
 PROBE_KEYS = (
-    ("br-1.0", "br-no-match-corsa-shared-fipe-different-model-year", "left"),
-    ("br-1.0", "br-no-match-corsa-shared-fipe-different-model-year", "right"),
-    ("br-1.0", "br-review-shared-fipe-code-alone", "left"),
-    ("br-1.0", "br-review-shared-fipe-code-alone", "right"),
+    ("br-1.0", YEAR_CASE, "left"),
+    ("br-1.0", YEAR_CASE, "right"),
+    ("br-1.0", REVIEW_CASE, "left"),
+    ("br-1.0", REVIEW_CASE, "right"),
 )
 
 
@@ -47,17 +49,30 @@ def _augmented_br_benchmark(directory: Path) -> Path:
                 "publisher": "Departamento Estadual de Transito de Roraima",
                 "title": "Edital de Leilao No 004/2025/DETRAN-RR",
                 "url": "https://www.detran.rr.gov.br/wp-content/uploads/2025/09/EDITAL-DE-LEILAO-No-004-2025-DETRAN-RR.pdf",
-                "supports": "Official DETRAN-RR public record lists Chevrolet Corsa Wind 1.0 EFI, 1995/1995, with FIPE code 004001-0.",
+                "supports": "Official DETRAN-RR public record lists Chevrolet Corsa Wind 1.0 EFI, 1995/1995, and displays FIPE code 004001-0.",
             },
             {
                 "id": DETRAN_1997_SOURCE,
                 "publisher": "Departamento Estadual de Transito de Roraima",
                 "title": "Edital de Leilao No 003/2025/DETRAN-RR",
                 "url": "https://www.detran.rr.gov.br/wp-content/uploads/2025/06/EDITAL-DE-LEILAO-No-003-2025-DETRAN-RR_compressed-1.pdf",
-                "supports": "Official DETRAN-RR public record lists Chevrolet Corsa Wind 1.0 MPFI, 1997/1997, under the same FIPE model-code family documented by the public model table.",
+                "supports": "Official DETRAN-RR public record lists Chevrolet Corsa Wind 1.0 MPFI as a 1997/1997 vehicle observation.",
             },
         ]
     )
+
+    targets = {
+        case["id"]: case
+        for case in payload["cases"]
+        if case.get("id") in {YEAR_CASE, REVIEW_CASE}
+    }
+    if set(targets) != {YEAR_CASE, REVIEW_CASE}:
+        raise AssertionError("Corsa public-record probe cases must resolve exactly once")
+    targets[YEAR_CASE]["sourceIds"].extend(
+        [TCE_MODEL_SOURCE, DETRAN_1995_SOURCE, DETRAN_1997_SOURCE]
+    )
+    targets[REVIEW_CASE]["sourceIds"].append(TCE_MODEL_SOURCE)
+
     path = directory / "catalog_identity_golden_br_v1.json"
     path.write_text(json.dumps(payload), encoding="utf-8")
     return path
@@ -67,7 +82,7 @@ def _year_mapping(side: str, year: int, detran_source: str) -> dict:
     return {
         "benchmark": "catalog_identity_golden_br_v1.json",
         "benchmarkDatasetVersion": "br-1.0",
-        "caseId": "br-no-match-corsa-shared-fipe-different-model-year",
+        "caseId": YEAR_CASE,
         "side": side,
         "fieldSourceIds": {
             "make": [TCE_MODEL_SOURCE],
@@ -75,12 +90,12 @@ def _year_mapping(side: str, year: int, detran_source: str) -> dict:
             "market": [FIPE_SOURCE],
             "model_year_from": [detran_source],
             "model_year_to": [detran_source],
-            "external_identifiers": [TCE_MODEL_SOURCE, detran_source],
+            "external_identifiers": [TCE_MODEL_SOURCE],
         },
         "evidenceBasis": {
             FIPE_SOURCE: "Retained FIPE official evidence defines national vehicle lookup semantics and model-year-specific FIPE-code lookup.",
             TCE_MODEL_SOURCE: "Official TCE-PR administrative model table maps code 0040010 to GM-Chevrolet Corsa Wind 1.0 MPFI / EFI 2p.",
-            detran_source: f"Official DETRAN-RR vehicle record establishes the Corsa Wind observation in model year {year} and preserves the public-record link to FIPE code 004001-0.",
+            detran_source: f"Official DETRAN-RR vehicle record establishes a Corsa Wind observation in model year {year}.",
         },
         "status": "PROBE_ONLY_NOT_RETAINED",
     }
@@ -90,18 +105,17 @@ def _review_mapping(side: str) -> dict:
     return {
         "benchmark": "catalog_identity_golden_br_v1.json",
         "benchmarkDatasetVersion": "br-1.0",
-        "caseId": "br-review-shared-fipe-code-alone",
+        "caseId": REVIEW_CASE,
         "side": side,
         "fieldSourceIds": {
             "make": [TCE_MODEL_SOURCE],
             "model": [TCE_MODEL_SOURCE],
             "market": [FIPE_SOURCE],
-            "external_identifiers": [TCE_MODEL_SOURCE, DETRAN_1995_SOURCE],
+            "external_identifiers": [TCE_MODEL_SOURCE],
         },
         "evidenceBasis": {
             FIPE_SOURCE: "Retained FIPE official evidence defines the identifier as supporting, model-year-specific lookup evidence rather than sole catalog identity authority.",
             TCE_MODEL_SOURCE: "Official TCE-PR administrative model table maps code 0040010 to GM-Chevrolet Corsa Wind 1.0 MPFI / EFI 2p.",
-            DETRAN_1995_SOURCE: "Official DETRAN-RR record independently uses formatted code 004001-0 for a Chevrolet Corsa Wind observation.",
         },
         "status": "PROBE_ONLY_NOT_RETAINED",
     }
