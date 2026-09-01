@@ -9,6 +9,9 @@ from podium7.operational_multisource import (
     build_multisource_operational_records,
     run_multisource_operational_records,
 )
+from podium7.operational_multisource_overlay_set import (
+    build_multisource_operational_records_from_overlays,
+)
 from podium7.operational_provenance import run_provenance_eligible_operational_corpus
 
 
@@ -16,7 +19,10 @@ GLOBAL_PATH = "benchmarks/catalog_identity_golden_v1.json"
 BR_PATH = Path("benchmarks/catalog_identity_golden_br_v1.json")
 ADJACENT_PATH = "benchmarks/catalog_identity_br_adjacent_incomplete_v1.json"
 ACTIVE_PATHS = (GLOBAL_PATH, str(BR_PATH), ADJACENT_PATH)
-RETAINED_ATTRIBUTION_PATH = "benchmarks/operational_multisource_field_attribution_v1.json"
+RETAINED_ATTRIBUTION_PATHS = (
+    "benchmarks/operational_multisource_field_attribution_v1.json",
+    "benchmarks/operational_multisource_field_attribution_tcross_adjacent_v1.json",
+)
 GENERATION_SOURCE = "chevrolet-onix-second-generation"
 PRICE_SOURCE = "chevrolet-onix-my25-price-list"
 OWNER_MANUAL_SOURCE = "chevrolet-onix-2025-owner-manual"
@@ -134,7 +140,7 @@ class OnixMy25MultisourceProbeTests(unittest.TestCase):
         self.assertEqual(tuple(_key(record) for record in records), PROBE_KEYS)
         self.assertTrue(all(OWNER_MANUAL_SOURCE in record["sourceIds"] for record in records))
 
-    def test_probe_replays_after_retained_corpus_with_complete_field_provenance(self) -> None:
+    def test_probe_replays_after_current_retained_corpus_with_complete_field_provenance(self) -> None:
         store = CatalogStore()
         self.addCleanup(store.close)
 
@@ -142,11 +148,11 @@ class OnixMy25MultisourceProbeTests(unittest.TestCase):
         self.assertEqual(v1_report.total, 22)
         self.assertEqual(v1_report.failed, 0)
 
-        retained_records = build_multisource_operational_records(
+        retained_records = build_multisource_operational_records_from_overlays(
             ACTIVE_PATHS,
-            RETAINED_ATTRIBUTION_PATH,
+            RETAINED_ATTRIBUTION_PATHS,
         )
-        self.assertEqual(len(retained_records), 16)
+        self.assertEqual(len(retained_records), 22)
         run_multisource_operational_records(store, retained_records)
 
         records = _probe_records()
