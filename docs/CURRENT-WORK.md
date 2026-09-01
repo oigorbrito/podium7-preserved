@@ -25,7 +25,7 @@ Active three-dataset scope:
 - `MULTI_SOURCE_WITHOUT_EXPLICIT_FIELD_ATTRIBUTION = 36`;
 - `MISSING_SIDE_FIELD_ATTRIBUTION = 2`.
 
-The bounded single-source attribution lane is complete and integrated by PR #284. Exact-head CI passed the complete isolated suite on Python 3.11 and Python 3.13.
+The bounded single-source attribution lane is complete and integrated by PR #284. Exact-head CI passed the complete isolated suite in both supported CI runtime lanes.
 
 V3 scope is 72 record-sides: 22 replayable / 50 blocked.
 
