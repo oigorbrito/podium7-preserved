@@ -38,7 +38,7 @@ Including `catalog_identity_year_semantics_challenge_v1.json`:
 
 ## Operational effects
 
-Exact-head CI for PR #284 passed the complete isolated suite on Python 3.11 and Python 3.13.
+Exact-head CI for PR #284 passed the complete isolated suite in both supported CI runtime lanes.
 
 Executed operational measurement during the attribution lane established:
 
