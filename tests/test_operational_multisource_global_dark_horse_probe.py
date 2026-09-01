@@ -9,6 +9,9 @@ from podium7.operational_multisource import (
     build_multisource_operational_records,
     run_multisource_operational_records,
 )
+from podium7.operational_multisource_overlay_set import (
+    build_multisource_operational_records_from_overlays,
+)
 from podium7.operational_provenance import run_provenance_eligible_operational_corpus
 
 
@@ -18,7 +21,11 @@ BR_PATHS = (
     "benchmarks/catalog_identity_br_adjacent_incomplete_v1.json",
 )
 ACTIVE_PATHS = (str(GLOBAL_PATH),) + BR_PATHS
-RETAINED_ATTRIBUTION_PATH = "benchmarks/operational_multisource_field_attribution_v1.json"
+RETAINED_ATTRIBUTION_PATHS = (
+    "benchmarks/operational_multisource_field_attribution_v1.json",
+    "benchmarks/operational_multisource_field_attribution_tcross_adjacent_v1.json",
+    "benchmarks/operational_multisource_field_attribution_onix_v1.json",
+)
 SPEC_SOURCE = "ford-mustang-2024-eu-spec"
 DARK_HORSE_GENERATION_SOURCE = "ford-mustang-dark-horse-2022"
 GT_GENERATION_SOURCE = "ford-mustang-gt-performance-2024-br"
@@ -127,17 +134,11 @@ class GlobalMustangMultisourceProbeTests(unittest.TestCase):
         records = _probe_records()
         self.assertEqual(len(records), 4)
         self.assertEqual(tuple(_key(record) for record in records), PROBE_KEYS)
-        self.assertEqual(
-            set(records[2]["sourceIds"]),
-            {SPEC_SOURCE, GT_GENERATION_SOURCE},
-        )
+        self.assertEqual(set(records[2]["sourceIds"]), {SPEC_SOURCE, GT_GENERATION_SOURCE})
         for index in (0, 1, 3):
-            self.assertEqual(
-                set(records[index]["sourceIds"]),
-                {SPEC_SOURCE, DARK_HORSE_GENERATION_SOURCE},
-            )
+            self.assertEqual(set(records[index]["sourceIds"]), {SPEC_SOURCE, DARK_HORSE_GENERATION_SOURCE})
 
-    def test_probe_replays_after_retained_corpus_with_field_level_provenance(self) -> None:
+    def test_probe_replays_after_current_retained_corpus_with_field_level_provenance(self) -> None:
         store = CatalogStore()
         self.addCleanup(store.close)
 
@@ -145,20 +146,16 @@ class GlobalMustangMultisourceProbeTests(unittest.TestCase):
         self.assertEqual(v1_report.total, 22)
         self.assertEqual(v1_report.failed, 0)
 
-        retained_records = build_multisource_operational_records(
+        retained_records = build_multisource_operational_records_from_overlays(
             ACTIVE_PATHS,
-            RETAINED_ATTRIBUTION_PATH,
+            RETAINED_ATTRIBUTION_PATHS,
         )
-        self.assertEqual(len(retained_records), 16)
+        self.assertEqual(len(retained_records), 28)
         run_multisource_operational_records(store, retained_records)
 
         records = _probe_records()
         results = run_multisource_operational_records(store, records)
-        allowed = {
-            CatalogIngestionAction.CREATED,
-            CatalogIngestionAction.MATCHED,
-            CatalogIngestionAction.REVIEW,
-        }
+        allowed = {CatalogIngestionAction.CREATED, CatalogIngestionAction.MATCHED, CatalogIngestionAction.REVIEW}
         self.assertEqual(len(results), 4)
         self.assertTrue(all(result.action in allowed for result in results))
 
