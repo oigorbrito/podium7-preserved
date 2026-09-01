@@ -33,6 +33,13 @@
       "supports": "Onix Premier Turbo 116cv, hatch body, model year 2025 and six-speed automatic transmission."
     },
     {
+      "id": "chevrolet-onix-2025-owner-manual",
+      "publisher": "Chevrolet Brasil",
+      "title": "Onix 2025 — Manual do Proprietário",
+      "url": "https://www.chevrolet.com.br/content/dam/chevrolet/south-america/brazil/portuguese/index/visid/services/manuals/pdfs/onix/01-pdfs/2025/onix-2025-manual-do-propietario.pdf",
+      "supports": "Official 2025 Onix specifications identify motor 1.0 T with Etanol/Gasolina fuel capability and automatic-transmission configurations for the hatch line."
+    },
+    {
       "id": "vw-tcross-2019-br-generation",
       "publisher": "Volkswagen do Brasil",
       "title": "O líder aprimorado: muito prazer, Novo T-Cross!",
@@ -134,7 +141,7 @@
         "model_year_from": 2025,
         "model_year_to": 2025
       },
-      "sourceIds": ["chevrolet-onix-second-generation", "chevrolet-onix-my25-price-list"],
+      "sourceIds": ["chevrolet-onix-second-generation", "chevrolet-onix-my25-price-list", "chevrolet-onix-2025-owner-manual"],
       "rationale": "Same second-generation MY25 Onix Premier Turbo automatic hatch configuration."
     },
     {
@@ -352,7 +359,7 @@
         "model_year_from": 2025,
         "model_year_to": 2025
       },
-      "sourceIds": ["chevrolet-onix-second-generation", "chevrolet-onix-my25-price-list"],
+      "sourceIds": ["chevrolet-onix-second-generation", "chevrolet-onix-my25-price-list", "chevrolet-onix-2025-owner-manual"],
       "rationale": "A source that identifies the turbo automatic hatch but omits trim is not sufficient to collapse deterministically into Premier."
     },
     {
