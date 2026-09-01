@@ -1,6 +1,6 @@
 {
   "schema": "podium7.catalog-operational-field-attribution.v1",
-  "datasetVersion": "1.1",
+  "datasetVersion": "1.2",
   "createdAt": "2026-09-01",
   "mappings": [
     {
@@ -140,6 +140,131 @@
         "toyota-corolla-cross-my25-br": "Retained Toyota do Brasil MY25 technical sheet establishes Brazil MY25 hybrid powertrain/transmission evidence while the benchmark intentionally omits variant on this side."
       },
       "status": "FAMILY_PARTITION_DERIVED_FROM_VALIDATED_REPRESENTATIVE"
+    },
+    {
+      "benchmark": "catalog_identity_golden_br_v1.json",
+      "benchmarkDatasetVersion": "br-1.0",
+      "caseId": "br-match-tcross-highline-250-tsi",
+      "side": "left",
+      "fieldSourceIds": {
+        "make": ["vw-tcross-2019-br-generation"],
+        "model": ["vw-tcross-2019-br-generation"],
+        "generation": ["vw-tcross-2019-br-generation"],
+        "variant": ["vw-tcross-current-config"],
+        "powertrain": ["vw-tcross-current-config"],
+        "transmission": ["vw-tcross-current-config"],
+        "body_style": ["vw-tcross-2019-br-generation"],
+        "market": ["vw-tcross-current-config"]
+      },
+      "evidenceBasis": {
+        "vw-tcross-2019-br-generation": "Retained Volkswagen do Brasil newsroom evidence establishes the Brazil T-Cross product line beginning in 2019 and describes it as an SUV.",
+        "vw-tcross-current-config": "Retained Volkswagen do Brasil configurator establishes Highline 250 TSI and Comfortline 200 TSI as Total Flex automatic configurations in the Brazil catalog."
+      },
+      "status": "SOURCE_FAMILY_VERIFIED_FOR_TCROSS_ROLLOUT"
+    },
+    {
+      "benchmark": "catalog_identity_golden_br_v1.json",
+      "benchmarkDatasetVersion": "br-1.0",
+      "caseId": "br-match-tcross-highline-250-tsi",
+      "side": "right",
+      "fieldSourceIds": {
+        "make": ["vw-tcross-2019-br-generation"],
+        "model": ["vw-tcross-2019-br-generation"],
+        "generation": ["vw-tcross-2019-br-generation"],
+        "variant": ["vw-tcross-current-config"],
+        "powertrain": ["vw-tcross-current-config"],
+        "transmission": ["vw-tcross-current-config"],
+        "body_style": ["vw-tcross-2019-br-generation"],
+        "market": ["vw-tcross-current-config"]
+      },
+      "evidenceBasis": {
+        "vw-tcross-2019-br-generation": "Retained Volkswagen do Brasil newsroom evidence establishes the Brazil T-Cross product line beginning in 2019 and describes it as an SUV.",
+        "vw-tcross-current-config": "Retained Volkswagen do Brasil configurator establishes Highline 250 TSI and Comfortline 200 TSI as Total Flex automatic configurations in the Brazil catalog."
+      },
+      "status": "SOURCE_FAMILY_VERIFIED_FOR_TCROSS_ROLLOUT"
+    },
+    {
+      "benchmark": "catalog_identity_golden_br_v1.json",
+      "benchmarkDatasetVersion": "br-1.0",
+      "caseId": "br-no-match-tcross-highline-vs-comfortline",
+      "side": "left",
+      "fieldSourceIds": {
+        "make": ["vw-tcross-2019-br-generation"],
+        "model": ["vw-tcross-2019-br-generation"],
+        "generation": ["vw-tcross-2019-br-generation"],
+        "variant": ["vw-tcross-current-config"],
+        "powertrain": ["vw-tcross-current-config"],
+        "transmission": ["vw-tcross-current-config"],
+        "body_style": ["vw-tcross-2019-br-generation"],
+        "market": ["vw-tcross-current-config"]
+      },
+      "evidenceBasis": {
+        "vw-tcross-2019-br-generation": "Retained Volkswagen do Brasil newsroom evidence establishes the Brazil T-Cross product line beginning in 2019 and describes it as an SUV.",
+        "vw-tcross-current-config": "Retained Volkswagen do Brasil configurator establishes Highline 250 TSI and Comfortline 200 TSI as Total Flex automatic configurations in the Brazil catalog."
+      },
+      "status": "SOURCE_FAMILY_VERIFIED_FOR_TCROSS_ROLLOUT"
+    },
+    {
+      "benchmark": "catalog_identity_golden_br_v1.json",
+      "benchmarkDatasetVersion": "br-1.0",
+      "caseId": "br-no-match-tcross-highline-vs-comfortline",
+      "side": "right",
+      "fieldSourceIds": {
+        "make": ["vw-tcross-2019-br-generation"],
+        "model": ["vw-tcross-2019-br-generation"],
+        "generation": ["vw-tcross-2019-br-generation"],
+        "variant": ["vw-tcross-current-config"],
+        "powertrain": ["vw-tcross-current-config"],
+        "transmission": ["vw-tcross-current-config"],
+        "body_style": ["vw-tcross-2019-br-generation"],
+        "market": ["vw-tcross-current-config"]
+      },
+      "evidenceBasis": {
+        "vw-tcross-2019-br-generation": "Retained Volkswagen do Brasil newsroom evidence establishes the Brazil T-Cross product line beginning in 2019 and describes it as an SUV.",
+        "vw-tcross-current-config": "Retained Volkswagen do Brasil configurator establishes Highline 250 TSI and Comfortline 200 TSI as Total Flex automatic configurations in the Brazil catalog."
+      },
+      "status": "SOURCE_FAMILY_VERIFIED_FOR_TCROSS_ROLLOUT"
+    },
+    {
+      "benchmark": "catalog_identity_golden_br_v1.json",
+      "benchmarkDatasetVersion": "br-1.0",
+      "caseId": "br-review-tcross-250-tsi-missing-variant",
+      "side": "left",
+      "fieldSourceIds": {
+        "make": ["vw-tcross-2019-br-generation"],
+        "model": ["vw-tcross-2019-br-generation"],
+        "generation": ["vw-tcross-2019-br-generation"],
+        "variant": ["vw-tcross-current-config"],
+        "powertrain": ["vw-tcross-current-config"],
+        "transmission": ["vw-tcross-current-config"],
+        "body_style": ["vw-tcross-2019-br-generation"],
+        "market": ["vw-tcross-current-config"]
+      },
+      "evidenceBasis": {
+        "vw-tcross-2019-br-generation": "Retained Volkswagen do Brasil newsroom evidence establishes the Brazil T-Cross product line beginning in 2019 and describes it as an SUV.",
+        "vw-tcross-current-config": "Retained Volkswagen do Brasil configurator establishes Highline 250 TSI and Comfortline 200 TSI as Total Flex automatic configurations in the Brazil catalog."
+      },
+      "status": "SOURCE_FAMILY_VERIFIED_FOR_TCROSS_ROLLOUT"
+    },
+    {
+      "benchmark": "catalog_identity_golden_br_v1.json",
+      "benchmarkDatasetVersion": "br-1.0",
+      "caseId": "br-review-tcross-250-tsi-missing-variant",
+      "side": "right",
+      "fieldSourceIds": {
+        "make": ["vw-tcross-2019-br-generation"],
+        "model": ["vw-tcross-2019-br-generation"],
+        "generation": ["vw-tcross-2019-br-generation"],
+        "powertrain": ["vw-tcross-current-config"],
+        "transmission": ["vw-tcross-current-config"],
+        "body_style": ["vw-tcross-2019-br-generation"],
+        "market": ["vw-tcross-current-config"]
+      },
+      "evidenceBasis": {
+        "vw-tcross-2019-br-generation": "Retained Volkswagen do Brasil newsroom evidence establishes the Brazil T-Cross product line beginning in 2019 and describes it as an SUV.",
+        "vw-tcross-current-config": "Retained Volkswagen do Brasil configurator establishes Highline 250 TSI and Comfortline 200 TSI as Total Flex automatic configurations in the Brazil catalog."
+      },
+      "status": "SOURCE_FAMILY_VERIFIED_FOR_TCROSS_ROLLOUT"
     }
   ]
 }
