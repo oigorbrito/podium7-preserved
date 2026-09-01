@@ -91,11 +91,13 @@ class ProductionEvidenceEnrichmentV2Tests(unittest.TestCase):
         )
         self.assertEqual(summary["appliedEvidenceOverrides"], scope["appliedEvidenceOverrides"])
         self.assertEqual(summary["excludedEvidenceOverrides"], scope["excludedEvidenceOverrides"])
-        self.assertGreater(scope["excludedEvidenceOverrides"], 0)
+        self.assertEqual(scope["excludedEvidenceOverrides"], 1)
+        self.assertEqual(scope["appliedEvidenceOverrides"], len(overrides) - 1)
         self.assertEqual(
             set(scope["excludedEvidenceOverrideIds"]),
-            {SPARSE_ONIX_EVIDENCE, LATER_ONIX_EVIDENCE},
+            {LATER_ONIX_EVIDENCE},
         )
+        self.assertNotIn(SPARSE_ONIX_EVIDENCE, scope["excludedEvidenceOverrideIds"])
         self.assertEqual(sum(measurement["reviewCauses"].values()), summary["review"])
         self.assertNotIn("UNKNOWN_REVIEW_CAUSE", measurement["reviewCauses"])
         self.assertNotIn(SPARSE_ONIX_EVIDENCE, measurement["reviewReasonsByEvidence"])

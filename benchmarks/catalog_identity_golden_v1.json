@@ -119,6 +119,25 @@
         "aliases": ["911 Carrera 4S"]
       },
       "sourceIds": ["porsche-911-generations-2019", "porsche-911-992-powertrain-2019"],
+      "fieldSourceIds": {
+        "left": {
+          "make": ["porsche-911-generations-2019"],
+          "model": ["porsche-911-generations-2019"],
+          "generation": ["porsche-911-generations-2019"],
+          "variant": ["porsche-911-generations-2019"],
+          "powertrain": ["porsche-911-generations-2019"],
+          "body_style": ["porsche-911-generations-2019"]
+        },
+        "right": {
+          "make": ["porsche-911-generations-2019"],
+          "model": ["porsche-911-generations-2019"],
+          "generation": ["porsche-911-generations-2019"],
+          "variant": ["porsche-911-generations-2019"],
+          "powertrain": ["porsche-911-generations-2019"],
+          "body_style": ["porsche-911-generations-2019"],
+          "aliases": ["porsche-911-generations-2019"]
+        }
+      },
       "rationale": "Same 992 Carrera 4S configuration; alias wording does not change identity."
     },
     {
@@ -166,6 +185,15 @@
         "body_style": "sedan"
       },
       "sourceIds": ["toyota-corolla-2006-global", "toyota-corolla-2018-global"],
+      "fieldSourceIds": {
+        "right": {
+          "make": ["toyota-corolla-2018-global"],
+          "model": ["toyota-corolla-2018-global"],
+          "generation": ["toyota-corolla-2018-global"],
+          "powertrain": ["toyota-corolla-2018-global"],
+          "body_style": ["toyota-corolla-2018-global"]
+        }
+      },
       "rationale": "Different Corolla generations are distinct catalog identities even when make/model labels agree."
     },
     {
@@ -236,6 +264,16 @@
         "body_style": "coupe"
       },
       "sourceIds": ["porsche-911-generations-2019", "porsche-911-992-powertrain-2019"],
+      "fieldSourceIds": {
+        "right": {
+          "make": ["porsche-911-generations-2019"],
+          "model": ["porsche-911-generations-2019"],
+          "generation": ["porsche-911-generations-2019"],
+          "variant": ["porsche-911-generations-2019"],
+          "powertrain": ["porsche-911-generations-2019"],
+          "body_style": ["porsche-911-generations-2019"]
+        }
+      },
       "rationale": "991 and 992 are distinct generations of the 911."
     },
     {
@@ -294,6 +332,20 @@
         "powertrain": "3.0 twin-turbo boxer six"
       },
       "sourceIds": ["porsche-911-generations-2019", "porsche-911-992-powertrain-2019"],
+      "fieldSourceIds": {
+        "left": {
+          "make": ["porsche-911-992-powertrain-2019"],
+          "model": ["porsche-911-992-powertrain-2019"],
+          "generation": ["porsche-911-992-powertrain-2019"],
+          "powertrain": ["porsche-911-992-powertrain-2019"]
+        },
+        "right": {
+          "make": ["porsche-911-992-powertrain-2019"],
+          "model": ["porsche-911-992-powertrain-2019"],
+          "generation": ["porsche-911-992-powertrain-2019"],
+          "powertrain": ["porsche-911-992-powertrain-2019"]
+        }
+      },
       "rationale": "A generic Carrera label is not enough to collapse automatically into the more specific Carrera 4S identity."
     },
     {

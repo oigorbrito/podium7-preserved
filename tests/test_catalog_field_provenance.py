@@ -118,15 +118,90 @@ class CatalogFieldProvenanceTests(unittest.TestCase):
         self.assertEqual(report["sourceContributionByDimension"], {})
         self.assertTrue(all(value > 0 for value in report["unattributedByDimension"].values()))
 
-    def test_existing_v3_corpus_reports_missing_field_attribution_instead_of_inferring_it(self) -> None:
+    def test_existing_v3_corpus_reports_only_explicit_retained_field_attribution(self) -> None:
         report = measure_field_source_contribution(V3_DATASETS)
-        self.assertGreater(report["totalPresentFieldObservations"], 0)
-        self.assertEqual(report["attributedFieldObservations"], 0)
-        self.assertEqual(report["attributionCoverage"], 0.0)
-        self.assertEqual(report["sourceContributionByDimension"], {})
+        total = report["totalPresentFieldObservations"]
+
+        self.assertGreater(total, 56)
+        self.assertEqual(report["attributedFieldObservations"], 56)
+        self.assertEqual(report["attributionCoverage"], 56 / total)
+        self.assertEqual(report["attributedByDimension"], {
+            "aliases": 1,
+            "body_style": 4,
+            "generation": 6,
+            "make": 10,
+            "market": 4,
+            "model": 10,
+            "model_year_from": 4,
+            "model_year_to": 4,
+            "powertrain": 6,
+            "variant": 7,
+        })
+        self.assertEqual(report["sourceContributionByDimension"], {
+            "aliases": {
+                "porsche-911-generations-2019": 1,
+            },
+            "body_style": {
+                "porsche-911-generations-2019": 3,
+                "toyota-corolla-2018-global": 1,
+            },
+            "generation": {
+                "porsche-911-992-powertrain-2019": 2,
+                "porsche-911-generations-2019": 3,
+                "toyota-corolla-2018-global": 1,
+            },
+            "make": {
+                "chevrolet-onix-line-2027": 1,
+                "chevrolet-onix-my26-price-list": 1,
+                "porsche-911-992-powertrain-2019": 2,
+                "porsche-911-generations-2019": 3,
+                "toyota-connected-services-corolla-my25": 1,
+                "toyota-corolla-2018-global": 1,
+                "toyota-corolla-altis-hybrid-offer-2026": 1,
+            },
+            "market": {
+                "chevrolet-onix-line-2027": 1,
+                "chevrolet-onix-my26-price-list": 1,
+                "toyota-connected-services-corolla-my25": 1,
+                "toyota-corolla-altis-hybrid-offer-2026": 1,
+            },
+            "model": {
+                "chevrolet-onix-line-2027": 1,
+                "chevrolet-onix-my26-price-list": 1,
+                "porsche-911-992-powertrain-2019": 2,
+                "porsche-911-generations-2019": 3,
+                "toyota-connected-services-corolla-my25": 1,
+                "toyota-corolla-2018-global": 1,
+                "toyota-corolla-altis-hybrid-offer-2026": 1,
+            },
+            "model_year_from": {
+                "chevrolet-onix-line-2027": 1,
+                "chevrolet-onix-my26-price-list": 1,
+                "toyota-connected-services-corolla-my25": 1,
+                "toyota-corolla-altis-hybrid-offer-2026": 1,
+            },
+            "model_year_to": {
+                "chevrolet-onix-line-2027": 1,
+                "chevrolet-onix-my26-price-list": 1,
+                "toyota-connected-services-corolla-my25": 1,
+                "toyota-corolla-altis-hybrid-offer-2026": 1,
+            },
+            "powertrain": {
+                "porsche-911-992-powertrain-2019": 2,
+                "porsche-911-generations-2019": 3,
+                "toyota-corolla-2018-global": 1,
+            },
+            "variant": {
+                "chevrolet-onix-line-2027": 1,
+                "chevrolet-onix-my26-price-list": 1,
+                "porsche-911-generations-2019": 3,
+                "toyota-connected-services-corolla-my25": 1,
+                "toyota-corolla-altis-hybrid-offer-2026": 1,
+            },
+        })
         self.assertEqual(
             sum(report["unattributedByDimension"].values()),
-            report["totalPresentFieldObservations"],
+            total - 56,
         )
 
     def test_field_attribution_rejects_unknown_source(self) -> None:

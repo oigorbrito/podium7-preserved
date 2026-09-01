@@ -136,6 +136,24 @@
         "toyota-connected-services-corolla-my25",
         "toyota-corolla-altis-hybrid-offer-2026"
       ],
+      "fieldSourceIds": {
+        "left": {
+          "make": ["toyota-connected-services-corolla-my25"],
+          "model": ["toyota-connected-services-corolla-my25"],
+          "variant": ["toyota-connected-services-corolla-my25"],
+          "market": ["toyota-connected-services-corolla-my25"],
+          "model_year_from": ["toyota-connected-services-corolla-my25"],
+          "model_year_to": ["toyota-connected-services-corolla-my25"]
+        },
+        "right": {
+          "make": ["toyota-corolla-altis-hybrid-offer-2026"],
+          "model": ["toyota-corolla-altis-hybrid-offer-2026"],
+          "variant": ["toyota-corolla-altis-hybrid-offer-2026"],
+          "market": ["toyota-corolla-altis-hybrid-offer-2026"],
+          "model_year_from": ["toyota-corolla-altis-hybrid-offer-2026"],
+          "model_year_to": ["toyota-corolla-altis-hybrid-offer-2026"]
+        }
+      },
       "rationale": "Toyota documents the same named Brazilian Corolla trim in model years 2025 and 2026; under the selected Senatran-aligned catalog policy, explicit adjacent model-year non-overlap is a deterministic identity contradiction."
     },
     {
@@ -162,6 +180,24 @@
         "chevrolet-onix-line-2027",
         "chevrolet-onix-second-generation"
       ],
+      "fieldSourceIds": {
+        "left": {
+          "make": ["chevrolet-onix-my26-price-list"],
+          "model": ["chevrolet-onix-my26-price-list"],
+          "variant": ["chevrolet-onix-my26-price-list"],
+          "market": ["chevrolet-onix-my26-price-list"],
+          "model_year_from": ["chevrolet-onix-my26-price-list"],
+          "model_year_to": ["chevrolet-onix-my26-price-list"]
+        },
+        "right": {
+          "make": ["chevrolet-onix-line-2027"],
+          "model": ["chevrolet-onix-line-2027"],
+          "variant": ["chevrolet-onix-line-2027"],
+          "market": ["chevrolet-onix-line-2027"],
+          "model_year_from": ["chevrolet-onix-line-2027"],
+          "model_year_to": ["chevrolet-onix-line-2027"]
+        }
+      },
       "rationale": "Chevrolet documents Premier in adjacent Onix model years 2026 and 2027; generation evidence strengthens the product context but does not override explicit model-year non-overlap."
     },
     {
