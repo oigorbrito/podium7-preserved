@@ -1,36 +1,25 @@
 # PODIUM7 Productive Coverage Wave 01 — multisource rollout state
 
-Status: active / executed through Strada family rollout
+Status: active / executed through Strada; later source-family lanes prepared but not yet authoritative
 
 Date: 2026-09-01
 
-Authority scope: executed post-ADR-0002 operational multi-source coverage state. This document supersedes the post-single-source count as the current Wave 01 execution snapshot; the frozen pre-mutation classification remains in `PODIUM7-PRODUCTIVE-COVERAGE-WAVE-01.md`.
+Authority scope: executed post-ADR-0002 operational multi-source coverage state plus a bounded register of prepared, unmerged lanes. Projections are never substituted for executed measurements.
 
-## Decision and runtime status
-
-Accepted architecture decision:
+## Accepted architecture
 
 `PRESERVE_FIELD_LEVEL_MULTI_SOURCE_REPLAY`
 
-The runtime lane is green:
-- v2 operational provenance contract/parser is implemented;
-- CREATE and MATCH preserve field-level multi-evidence bindings;
-- v1-to-v2 single-source semantic equivalence is covered;
-- REVIEW has a dedicated multi-evidence path;
-- review-cause snapshots preserve multi-source evidence context;
-- CandidateFact -> evidence -> source reconstruction is tested;
-- representative composite replay passed before family rollout.
+The runtime lane is green: v2 parsing, CREATE/MATCH/REVIEW multi-evidence handling, single-source equivalence, review snapshots and CandidateFact -> evidence -> source reconstruction are implemented and already exercised by merged family rollouts.
 
-Remaining work is evidence-qualified corpus rollout, not basic runtime representability.
+## Executed authoritative measurement
 
-## Executed active-scope measurement
-
-Three retained Wave 01 datasets remain the denominator:
+The three retained Wave 01 datasets remain the denominator:
 - `catalog_identity_golden_v1.json`;
 - `catalog_identity_golden_br_v1.json`;
 - `catalog_identity_br_adjacent_incomplete_v1.json`.
 
-After the verified single-source lane plus Corolla Cross, T-Cross and Strada multi-source rollouts:
+Merged state after the single-source lane plus Corolla Cross, T-Cross BR and Strada:
 - retained record-sides: `60`;
 - replayable: `38`;
 - blocked: `22`;
@@ -40,101 +29,88 @@ After the verified single-source lane plus Corolla Cross, T-Cross and Strada mul
 - `MULTI_SOURCE_WITHOUT_EXPLICIT_FIELD_ATTRIBUTION = 20`;
 - `MISSING_SIDE_FIELD_ATTRIBUTION = 2`.
 
-The 16 v2 record-sides are the complete retained Corolla Cross, T-Cross and Strada composite families currently admitted into the overlay. Field attribution remains versioned separately from frozen identity goldens in `benchmarks/operational_multisource_field_attribution_v1.json`.
-
-No identity value, expected resolver outcome, source definition, threshold, qualification rule or v1 replay rule was changed to obtain the count.
-
-## Executed operational effects
-
-The existing v1 replay corpus first produces:
-- 22 records;
-- 7 CREATE;
-- 7 MATCH;
-- 8 REVIEW;
-- 0 failed;
-- 7 published vehicles.
-
-Corolla Cross executes as CREATE / MATCH / MATCH / CREATE / MATCH / REVIEW.
-T-Cross executes with the same family-level disposition pattern.
-Strada executes as CREATE / MATCH / CREATE / CREATE.
-
-Combined executed effects:
-- 38 replayed record-sides;
+Executed operational effects:
 - 14 CREATE;
 - 14 MATCH;
 - 10 REVIEW;
 - 0 failed;
 - 14 published vehicles.
 
-Every mapped record is exercised independently with exact CandidateFact/evidence/source reconstruction, and the family rollouts are also replayed after the existing corpus to freeze interaction-sensitive behavior.
+This is the only count currently claimable as merged execution evidence.
 
-## Hosted validation
+## Completed hosted validation
+- representative PR #296: hosted CI passed;
+- Corolla Cross PR #297: hosted CI passed and squash-merged;
+- T-Cross BR PR #299: hosted CI passed and squash-merged;
+- Strada PR #300: hosted CI passed and squash-merged to main as `7f71e1c33a805441fc0c2832cb13dad8ebd6df9a`.
 
-Representative integration PR #296 passed hosted run `33510217638`.
+## Prepared source-family lanes
 
-Corolla Cross rollout PR #297 passed hosted run `33511293873` with both required jobs and was squash-merged.
+### #302 — adjacent T-Cross retained candidate
+Six field-complete adjacent/incomplete T-Cross sides were previously exercised by test-only probe #301. The retained candidate is cleanly based on current `main`, keeps the existing v1 overlay unchanged, and adds an additive overlay-set composition helper plus a source-family overlay.
 
-T-Cross rollout PR #299 passed hosted run `33512430109`; both required jobs completed successfully and the PR was squash-merged to main.
+Projected only if exact-head validation later succeeds:
+- replayable `44 / 60`;
+- blocked `16 / 60`;
+- v2 method `22`;
+- residual reason codes: 14 multi-source without retained attribution + 2 missing-side attribution.
 
-Strada rollout PR #300 exact head `6a1f0efb4f0cf8e8f768d310a5804b5abd8d2209` passed hosted run `33514203496`; both `tests` and `minimum-python` completed successfully, including harness, dependency installation, runtime health, package build/install, isolated tests and validation evidence. PR #300 was squash-merged to main as `7f71e1c33a805441fc0c2832cb13dad8ebd6df9a`.
+No exact CREATE/MATCH/REVIEW distribution is claimed because the current connector could not recover #301 printed stdout. The retained regression uses safe invariants instead of invented outputs.
 
-## Residual blocker register
+Run `33520809588` for #302 failed before either job created repository steps. That is a hosted-execution blocker, not a test failure.
 
-### `EVIDENCE_BLOCKER / INSUFFICIENT_SINGLE_SOURCE_SUPPORT = 2`
-- `no-match-toyota-corolla-10g-vs-12g:left`;
-- `no-match-porsche-911-991-vs-992:left`.
+### #303 — adjacent Onix MY26 probe
+Two review sides are evidence-separable from the MY25 blocker:
+- second-generation identity from retained Chevrolet product history;
+- detailed Premier 1.0 Turbo hatch/MY26/six-speed configuration from the official price list;
+- intentionally incomplete Premier/hatch/MY26 context from the engineering article, without fabricating missing powertrain/transmission.
 
-Do not infer missing field support merely to improve coverage.
+If the probe becomes green and a later clean retained overlay is validated after #302, the projected measurement is `46 / 60 replayable`, `14 / 60 blocked`.
 
-### `EVIDENCE_BLOCKER / COMPOSITE_NOT_YET_ATTRIBUTED = 20`
-Twenty composite record-sides remain outside the retained overlay. They close only in source-family batches after every present field is defensibly bound to retained evidence.
+Run `33520999605` failed pre-step; no probe result is claimed yet.
 
-### `EVIDENCE_GAP / ONIX_MY25_POWERTRAIN_SEMANTICS`
-Retained Chevrolet evidence supports Premier Turbo 116cv, hatch body, model year 2025 and six-speed automatic transmission, but inspected retained evidence does not explicitly establish benchmark `powertrain = "1.0 turbo flex"`. The BR MY25 Onix composite sides remain blocked rather than inferred.
+### #304 — three-side global Dark Horse probe
+The two sides of `match-ford-mustang-dark-horse` and the Dark Horse/right side of `no-match-ford-mustang-gt-vs-dark-horse` have a defensible field split between Ford technical specification evidence and separate seventh-generation Dark Horse evidence.
 
-### `SOURCE_POLICY_BLOCKER / CORSA_FIPE`
-FIPE official evidence establishes lookup/model-year semantics. The concrete Corsa code/year enumeration is retained from a secondary supporting source. Do not promote that source to sole identity authority solely to increase coverage.
+The GT/left side is explicitly excluded because its `generation = "7th generation"` field is not sufficiently supported by the retained sources without inference.
 
-### `TOOLING_NOTE / LARGE_PDF_RENDER`
-The Fiat Strada handbook exceeds the visual-render path size limit. This did not block evidence closure because retained official text explicitly enumerates `VOLCANO 1.3 FLEX`, `VOLCANO 1.3 CVT FLEX` and `RANCH 1.3 CVT FLEX`, while retained Stellantis evidence establishes the second-generation Strada/pickup context.
+If all prior prepared lanes plus these three sides are eventually validated and retained, the theoretical ceiling becomes `49 / 60 replayable`, `11 / 60 blocked`. This is not an executed result.
 
-## Qualified next lanes
+Run `33521151656` failed pre-step; no probe result is claimed yet.
 
-### Adjacent/incomplete T-Cross
-Six record-sides are field-attribution candidates using only retained official Volkswagen evidence:
-- generation/body/Brazil context from `vw-tcross-brazil-generation`;
-- complete Highline 250 TSI mechanical identity from launch/technical-sheet evidence;
-- current-page variant identity where transmission is intentionally absent;
-- MY26 year/mechanical context from the retained owner manual.
+## Current hosted blocker
 
-Because equivalent T-Cross entities already exist in the retained corpus, a stacked test-only probe is measuring empirical CREATE/MATCH/REVIEW interaction before any retained mutation. Do not freeze actions from intuition.
+`HOSTED_CI_PRE_STEP`
 
-### Adjacent/incomplete Onix
-The two review sides are separately qualified from the MY25 blocker: retained MY26 price-list evidence explicitly establishes Premier `1.0 Turbo`, hatch, MY2026 and six-speed automatic; the engineering article supports the intentionally incomplete Premier/hatch/MY2026 observation; generation evidence remains separate. This lane may proceed without inferring MY25 `flex` semantics.
+The exact-head runs for #302, #303 and #304 all terminated with both required jobs failing before steps/logs were created. Repeated reruns are not useful while this condition persists. The engineering wave continues through evidence classification and preparation, but no affected PR is merged until a fresh exact-head run executes repository steps and both jobs pass.
+
+## Residual evidence/policy register
+
+If the three prepared lanes above all eventually pass and are retained, the bounded residual set is 11 record-sides:
+- 2 insufficient retained-support sides: Toyota Corolla 10g left and Porsche 991 left;
+- 4 BR Onix MY25 composite sides blocked on explicit `1.0 turbo flex` semantics;
+- 4 Corsa/FIPE composite sides blocked on source-authority policy;
+- 1 Mustang GT composite side blocked on explicit seventh-generation support.
+
+This residual is a planning classification, not a permission to weaken evidence rules.
 
 ## Closure-wave operating rule
-
-Work proceeds in source-family closure waves:
 1. verify all present fields against retained/qualified evidence;
-2. add only defensible overlay mappings;
-3. freeze expected measurement deltas and runtime dispositions;
-4. run mappings independently and after the existing corpus where behavior can interact;
-5. require exact-head hosted CI;
+2. isolate a source-family candidate or test-only probe;
+3. freeze measurement deltas but do not invent runtime dispositions;
+4. validate independently and after the retained corpus when interaction matters;
+5. require exact-head hosted CI with real steps;
 6. squash-merge only after both jobs are green;
-7. reconcile this execution snapshot when the authoritative count changes;
-8. move evidence/tooling/runtime obstacles into the blocker register and continue unrelated families.
-
-Do not bulk-promote remaining composite sides from classification labels alone.
+7. reconcile authority only from merged execution evidence;
+8. record CI/runtime/tooling/evidence obstacles as blocker-register lines and continue unrelated work.
 
 ## Current state
 
 `MULTISOURCE_RUNTIME = GREEN`
 
-`REPRESENTATIVE_REPLAY = PASS`
-
 `COROLLA_CROSS_FAMILY_ROLLOUT = PASS`
 
-`TCROSS_FAMILY_ROLLOUT = PASS`
+`TCROSS_BR_FAMILY_ROLLOUT = PASS`
 
 `STRADA_FAMILY_ROLLOUT = PASS`
 
@@ -142,8 +118,10 @@ Do not bulk-promote remaining composite sides from classification labels alone.
 
 `ACTIVE_SCOPE_BLOCKED = 22 / 60`
 
-`REMAINING_COMPOSITE_NOT_YET_ATTRIBUTED = 20`
+`TCROSS_ADJACENT_RETAINED = PREPARED / CI_PRE_STEP_BLOCKED`
 
-`INSUFFICIENT_RETAINED_SUPPORT = 2`
+`ONIX_ADJACENT_PROBE = PREPARED / CI_PRE_STEP_BLOCKED`
+
+`GLOBAL_DARK_HORSE_PROBE = PREPARED / CI_PRE_STEP_BLOCKED`
 
 `WAVE_01 = ACTIVE_EVIDENCE_ROLLOUT`
