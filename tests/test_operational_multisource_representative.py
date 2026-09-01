@@ -16,7 +16,7 @@ ACTIVE_PATHS = (
     "benchmarks/catalog_identity_golden_br_v1.json",
     "benchmarks/catalog_identity_br_adjacent_incomplete_v1.json",
 )
-ATTRIBUTION_PATH = "benchmarks/catalog_identity_multisource_field_attribution_v1.json"
+ATTRIBUTION_PATH = "benchmarks/operational_multisource_field_attribution_v1.json"
 REPRESENTATIVE_KEY = (
     "br-1.0",
     "br-match-corolla-cross-xrx-hybrid-my25",
