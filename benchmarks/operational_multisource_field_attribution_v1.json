@@ -1,6 +1,6 @@
 {
   "schema": "podium7.catalog-operational-field-attribution.v1",
-  "datasetVersion": "1.2",
+  "datasetVersion": "1.3",
   "createdAt": "2026-09-01",
   "mappings": [
     {
@@ -265,6 +265,90 @@
         "vw-tcross-current-config": "Retained Volkswagen do Brasil configurator establishes Highline 250 TSI and Comfortline 200 TSI as Total Flex automatic configurations in the Brazil catalog."
       },
       "status": "SOURCE_FAMILY_VERIFIED_FOR_TCROSS_ROLLOUT"
+    },
+    {
+      "benchmark": "catalog_identity_golden_br_v1.json",
+      "benchmarkDatasetVersion": "br-1.0",
+      "caseId": "br-match-strada-ranch-13-cvt",
+      "side": "left",
+      "fieldSourceIds": {
+        "make": ["fiat-strada-second-generation"],
+        "model": ["fiat-strada-second-generation"],
+        "generation": ["fiat-strada-second-generation"],
+        "variant": ["fiat-strada-2023-handbook"],
+        "powertrain": ["fiat-strada-2023-handbook"],
+        "transmission": ["fiat-strada-2023-handbook"],
+        "body_style": ["fiat-strada-second-generation"],
+        "market": ["fiat-strada-second-generation"]
+      },
+      "evidenceBasis": {
+        "fiat-strada-second-generation": "Retained Fiat/Stellantis evidence establishes the 2020 Nova Strada as the second-generation Brazil pickup line.",
+        "fiat-strada-2023-handbook": "Retained Fiat handbook explicitly enumerates Ranch 1.3 CVT Flex and Volcano 1.3 manual/CVT Flex configurations."
+      },
+      "status": "SOURCE_FAMILY_VERIFIED_FOR_STRADA_ROLLOUT"
+    },
+    {
+      "benchmark": "catalog_identity_golden_br_v1.json",
+      "benchmarkDatasetVersion": "br-1.0",
+      "caseId": "br-match-strada-ranch-13-cvt",
+      "side": "right",
+      "fieldSourceIds": {
+        "make": ["fiat-strada-second-generation"],
+        "model": ["fiat-strada-second-generation"],
+        "generation": ["fiat-strada-second-generation"],
+        "variant": ["fiat-strada-2023-handbook"],
+        "powertrain": ["fiat-strada-2023-handbook"],
+        "transmission": ["fiat-strada-2023-handbook"],
+        "body_style": ["fiat-strada-second-generation"],
+        "market": ["fiat-strada-second-generation"]
+      },
+      "evidenceBasis": {
+        "fiat-strada-second-generation": "Retained Fiat/Stellantis evidence establishes the 2020 Nova Strada as the second-generation Brazil pickup line.",
+        "fiat-strada-2023-handbook": "Retained Fiat handbook explicitly enumerates Ranch 1.3 CVT Flex and Volcano 1.3 manual/CVT Flex configurations."
+      },
+      "status": "SOURCE_FAMILY_VERIFIED_FOR_STRADA_ROLLOUT"
+    },
+    {
+      "benchmark": "catalog_identity_golden_br_v1.json",
+      "benchmarkDatasetVersion": "br-1.0",
+      "caseId": "br-no-match-strada-volcano-manual-vs-cvt",
+      "side": "left",
+      "fieldSourceIds": {
+        "make": ["fiat-strada-second-generation"],
+        "model": ["fiat-strada-second-generation"],
+        "generation": ["fiat-strada-second-generation"],
+        "variant": ["fiat-strada-2023-handbook"],
+        "powertrain": ["fiat-strada-2023-handbook"],
+        "transmission": ["fiat-strada-2023-handbook"],
+        "body_style": ["fiat-strada-second-generation"],
+        "market": ["fiat-strada-second-generation"]
+      },
+      "evidenceBasis": {
+        "fiat-strada-second-generation": "Retained Fiat/Stellantis evidence establishes the 2020 Nova Strada as the second-generation Brazil pickup line.",
+        "fiat-strada-2023-handbook": "Retained Fiat handbook explicitly enumerates Ranch 1.3 CVT Flex and Volcano 1.3 manual/CVT Flex configurations."
+      },
+      "status": "SOURCE_FAMILY_VERIFIED_FOR_STRADA_ROLLOUT"
+    },
+    {
+      "benchmark": "catalog_identity_golden_br_v1.json",
+      "benchmarkDatasetVersion": "br-1.0",
+      "caseId": "br-no-match-strada-volcano-manual-vs-cvt",
+      "side": "right",
+      "fieldSourceIds": {
+        "make": ["fiat-strada-second-generation"],
+        "model": ["fiat-strada-second-generation"],
+        "generation": ["fiat-strada-second-generation"],
+        "variant": ["fiat-strada-2023-handbook"],
+        "powertrain": ["fiat-strada-2023-handbook"],
+        "transmission": ["fiat-strada-2023-handbook"],
+        "body_style": ["fiat-strada-second-generation"],
+        "market": ["fiat-strada-second-generation"]
+      },
+      "evidenceBasis": {
+        "fiat-strada-second-generation": "Retained Fiat/Stellantis evidence establishes the 2020 Nova Strada as the second-generation Brazil pickup line.",
+        "fiat-strada-2023-handbook": "Retained Fiat handbook explicitly enumerates Ranch 1.3 CVT Flex and Volcano 1.3 manual/CVT Flex configurations."
+      },
+      "status": "SOURCE_FAMILY_VERIFIED_FOR_STRADA_ROLLOUT"
     }
   ]
 }
