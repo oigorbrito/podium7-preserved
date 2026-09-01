@@ -19,6 +19,13 @@
       "supports": "10th-generation Corolla Axio sedan and 1.8-liter 2ZR-FE powertrain."
     },
     {
+      "id": "toyota-2zr-fe-gasoline-2006",
+      "publisher": "Toyota Motor Corporation",
+      "title": "Toyota Reinforces Efforts for Environmental Technologies and Environmentally Friendly Vehicles",
+      "url": "https://global.toyota/en/detail/274024",
+      "supports": "2ZR-FE, 1,797 cc, regular unleaded gasoline."
+    },
+    {
       "id": "ford-mustang-2024-eu-spec",
       "publisher": "Ford Motor Company",
       "title": "2024 Ford Mustang Technical Specifications",
@@ -45,6 +52,13 @@
       "title": "For eternity - Porsche 911 generations",
       "url": "https://newsroom.porsche.com/en/2019/history/porsche-klassik-911-eight-generations-dna-18914.html",
       "supports": "911 generation identifiers including 991 and 992, plus Carrera 4S examples."
+    },
+    {
+      "id": "porsche-911-carrera-s-991-tech-spec",
+      "publisher": "Porsche",
+      "title": "2013 911 Carrera (991) and 911 Carrera S (991) technical specifications",
+      "url": "https://newsroom.porsche.com/dam/jcr:e1638451-d7dc-4f0e-a00d-b169cf342b86/2013_911_Technical_Specifications.pdf",
+      "supports": "Porsche 911 Carrera S 991 horizontally opposed six-cylinder coupe."
     },
     {
       "id": "porsche-911-992-powertrain-2019",
@@ -191,7 +205,7 @@
         "powertrain": "hybrid",
         "body_style": "sedan"
       },
-      "sourceIds": ["toyota-corolla-2006-global", "toyota-corolla-2018-global"],
+      "sourceIds": ["toyota-corolla-2006-global", "toyota-corolla-2018-global", "toyota-2zr-fe-gasoline-2006"],
       "fieldSourceIds": {
         "right": {
           "make": ["toyota-corolla-2018-global"],
@@ -270,7 +284,7 @@
         "powertrain": "3.0 twin-turbo boxer six",
         "body_style": "coupe"
       },
-      "sourceIds": ["porsche-911-generations-2019", "porsche-911-992-powertrain-2019"],
+      "sourceIds": ["porsche-911-generations-2019", "porsche-911-992-powertrain-2019", "porsche-911-carrera-s-991-tech-spec"],
       "fieldSourceIds": {
         "right": {
           "make": ["porsche-911-generations-2019"],

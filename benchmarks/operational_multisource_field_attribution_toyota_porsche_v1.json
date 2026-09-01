@@ -1,0 +1,34 @@
+{
+  "schema": "podium7.catalog-operational-field-attribution.v1",
+  "datasetVersion": "toyota-porsche-retained-1",
+  "mappings": [
+    {
+      "benchmark": "catalog_identity_golden_v1.json",
+      "benchmarkDatasetVersion": "1.0",
+      "caseId": "no-match-toyota-corolla-10g-vs-12g",
+      "side": "left",
+      "fieldSourceIds": {
+        "aliases": ["toyota-corolla-2006-global"],
+        "body_style": ["toyota-corolla-2006-global"],
+        "generation": ["toyota-corolla-2006-global"],
+        "make": ["toyota-corolla-2006-global"],
+        "model": ["toyota-corolla-2006-global"],
+        "powertrain": ["toyota-2zr-fe-gasoline-2006"]
+      }
+    },
+    {
+      "benchmark": "catalog_identity_golden_v1.json",
+      "benchmarkDatasetVersion": "1.0",
+      "caseId": "no-match-porsche-911-991-vs-992",
+      "side": "left",
+      "fieldSourceIds": {
+        "body_style": ["porsche-911-carrera-s-991-tech-spec"],
+        "generation": ["porsche-911-generations-2019"],
+        "make": ["porsche-911-carrera-s-991-tech-spec"],
+        "model": ["porsche-911-carrera-s-991-tech-spec"],
+        "powertrain": ["porsche-911-carrera-s-991-tech-spec"],
+        "variant": ["porsche-911-carrera-s-991-tech-spec"]
+      }
+    }
+  ]
+}
