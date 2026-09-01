@@ -1,6 +1,6 @@
 {
   "schema": "podium7.catalog-operational-field-attribution.v1",
-  "datasetVersion": "1.0",
+  "datasetVersion": "1.1",
   "createdAt": "2026-09-01",
   "mappings": [
     {
@@ -22,9 +22,124 @@
       },
       "evidenceBasis": {
         "toyota-corolla-cross-global-launch": "Retained Toyota global launch establishes Corolla Cross, the 2020 global generation, and SUV product form.",
-        "toyota-corolla-cross-my25-br": "Retained Toyota do Brasil MY25 technical sheet establishes the Brazil MY25 XRX Hybrid configuration, powertrain and transmission."
+        "toyota-corolla-cross-my25-br": "Retained Toyota do Brasil MY25 technical sheet establishes the Brazil MY25 XRX Hybrid/XRX configurations, powertrains and transmissions."
       },
       "status": "REPRESENTATIVE_VALIDATED_BY_PR_295"
+    },
+    {
+      "benchmark": "catalog_identity_golden_br_v1.json",
+      "benchmarkDatasetVersion": "br-1.0",
+      "caseId": "br-match-corolla-cross-xrx-hybrid-my25",
+      "side": "right",
+      "fieldSourceIds": {
+        "make": ["toyota-corolla-cross-global-launch"],
+        "model": ["toyota-corolla-cross-my25-br"],
+        "generation": ["toyota-corolla-cross-global-launch"],
+        "variant": ["toyota-corolla-cross-my25-br"],
+        "powertrain": ["toyota-corolla-cross-my25-br"],
+        "transmission": ["toyota-corolla-cross-my25-br"],
+        "body_style": ["toyota-corolla-cross-global-launch"],
+        "market": ["toyota-corolla-cross-my25-br"],
+        "model_year_from": ["toyota-corolla-cross-my25-br"],
+        "model_year_to": ["toyota-corolla-cross-my25-br"],
+        "aliases": ["toyota-corolla-cross-global-launch"]
+      },
+      "evidenceBasis": {
+        "toyota-corolla-cross-global-launch": "Retained Toyota global launch establishes Corolla Cross, the 2020 global generation, and SUV product form.",
+        "toyota-corolla-cross-my25-br": "Retained Toyota do Brasil MY25 technical sheet establishes the Brazil MY25 XRX Hybrid configuration and its product label, powertrain and transmission."
+      },
+      "status": "FAMILY_PARTITION_DERIVED_FROM_VALIDATED_REPRESENTATIVE"
+    },
+    {
+      "benchmark": "catalog_identity_golden_br_v1.json",
+      "benchmarkDatasetVersion": "br-1.0",
+      "caseId": "br-no-match-corolla-cross-xrx-hybrid-vs-xrx-flex",
+      "side": "left",
+      "fieldSourceIds": {
+        "make": ["toyota-corolla-cross-global-launch"],
+        "model": ["toyota-corolla-cross-global-launch"],
+        "generation": ["toyota-corolla-cross-global-launch"],
+        "variant": ["toyota-corolla-cross-my25-br"],
+        "powertrain": ["toyota-corolla-cross-my25-br"],
+        "transmission": ["toyota-corolla-cross-my25-br"],
+        "body_style": ["toyota-corolla-cross-global-launch"],
+        "market": ["toyota-corolla-cross-my25-br"],
+        "model_year_from": ["toyota-corolla-cross-my25-br"],
+        "model_year_to": ["toyota-corolla-cross-my25-br"]
+      },
+      "evidenceBasis": {
+        "toyota-corolla-cross-global-launch": "Retained Toyota global launch establishes Corolla Cross, the 2020 global generation, and SUV product form.",
+        "toyota-corolla-cross-my25-br": "Retained Toyota do Brasil MY25 technical sheet establishes the XRX Hybrid Brazil MY25 configuration, powertrain and transmission."
+      },
+      "status": "FAMILY_PARTITION_DERIVED_FROM_VALIDATED_REPRESENTATIVE"
+    },
+    {
+      "benchmark": "catalog_identity_golden_br_v1.json",
+      "benchmarkDatasetVersion": "br-1.0",
+      "caseId": "br-no-match-corolla-cross-xrx-hybrid-vs-xrx-flex",
+      "side": "right",
+      "fieldSourceIds": {
+        "make": ["toyota-corolla-cross-global-launch"],
+        "model": ["toyota-corolla-cross-global-launch"],
+        "generation": ["toyota-corolla-cross-global-launch"],
+        "variant": ["toyota-corolla-cross-my25-br"],
+        "powertrain": ["toyota-corolla-cross-my25-br"],
+        "transmission": ["toyota-corolla-cross-my25-br"],
+        "body_style": ["toyota-corolla-cross-global-launch"],
+        "market": ["toyota-corolla-cross-my25-br"],
+        "model_year_from": ["toyota-corolla-cross-my25-br"],
+        "model_year_to": ["toyota-corolla-cross-my25-br"]
+      },
+      "evidenceBasis": {
+        "toyota-corolla-cross-global-launch": "Retained Toyota global launch establishes Corolla Cross, the 2020 global generation, and SUV product form.",
+        "toyota-corolla-cross-my25-br": "Retained Toyota do Brasil MY25 technical sheet establishes the combustion XRX Brazil MY25 configuration, 2.0 flex powertrain and Direct Shift CVT."
+      },
+      "status": "FAMILY_PARTITION_DERIVED_FROM_VALIDATED_REPRESENTATIVE"
+    },
+    {
+      "benchmark": "catalog_identity_golden_br_v1.json",
+      "benchmarkDatasetVersion": "br-1.0",
+      "caseId": "br-review-corolla-cross-xrx-hybrid-missing-variant",
+      "side": "left",
+      "fieldSourceIds": {
+        "make": ["toyota-corolla-cross-global-launch"],
+        "model": ["toyota-corolla-cross-global-launch"],
+        "generation": ["toyota-corolla-cross-global-launch"],
+        "variant": ["toyota-corolla-cross-my25-br"],
+        "powertrain": ["toyota-corolla-cross-my25-br"],
+        "transmission": ["toyota-corolla-cross-my25-br"],
+        "body_style": ["toyota-corolla-cross-global-launch"],
+        "market": ["toyota-corolla-cross-my25-br"],
+        "model_year_from": ["toyota-corolla-cross-my25-br"],
+        "model_year_to": ["toyota-corolla-cross-my25-br"]
+      },
+      "evidenceBasis": {
+        "toyota-corolla-cross-global-launch": "Retained Toyota global launch establishes Corolla Cross, the 2020 global generation, and SUV product form.",
+        "toyota-corolla-cross-my25-br": "Retained Toyota do Brasil MY25 technical sheet establishes the XRX Hybrid Brazil MY25 configuration, powertrain and transmission."
+      },
+      "status": "FAMILY_PARTITION_DERIVED_FROM_VALIDATED_REPRESENTATIVE"
+    },
+    {
+      "benchmark": "catalog_identity_golden_br_v1.json",
+      "benchmarkDatasetVersion": "br-1.0",
+      "caseId": "br-review-corolla-cross-xrx-hybrid-missing-variant",
+      "side": "right",
+      "fieldSourceIds": {
+        "make": ["toyota-corolla-cross-global-launch"],
+        "model": ["toyota-corolla-cross-global-launch"],
+        "generation": ["toyota-corolla-cross-global-launch"],
+        "powertrain": ["toyota-corolla-cross-my25-br"],
+        "transmission": ["toyota-corolla-cross-my25-br"],
+        "body_style": ["toyota-corolla-cross-global-launch"],
+        "market": ["toyota-corolla-cross-my25-br"],
+        "model_year_from": ["toyota-corolla-cross-my25-br"],
+        "model_year_to": ["toyota-corolla-cross-my25-br"]
+      },
+      "evidenceBasis": {
+        "toyota-corolla-cross-global-launch": "Retained Toyota global launch establishes Corolla Cross, the 2020 global generation, and SUV product form.",
+        "toyota-corolla-cross-my25-br": "Retained Toyota do Brasil MY25 technical sheet establishes Brazil MY25 hybrid powertrain/transmission evidence while the benchmark intentionally omits variant on this side."
+      },
+      "status": "FAMILY_PARTITION_DERIVED_FROM_VALIDATED_REPRESENTATIVE"
     }
   ]
 }
