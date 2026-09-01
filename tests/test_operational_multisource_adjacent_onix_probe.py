@@ -9,6 +9,9 @@ from podium7.operational_multisource import (
     build_multisource_operational_records,
     run_multisource_operational_records,
 )
+from podium7.operational_multisource_overlay_set import (
+    build_multisource_operational_records_from_overlays,
+)
 from podium7.operational_provenance import run_provenance_eligible_operational_corpus
 
 
@@ -17,7 +20,10 @@ ACTIVE_PATHS = (
     "benchmarks/catalog_identity_golden_br_v1.json",
     "benchmarks/catalog_identity_br_adjacent_incomplete_v1.json",
 )
-RETAINED_ATTRIBUTION_PATH = "benchmarks/operational_multisource_field_attribution_v1.json"
+RETAINED_ATTRIBUTION_PATHS = (
+    "benchmarks/operational_multisource_field_attribution_v1.json",
+    "benchmarks/operational_multisource_field_attribution_tcross_adjacent_v1.json",
+)
 GENERATION_SOURCE = "chevrolet-onix-second-generation"
 MY26_PRICE_SOURCE = "chevrolet-onix-my26-price-list"
 MY26_ENGINEERING_SOURCE = "chevrolet-onix-line-2026-engineering"
@@ -100,7 +106,7 @@ class AdjacentOnixMultisourceProbeTests(unittest.TestCase):
         self.assertEqual(tuple(_key(record) for record in records), PROBE_KEYS)
         self.assertTrue(all(len(record["sourceIds"]) >= 2 for record in records))
 
-    def test_probe_replays_after_retained_corpus_without_collapsing_missing_mechanics(self) -> None:
+    def test_probe_replays_after_current_retained_corpus_without_collapsing_missing_mechanics(self) -> None:
         store = CatalogStore()
         self.addCleanup(store.close)
 
@@ -108,11 +114,11 @@ class AdjacentOnixMultisourceProbeTests(unittest.TestCase):
         self.assertEqual(v1_report.total, 22)
         self.assertEqual(v1_report.failed, 0)
 
-        retained_records = build_multisource_operational_records(
+        retained_records = build_multisource_operational_records_from_overlays(
             ACTIVE_PATHS,
-            RETAINED_ATTRIBUTION_PATH,
+            RETAINED_ATTRIBUTION_PATHS,
         )
-        self.assertEqual(len(retained_records), 16)
+        self.assertEqual(len(retained_records), 22)
         run_multisource_operational_records(store, retained_records)
 
         records = _probe_records()
