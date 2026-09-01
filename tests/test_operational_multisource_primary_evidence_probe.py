@@ -23,9 +23,11 @@ TOYOTA_COROLLA_SOURCE = "toyota-corolla-2006-global"
 TOYOTA_FUEL_SOURCE = "toyota-2zr-fe-gasoline-2006"
 PORSCHE_GENERATION_SOURCE = "porsche-911-generations-2019"
 PORSCHE_TECH_SOURCE = "porsche-911-carrera-s-991-tech-spec"
+TOYOTA_CASE = "no-match-toyota-corolla-10g-vs-12g"
+PORSCHE_CASE = "no-match-porsche-911-991-vs-992"
 PROBE_KEYS = (
-    ("1.0", "no-match-toyota-corolla-10g-vs-12g", "left"),
-    ("1.0", "no-match-porsche-911-991-vs-992", "left"),
+    ("1.0", TOYOTA_CASE, "left"),
+    ("1.0", PORSCHE_CASE, "left"),
 )
 
 
@@ -49,6 +51,17 @@ def _augmented_global_benchmark(directory: Path) -> Path:
             },
         ]
     )
+
+    targets = {
+        case["id"]: case
+        for case in payload["cases"]
+        if case.get("id") in {TOYOTA_CASE, PORSCHE_CASE}
+    }
+    if set(targets) != {TOYOTA_CASE, PORSCHE_CASE}:
+        raise AssertionError("primary-evidence probe cases must resolve exactly once")
+    targets[TOYOTA_CASE]["sourceIds"].append(TOYOTA_FUEL_SOURCE)
+    targets[PORSCHE_CASE]["sourceIds"].append(PORSCHE_TECH_SOURCE)
+
     path = directory / "catalog_identity_golden_v1.json"
     path.write_text(json.dumps(payload), encoding="utf-8")
     return path
@@ -63,7 +76,7 @@ def _overlay(directory: Path) -> Path:
             {
                 "benchmark": "catalog_identity_golden_v1.json",
                 "benchmarkDatasetVersion": "1.0",
-                "caseId": "no-match-toyota-corolla-10g-vs-12g",
+                "caseId": TOYOTA_CASE,
                 "side": "left",
                 "fieldSourceIds": {
                     "make": [TOYOTA_COROLLA_SOURCE],
@@ -82,7 +95,7 @@ def _overlay(directory: Path) -> Path:
             {
                 "benchmark": "catalog_identity_golden_v1.json",
                 "benchmarkDatasetVersion": "1.0",
-                "caseId": "no-match-porsche-911-991-vs-992",
+                "caseId": PORSCHE_CASE,
                 "side": "left",
                 "fieldSourceIds": {
                     "make": [PORSCHE_TECH_SOURCE],
