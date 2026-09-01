@@ -14,26 +14,26 @@ Active wave: `PODIUM7-PRODUCTIVE-COVERAGE-WAVE-01`
 ## Current executed state
 Active three-dataset scope:
 - retained record-sides: `60`;
-- replayable: `34`;
-- blocked: `26`;
+- replayable: `38`;
+- blocked: `22`;
 - `SOLE_CASE_SOURCE = 12`;
 - `EXPLICIT_FIELD_ATTRIBUTION = 10`;
-- `MULTISOURCE_FIELD_ATTRIBUTION_V2 = 12`;
-- `MULTI_SOURCE_WITHOUT_EXPLICIT_FIELD_ATTRIBUTION = 24`;
+- `MULTISOURCE_FIELD_ATTRIBUTION_V2 = 16`;
+- `MULTI_SOURCE_WITHOUT_EXPLICIT_FIELD_ATTRIBUTION = 20`;
 - `MISSING_SIDE_FIELD_ATTRIBUTION = 2`.
 
-Operational effects after v1 + Corolla Cross + T-Cross v2:
-- 34 replayed;
-- 11 CREATE;
-- 13 MATCH;
+Operational effects after v1 + Corolla Cross + T-Cross + Strada v2:
+- 38 replayed;
+- 14 CREATE;
+- 14 MATCH;
 - 10 REVIEW;
 - 0 failed;
-- 11 published vehicles.
+- 14 published vehicles.
 
 ## Multi-source runtime
 `MULTISOURCE_RUNTIME = GREEN`
 
-Merged implementation covers v2 fail-closed parsing, CREATE/MATCH field-level evidence, single-source equivalence, multi-evidence REVIEW, provenance reconstruction, the representative probe, and complete retained Corolla Cross and T-Cross family rollouts.
+Merged implementation covers v2 fail-closed parsing, CREATE/MATCH field-level evidence, single-source equivalence, multi-evidence REVIEW, provenance reconstruction, the representative probe, and complete retained Corolla Cross, T-Cross and Strada family rollouts.
 
 Remaining Wave 01 work is evidence-qualified corpus rollout, not core v2 runtime construction.
 
@@ -45,7 +45,7 @@ Blockers are bounded lines and do not halt unrelated source families.
 - `no-match-porsche-911-991-vs-992:left`.
 No inference is allowed to close these fields.
 
-`COMPOSITE_NOT_YET_ATTRIBUTED = 24`
+`COMPOSITE_NOT_YET_ATTRIBUTED = 20`
 Every present field must be verified against retained/qualified evidence before an overlay is added.
 
 `EVIDENCE_GAP / ONIX_MY25_POWERTRAIN_SEMANTICS`
@@ -55,20 +55,20 @@ Retained Chevrolet evidence supports Premier Turbo 116cv, hatch, MY2025 and six-
 FIPE official evidence supplies lookup/model-year semantics, while concrete code/year enumeration is retained from a secondary supporting source. Do not elevate that source to sole identity authority merely to increase coverage.
 
 `TOOLING_NOTE / LARGE_PDF_RENDER`
-The Fiat Strada handbook exceeded the visual-render path size limit, but retained official text explicitly enumerates Volcano 1.3 Flex, Volcano 1.3 CVT Flex and Ranch 1.3 CVT Flex configurations. This does not block the Strada source-family wave.
+The Fiat Strada handbook exceeded the visual-render path size limit, but retained official text was sufficient for the now-merged Strada source-family rollout.
 
 `HOSTED_CI = AVAILABLE`
-PR #299 passed both required jobs and was squash-merged after exact-head validation.
+PRs #299 and #300 passed both required jobs and were squash-merged after exact-head validation.
 
 ## Next source-family waves
-1. Strada: integrate retained Stellantis generation + Fiat handbook evidence.
-2. Onix: remain blocked until `1.0 turbo flex` is explicitly supported or separately reconciled.
-3. Corsa/FIPE: preserve the secondary source's supporting-only role.
-4. Global Mustang: continue field qualification; PDF rendering limitations remain a tooling line, not a global stop.
-5. Remaining adjacent/incomplete families: apply the same field-complete evidence rule.
+1. Adjacent/incomplete T-Cross: field attribution is qualified; a stacked probe is measuring interaction with the now-covered T-Cross corpus before retained mutation.
+2. Adjacent/incomplete Onix: qualified separately because MY26 evidence explicitly supports `1.0 Turbo` and six-speed automatic; do not conflate it with the MY25 `flex` gap.
+3. Onix MY25: remain blocked until `1.0 turbo flex` is explicitly supported or separately reconciled.
+4. Corsa/FIPE: preserve the secondary source's supporting-only role.
+5. Global Mustang and remaining families: apply the same field-complete evidence rule.
 
 For every rollout PR: exact-head CI, both jobs green, fix real failures rather than force counts, squash merge with expected head SHA, then remeasure coverage/dispositions/provenance.
 
-Do not bulk-promote the remaining 24 composite sides solely because they are `COMPOSITE_SUPPORT`.
+Do not bulk-promote the remaining 20 composite sides solely because they are `COMPOSITE_SUPPORT`.
 
 Baseline closeout in [`PROJECT-STATE.md`](PROJECT-STATE.md) remains authoritative outside this controlled product-evolution wave.
