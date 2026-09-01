@@ -1,6 +1,8 @@
 # Current work
 
-Status: `DECISION_REQUIRED`
+Status: active
+
+Decision status: `DECISION_REQUIRED = OPERATIONAL_REPLAY_PROVENANCE_MODEL`
 
 Active controlled product-evolution wave:
 
@@ -73,20 +75,22 @@ Do not implement multi-source replay before ADR-0002 is accepted with one policy
 
 ## Validation state
 
-Hosted GitHub Actions remains externally blocked before repository execution. Recent PR #278 runs continue to terminate both required jobs with `steps=null` / no repository logs.
+Hosted GitHub Actions resumed repository execution on 2026-09-01.
 
-Therefore:
+The first executing run exposed repository harness defects rather than product-test failures:
 
-- do not interpret hosted failures as Podium test failures;
-- do not spend repeated reruns while the runner cannot execute steps;
-- do not merge PR #278 without applicable exact-head validation evidence;
-- keep the existing Actions recovery monitor active.
+- new top-level wave documents were missing from `docs/INDEX.md`; corrected in PR #278;
+- `CURRENT-WORK.md` used `DECISION_REQUIRED` as the harness status value even though the harness contract permits only `active|none|blocked`; corrected here by keeping `Status: active` and recording the architecture decision separately.
 
-## Work allowed while decision/CI is pending
+The observed `pdfplumber` import error was downstream of the harness failure because dependency installation was skipped; it is not yet an independent dependency failure.
+
+Require a fresh exact-head run after these corrections before any merge or product-test conclusion.
+
+## Work allowed while decision/validation is pending
 
 - keep PR #278 focused on blocker taxonomy, evidence classification, decision framing and prepared patch plan;
 - review the final PR diff for internal consistency;
-- refresh exact-head CI when the branch changes, but do not manually rerun repeated pre-step failures;
+- use exact-head CI now that hosted runners are executing repository steps;
 - once #278 is validated/integrated, create the separate 10-side evidence-mutation change;
 - if multi-source replay is selected, implement ADR-0002 in a separate architecture/runtime change with contract-first negative tests.
 
