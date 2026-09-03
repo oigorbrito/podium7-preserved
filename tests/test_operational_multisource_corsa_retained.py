@@ -23,6 +23,7 @@ ATTRIBUTION_PATHS = (
     "benchmarks/operational_multisource_field_attribution_toyota_porsche_v1.json",
     "benchmarks/operational_multisource_field_attribution_corsa_v1.json",
 )
+BASELINE_ATTRIBUTION_PATHS = ATTRIBUTION_PATHS[:-1]
 YEAR_CASE = "br-no-match-corsa-shared-fipe-different-model-year"
 REVIEW_CASE = "br-review-shared-fipe-code-alone"
 CORSA_KEYS = (
@@ -39,6 +40,28 @@ def _key(record: dict) -> tuple[str, str, str]:
 
 
 class CorsaRetainedRolloutTests(unittest.TestCase):
+    def test_corsa_overlay_closes_exact_prior_four_record_gap(self) -> None:
+        baseline = measure_combined_operational_provenance_eligibility_from_overlays(
+            ACTIVE_PATHS,
+            BASELINE_ATTRIBUTION_PATHS,
+        )["summary"]
+        self.assertEqual(baseline["records"], 60)
+        self.assertEqual(baseline["replayableRecords"], 56)
+        self.assertEqual(baseline["blockedRecords"], 4)
+        self.assertEqual(
+            baseline["blockedByReasonCode"],
+            {"MULTI_SOURCE_WITHOUT_EXPLICIT_FIELD_ATTRIBUTION": 4},
+        )
+
+        current = measure_combined_operational_provenance_eligibility_from_overlays(
+            ACTIVE_PATHS,
+            ATTRIBUTION_PATHS,
+        )["summary"]
+        self.assertEqual(current["records"], 60)
+        self.assertEqual(current["replayableRecords"], 60)
+        self.assertEqual(current["blockedRecords"], 0)
+        self.assertEqual(current["blockedByReasonCode"], {})
+
     def test_composed_measurement_promotes_exact_four_corsa_sides(self) -> None:
         measurement = measure_combined_operational_provenance_eligibility_from_overlays(
             ACTIVE_PATHS,
