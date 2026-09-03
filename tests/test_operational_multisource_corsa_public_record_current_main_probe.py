@@ -1,0 +1,196 @@
+import json
+from pathlib import Path
+import tempfile
+import unittest
+
+from podium7.catalog import CatalogStore
+from podium7.catalog_ingestion import CatalogIngestionAction
+from podium7.operational_multisource import run_multisource_operational_records
+from podium7.operational_multisource_overlay_set import (
+    build_multisource_operational_records_from_overlays,
+)
+from podium7.operational_provenance import run_provenance_eligible_operational_corpus
+
+
+ROOT = Path(__file__).resolve().parents[1]
+ACTIVE_PATHS = (
+    ROOT / "benchmarks/catalog_identity_golden_v1.json",
+    ROOT / "benchmarks/catalog_identity_golden_br_v1.json",
+    ROOT / "benchmarks/catalog_identity_br_adjacent_incomplete_v1.json",
+)
+RETAINED_ATTRIBUTION_PATHS = (
+    ROOT / "benchmarks/operational_multisource_field_attribution_v1.json",
+    ROOT / "benchmarks/operational_multisource_field_attribution_tcross_adjacent_v1.json",
+    ROOT / "benchmarks/operational_multisource_field_attribution_onix_v1.json",
+    ROOT / "benchmarks/operational_multisource_field_attribution_mustang_v1.json",
+    ROOT / "benchmarks/operational_multisource_field_attribution_toyota_porsche_v1.json",
+)
+FIPE_SOURCE = "fipe-official-vehicle-index"
+TCE_MODEL_SOURCE = "tce-pr-fipe-model-table-2015"
+DETRAN_1995_SOURCE = "detran-rr-leilao-004-2025-corsa-1995"
+DETRAN_1997_SOURCE = "detran-rr-leilao-003-2025-corsa-1997"
+YEAR_CASE = "br-no-match-corsa-shared-fipe-different-model-year"
+REVIEW_CASE = "br-review-shared-fipe-code-alone"
+PROBE_KEYS = (
+    ("br-1.0", YEAR_CASE, "left"),
+    ("br-1.0", YEAR_CASE, "right"),
+    ("br-1.0", REVIEW_CASE, "left"),
+    ("br-1.0", REVIEW_CASE, "right"),
+)
+
+
+def _augmented_br_benchmark(directory: Path) -> Path:
+    payload = json.loads(ACTIVE_PATHS[1].read_text(encoding="utf-8"))
+    payload["sources"].extend(
+        [
+            {
+                "id": TCE_MODEL_SOURCE,
+                "publisher": "Tribunal de Contas do Estado do Parana",
+                "title": "Anexo II - Tabela Padrao de Modelos - FIPE 2015",
+                "url": "https://www.tce.pr.gov.br/data/files/BF/44/F8/6D/FF9049108A198F3924D419A8/Anexo%20II%20-%20Tabela%20Padrao%20de%20Modelos%20-%20FIPE%202015.pdf",
+                "supports": "Official public-administration model table maps FIPE model code 0040010 to GM-Chevrolet Corsa Wind 1.0 MPFI / EFI 2p.",
+            },
+            {
+                "id": DETRAN_1995_SOURCE,
+                "publisher": "Departamento Estadual de Transito de Roraima",
+                "title": "Edital de Leilao No 004/2025/DETRAN-RR",
+                "url": "https://www.detran.rr.gov.br/wp-content/uploads/2025/09/EDITAL-DE-LEILAO-No-004-2025-DETRAN-RR.pdf",
+                "supports": "Official DETRAN-RR public record lists Chevrolet Corsa Wind 1.0 EFI, 1995/1995, and displays FIPE code 004001-0.",
+            },
+            {
+                "id": DETRAN_1997_SOURCE,
+                "publisher": "Departamento Estadual de Transito de Roraima",
+                "title": "Edital de Leilao No 003/2025/DETRAN-RR",
+                "url": "https://www.detran.rr.gov.br/wp-content/uploads/2025/06/EDITAL-DE-LEILAO-No-003-2025-DETRAN-RR_compressed-1.pdf",
+                "supports": "Official DETRAN-RR public record lists Chevrolet Corsa Wind 1.0 MPFI as a 1997/1997 vehicle observation.",
+            },
+        ]
+    )
+    targets = {case["id"]: case for case in payload["cases"] if case.get("id") in {YEAR_CASE, REVIEW_CASE}}
+    if set(targets) != {YEAR_CASE, REVIEW_CASE}:
+        raise AssertionError("Corsa public-record probe cases must resolve exactly once")
+    targets[YEAR_CASE]["sourceIds"].extend([TCE_MODEL_SOURCE, DETRAN_1995_SOURCE, DETRAN_1997_SOURCE])
+    targets[REVIEW_CASE]["sourceIds"].append(TCE_MODEL_SOURCE)
+    path = directory / "catalog_identity_golden_br_v1.json"
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    return path
+
+
+def _year_mapping(side: str, year: int, detran_source: str) -> dict:
+    return {
+        "benchmark": "catalog_identity_golden_br_v1.json",
+        "benchmarkDatasetVersion": "br-1.0",
+        "caseId": YEAR_CASE,
+        "side": side,
+        "fieldSourceIds": {
+            "make": [TCE_MODEL_SOURCE],
+            "model": [TCE_MODEL_SOURCE],
+            "market": [FIPE_SOURCE],
+            "model_year_from": [detran_source],
+            "model_year_to": [detran_source],
+            "external_identifiers": [TCE_MODEL_SOURCE],
+        },
+        "evidenceBasis": {
+            FIPE_SOURCE: "Retained FIPE official evidence defines national vehicle lookup semantics and model-year-specific FIPE-code lookup.",
+            TCE_MODEL_SOURCE: "Official TCE-PR administrative model table maps code 0040010 to GM-Chevrolet Corsa Wind 1.0 MPFI / EFI 2p.",
+            detran_source: f"Official DETRAN-RR vehicle record establishes a Corsa Wind observation in model year {year}.",
+        },
+        "status": "PROBE_ONLY_NOT_RETAINED",
+    }
+
+
+def _review_mapping(side: str) -> dict:
+    return {
+        "benchmark": "catalog_identity_golden_br_v1.json",
+        "benchmarkDatasetVersion": "br-1.0",
+        "caseId": REVIEW_CASE,
+        "side": side,
+        "fieldSourceIds": {
+            "make": [TCE_MODEL_SOURCE],
+            "model": [TCE_MODEL_SOURCE],
+            "market": [FIPE_SOURCE],
+            "external_identifiers": [TCE_MODEL_SOURCE],
+        },
+        "evidenceBasis": {
+            FIPE_SOURCE: "Retained FIPE official evidence defines the identifier as supporting, model-year-specific lookup evidence rather than sole catalog identity authority.",
+            TCE_MODEL_SOURCE: "Official TCE-PR administrative model table maps code 0040010 to GM-Chevrolet Corsa Wind 1.0 MPFI / EFI 2p.",
+        },
+        "status": "PROBE_ONLY_NOT_RETAINED",
+    }
+
+
+def _probe_overlay(directory: Path) -> Path:
+    payload = {
+        "schema": "podium7.catalog-operational-field-attribution.v1",
+        "datasetVersion": "probe-corsa-public-record-current-main-1",
+        "createdAt": "2026-09-03",
+        "mappings": [
+            _year_mapping("left", 1995, DETRAN_1995_SOURCE),
+            _year_mapping("right", 1997, DETRAN_1997_SOURCE),
+            _review_mapping("left"),
+            _review_mapping("right"),
+        ],
+    }
+    path = directory / "corsa-probe-overlay.json"
+    path.write_text(json.dumps(payload), encoding="utf-8")
+    return path
+
+
+def _key(record: dict) -> tuple[str, str, str]:
+    return (record["datasetVersion"], record["caseId"], record["side"])
+
+
+class CorsaPublicRecordCurrentMainProbeTests(unittest.TestCase):
+    def test_probe_composes_after_all_current_retained_overlays(self) -> None:
+        with tempfile.TemporaryDirectory() as raw_directory:
+            directory = Path(raw_directory)
+            augmented_br = _augmented_br_benchmark(directory)
+            probe_overlay = _probe_overlay(directory)
+            paths = (ACTIVE_PATHS[0], augmented_br, ACTIVE_PATHS[2])
+            retained = build_multisource_operational_records_from_overlays(paths, RETAINED_ATTRIBUTION_PATHS)
+            composed = build_multisource_operational_records_from_overlays(
+                paths,
+                (*RETAINED_ATTRIBUTION_PATHS, probe_overlay),
+            )
+
+        self.assertEqual(len(retained), 34)
+        self.assertEqual(len(composed), len(retained) + 4)
+        probe_records = composed[-4:]
+        self.assertEqual(tuple(_key(record) for record in probe_records), PROBE_KEYS)
+        for record in probe_records:
+            self.assertNotIn("corsa-wind-fipe-code-secondary", record["sourceIds"])
+            self.assertGreaterEqual(len(record["sourceIds"]), 2)
+
+    def test_probe_replays_only_after_current_retained_corpus(self) -> None:
+        with tempfile.TemporaryDirectory() as raw_directory:
+            directory = Path(raw_directory)
+            augmented_br = _augmented_br_benchmark(directory)
+            probe_overlay = _probe_overlay(directory)
+            paths = (ACTIVE_PATHS[0], augmented_br, ACTIVE_PATHS[2])
+            retained = build_multisource_operational_records_from_overlays(paths, RETAINED_ATTRIBUTION_PATHS)
+            composed = build_multisource_operational_records_from_overlays(
+                paths,
+                (*RETAINED_ATTRIBUTION_PATHS, probe_overlay),
+            )
+            probe_records = composed[len(retained):]
+
+            store = CatalogStore()
+            self.addCleanup(store.close)
+            v1_report = run_provenance_eligible_operational_corpus(store, paths)
+            self.assertEqual(v1_report.total, 22)
+            self.assertEqual(v1_report.failed, 0)
+            retained_results = run_multisource_operational_records(store, retained)
+            self.assertEqual(len(retained_results), 34)
+            results = run_multisource_operational_records(store, probe_records)
+
+        allowed = {
+            CatalogIngestionAction.CREATED,
+            CatalogIngestionAction.MATCHED,
+            CatalogIngestionAction.REVIEW,
+        }
+        self.assertEqual(len(results), 4)
+        self.assertTrue(all(result.action in allowed for result in results))
+
+
+if __name__ == "__main__":
+    unittest.main()
