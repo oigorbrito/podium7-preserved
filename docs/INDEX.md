@@ -26,6 +26,7 @@
 - [`PODIUM7-PRODUCTIVE-COVERAGE-WAVE-01.md`](PODIUM7-PRODUCTIVE-COVERAGE-WAVE-01.md) - active controlled product-evolution wave and frozen pre-mutation measurement boundary.
 - [`PODIUM7-PRODUCTIVE-COVERAGE-WAVE-01-POST-ATTRIBUTION.md`](PODIUM7-PRODUCTIVE-COVERAGE-WAVE-01-POST-ATTRIBUTION.md) - current executed coverage state after the verified single-source attribution lane.
 - [`PODIUM7-PRODUCTIVE-COVERAGE-WAVE-01-SINGLE-SOURCE-PATCH-PLAN.md`](PODIUM7-PRODUCTIVE-COVERAGE-WAVE-01-SINGLE-SOURCE-PATCH-PLAN.md) - historical patch plan applied by PR #284.
+- [`PODIUM7-PRODUCTIVE-COVERAGE-WAVE-02.md`](PODIUM7-PRODUCTIVE-COVERAGE-WAVE-02.md) - realigned Brazilian quantitative productive-coverage decision for BPT2 technical-sheet readiness.
 
 ## Decisions
 
