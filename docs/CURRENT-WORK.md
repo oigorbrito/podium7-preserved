@@ -25,8 +25,6 @@ Authority rule:
 
 ## Current retained multisource state
 
-Current `main`: `44b96d47685eecd34d8fb849ceead37666ec7754` (`data: retain Toyota Porsche multisource attribution (#309)`).
-
 The retained composed measurement test on current `main` asserts:
 
 - retained record-sides: `60`;
