@@ -11,6 +11,7 @@ from podium7.quantitative_coverage import (
     records_comparable,
     render_coverage_result,
     run_coverage_benchmark,
+    summarize_coverage_result,
 )
 
 
@@ -104,6 +105,50 @@ class QuantitativeCoverageTests(unittest.TestCase):
         catalog_contract = (ROOT / "docs/CATALOG-JSON-CONTRACT-V2.md").read_text(encoding="utf-8")
         self.assertNotIn("quantitative-coverage-benchmark", catalog_contract)
         self.assertNotIn("quantitative-enrichment.v1", catalog_contract)
+
+    def test_current_brazil_summary_reports_no_publication_ready_facts(self) -> None:
+        summary = summarize_coverage_result(run_coverage_benchmark(FIXTURE))
+        self.assertEqual(summary["schema"], "podium7.quantitative-coverage-summary.v1")
+        self.assertEqual(summary["totalVehicles"], 3)
+        self.assertEqual(summary["totalCandidateQuantitativeFacts"], 27)
+        self.assertEqual(summary["known"], 0)
+        self.assertEqual(summary["unknown"], 27)
+        self.assertEqual(summary["notApplicable"], 0)
+        self.assertEqual(summary["normalized"], 0)
+        self.assertEqual(summary["provenanceComplete"], 27)
+        self.assertEqual(summary["publicationReady"], 0)
+        self.assertEqual(summary["blocked"], 27)
+        self.assertEqual(summary["fullyPublicationReadyVehicles"], 0)
+        self.assertEqual(summary["partiallyPublicationReadyVehicles"], 0)
+
+    def test_summary_counts_publication_ready_known_values(self) -> None:
+        payload = json.loads(FIXTURE.read_text(encoding="utf-8"))
+        ready = 0
+        for row in payload["records"]:
+            if row["vehicleId"] != "podium7:retained:pbev-2026-p1-fiat-mobi-trekking":
+                continue
+            if row["field"] not in {"power", "torque"}:
+                continue
+            row["knowledgeState"] = "known"
+            row["publicationEligible"] = True
+            row["valueShape"] = "scalar"
+            row["value"] = 1
+            row["unit"] = "kW" if row["field"] == "power" else "Nm"
+            row.pop("reason", None)
+            ready += 1
+
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "fixture.json"
+            path.write_text(json.dumps(payload), encoding="utf-8")
+            summary = summarize_coverage_result(run_coverage_benchmark(path))
+
+        self.assertEqual(ready, 2)
+        self.assertEqual(summary["known"], 2)
+        self.assertEqual(summary["normalized"], 2)
+        self.assertEqual(summary["publicationReady"], 2)
+        self.assertEqual(summary["blocked"], 25)
+        self.assertEqual(summary["fullyPublicationReadyVehicles"], 0)
+        self.assertEqual(summary["partiallyPublicationReadyVehicles"], 1)
 
 
 if __name__ == "__main__":
