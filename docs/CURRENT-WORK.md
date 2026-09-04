@@ -8,7 +8,7 @@ Decision: `ACCEPTED = PRESERVE_FIELD_LEVEL_MULTI_SOURCE_REPLAY`
 
 Active product-evolution blocks:
 
-- `PODIUM7-PRODUCTIVE-COVERAGE-WAVE-01` — retained multisource rollout, currently encoded at 56/60 replayable with four Corsa sides remaining blocked.
+- `PODIUM7-PRODUCTIVE-COVERAGE-WAVE-01` — retained multisource rollout, currently encoded at 60/60 replayable with Corsa retained.
 - `PODIUM7-PRODUCTIVE-COVERAGE-WAVE-02` — Brazilian quantitative technical-sheet readiness evaluation; current decision remains data-not-ready for the V1 quantitative publication contract.
 
 ## Authority
@@ -24,8 +24,6 @@ Authority rule:
 `CODE/TEST ENCODED RETAINED EXPECTATION != CURRENT-HEAD HOSTED EXECUTION CERTIFICATION`
 
 ## Current retained multisource state
-
-Current `main`: `44b96d47685eecd34d8fb849ceead37666ec7754` (`data: retain Toyota Porsche multisource attribution (#309)`).
 
 The retained composed measurement test on current `main` asserts:
 
@@ -51,8 +49,8 @@ Do not promote hosted certification until an exact-current-head workflow obtains
 
 1. Preserve Wave 02 (#311) as the current quantitative-readiness execution candidate; do not merge until current-head execution evidence exists.
 2. Archive stale documentation reconciliation PR #298 after this replacement reconciliation is established.
-3. Archive stale Corsa probe PR #306 as evidence-only; any future Corsa rollout must be recreated from then-current `main` and compose the complete retained overlay set.
-4. If Wave 01 continues, create a clean retained Corsa rollout from current authority, execute it, and only then determine whether `60/60` is reached.
+3. Archive stale Corsa probe PR #306 as evidence-only; the retained Corsa rollout now exists on current `main` and composes the complete retained overlay set.
+4. If Wave 01 continues, keep the retained Corsa overlay aligned with current authority and preserve `60/60` on exact-current-head local execution.
 5. Reconcile current-state documentation again after any retained Corsa integration or after hosted CI certification changes.
 
 No planning ceiling or stale probe is product authority.

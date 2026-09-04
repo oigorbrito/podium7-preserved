@@ -81,7 +81,7 @@
       },
       "disposition": "HUMAN_REVIEW_EVIDENCE_EXHAUSTED",
       "evidenceStatus": "LIVE_REVALIDATED",
-      "sourceIds": ["fipe-official-vehicle-index", "corsa-wind-fipe-code-secondary"],
+      "sourceIds": ["fipe-official-vehicle-index", "tce-pr-fipe-model-table-2015"],
       "rationale": "FIPE lookup requires code plus model year under the curated semantics. The two current code-only observations lack model-year evidence and are insufficient for deterministic catalog identity."
     },
     {

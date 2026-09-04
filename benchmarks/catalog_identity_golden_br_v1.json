@@ -75,11 +75,25 @@
       "supports": "Official FIPE vehicle lookup semantics, including that vehicle year refers to model year and lookup can be performed by FIPE code plus model year."
     },
     {
-      "id": "corsa-wind-fipe-code-secondary",
-      "publisher": "Verificar Auto",
-      "title": "Tabela FIPE GM - Chevrolet Corsa Wind 1.0 MPFI / EFI 2p",
-      "url": "https://verificarauto.com.br/tabela-fipe/carros/gm-chevrolet/corsa-wind-10-mpfi-efi-2p/",
-      "supports": "Secondary enumeration showing FIPE code 004001-0 across multiple Corsa Wind model years, used only to exercise FIPE-as-supporting behavior."
+      "id": "tce-pr-fipe-model-table-2015",
+      "publisher": "Tribunal de Contas do Estado do Parana",
+      "title": "Anexo II - Tabela Padrao de Modelos - FIPE 2015",
+      "url": "https://www.tce.pr.gov.br/data/files/BF/44/F8/6D/FF9049108A198F3924D419A8/Anexo%20II%20-%20Tabela%20Padrao%20de%20Modelos%20-%20FIPE%202015.pdf",
+      "supports": "Official public-administration model table maps FIPE model code 0040010 to GM-Chevrolet Corsa Wind 1.0 MPFI / EFI 2p."
+    },
+    {
+      "id": "detran-rr-leilao-004-2025-corsa-1995",
+      "publisher": "Departamento Estadual de Transito de Roraima",
+      "title": "Edital de Leilao No 004/2025/DETRAN-RR",
+      "url": "https://www.detran.rr.gov.br/wp-content/uploads/2025/09/EDITAL-DE-LEILAO-No-004-2025-DETRAN-RR.pdf",
+      "supports": "Official DETRAN-RR public record lists Chevrolet Corsa Wind 1.0 EFI, 1995/1995, and displays FIPE code 004001-0."
+    },
+    {
+      "id": "detran-rr-leilao-003-2025-corsa-1997",
+      "publisher": "Departamento Estadual de Transito de Roraima",
+      "title": "Edital de Leilao No 003/2025/DETRAN-RR",
+      "url": "https://www.detran.rr.gov.br/wp-content/uploads/2025/06/EDITAL-DE-LEILAO-No-003-2025-DETRAN-RR_compressed-1.pdf",
+      "supports": "Official DETRAN-RR public record lists Chevrolet Corsa Wind 1.0 MPFI as a 1997/1997 vehicle observation."
     }
   ],
   "cases": [
@@ -301,7 +315,7 @@
           {"namespace": "fipe", "value": "004001-0"}
         ]
       },
-      "sourceIds": ["fipe-official-vehicle-index", "corsa-wind-fipe-code-secondary"],
+      "sourceIds": ["fipe-official-vehicle-index", "tce-pr-fipe-model-table-2015", "detran-rr-leilao-004-2025-corsa-1995", "detran-rr-leilao-003-2025-corsa-1997"],
       "rationale": "FIPE lookup is model-year specific; a shared supporting FIPE code must not override an explicit model-year contradiction."
     },
     {
@@ -406,7 +420,7 @@
           {"namespace": "fipe", "value": "004001-0"}
         ]
       },
-      "sourceIds": ["fipe-official-vehicle-index", "corsa-wind-fipe-code-secondary"],
+      "sourceIds": ["fipe-official-vehicle-index", "tce-pr-fipe-model-table-2015"],
       "rationale": "FIPE is SUPPORTING in Catalog Identity V2.1; a shared FIPE code without generation/powertrain/year evidence must not auto-match by itself."
     }
   ]

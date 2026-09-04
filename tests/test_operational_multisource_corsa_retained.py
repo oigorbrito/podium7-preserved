@@ -23,35 +23,27 @@ ATTRIBUTION_PATHS = (
     "benchmarks/operational_multisource_field_attribution_toyota_porsche_v1.json",
     "benchmarks/operational_multisource_field_attribution_corsa_v1.json",
 )
-TOYOTA_KEY = ("1.0", "no-match-toyota-corolla-10g-vs-12g", "left")
-PORSCHE_KEY = ("1.0", "no-match-porsche-911-991-vs-992", "left")
-TOYOTA_COROLLA_SOURCE = "toyota-corolla-2006-global"
-TOYOTA_FUEL_SOURCE = "toyota-2zr-fe-gasoline-2006"
-PORSCHE_GENERATION_SOURCE = "porsche-911-generations-2019"
-PORSCHE_TECH_SPEC_SOURCE = "porsche-911-carrera-s-991-tech-spec"
+CORSA_KEYS = (
+    ("br-1.0", "br-no-match-corsa-shared-fipe-different-model-year", "left"),
+    ("br-1.0", "br-no-match-corsa-shared-fipe-different-model-year", "right"),
+    ("br-1.0", "br-review-shared-fipe-code-alone", "left"),
+    ("br-1.0", "br-review-shared-fipe-code-alone", "right"),
+)
+CORSA_SECONDARY_SOURCE = "corsa-wind-fipe-code-secondary"
+EXPECTED_SOURCE_IDS = {
+    "fipe-official-vehicle-index",
+    "tce-pr-fipe-model-table-2015",
+    "detran-rr-leilao-004-2025-corsa-1995",
+    "detran-rr-leilao-003-2025-corsa-1997",
+}
 
 
 def _key(record: dict) -> tuple[str, str, str]:
     return (record["datasetVersion"], record["caseId"], record["side"])
 
 
-def _records_by_key(records: list[dict]) -> dict[tuple[str, str, str], dict]:
-    return {_key(record): record for record in records}
-
-
-def _sources_by_field(record: dict) -> dict[str, list[str]]:
-    return {
-        field: [evidence_id.rsplit(":", 1)[1] for evidence_id in evidence_ids]
-        for field, evidence_ids in record["payload"]["provenance"]["fieldEvidence"].items()
-    }
-
-
-def _common_field_source(field_source_ids: dict[str, list[str]]) -> set[str]:
-    return set.intersection(*(set(source_ids) for source_ids in field_source_ids.values()))
-
-
-class ToyotaPorscheRetainedRolloutTests(unittest.TestCase):
-    def test_composed_measurement_promotes_exact_two_toyota_porsche_sides(self) -> None:
+class CorsaRetainedRolloutTests(unittest.TestCase):
+    def test_composed_measurement_promotes_exact_four_corsa_sides(self) -> None:
         measurement = measure_combined_operational_provenance_eligibility_from_overlays(
             ACTIVE_PATHS,
             ATTRIBUTION_PATHS,
@@ -70,21 +62,12 @@ class ToyotaPorscheRetainedRolloutTests(unittest.TestCase):
             ATTRIBUTION_PATHS,
         )
         self.assertEqual(len(records), 38)
-        keyed_records = _records_by_key(records)
-        self.assertIn(TOYOTA_KEY, keyed_records)
-        self.assertIn(PORSCHE_KEY, keyed_records)
+        self.assertEqual(tuple(_key(record) for record in records[-4:]), CORSA_KEYS)
+        for record in records[-4:]:
+            self.assertNotIn(CORSA_SECONDARY_SOURCE, record["sourceIds"])
+            self.assertTrue(set(record["sourceIds"]) >= {"fipe-official-vehicle-index", "tce-pr-fipe-model-table-2015"})
 
-        toyota_sources = _sources_by_field(keyed_records[TOYOTA_KEY])
-        self.assertEqual(_common_field_source(toyota_sources), set())
-        self.assertEqual(toyota_sources["powertrain"], [TOYOTA_FUEL_SOURCE])
-        self.assertNotIn(TOYOTA_COROLLA_SOURCE, toyota_sources["powertrain"])
-
-        porsche_sources = _sources_by_field(keyed_records[PORSCHE_KEY])
-        self.assertEqual(_common_field_source(porsche_sources), set())
-        self.assertEqual(porsche_sources["generation"], [PORSCHE_GENERATION_SOURCE])
-        self.assertNotIn(PORSCHE_TECH_SPEC_SOURCE, porsche_sources["generation"])
-
-    def test_toyota_porsche_sides_replay_with_complete_field_provenance(self) -> None:
+    def test_corsa_sides_replay_after_retained_corpus_with_complete_field_provenance(self) -> None:
         store = CatalogStore()
         self.addCleanup(store.close)
 
@@ -102,28 +85,28 @@ class ToyotaPorscheRetainedRolloutTests(unittest.TestCase):
         ).run_multisource_operational_records(store, records)
 
         self.assertEqual(len(results), 38)
-        keyed_records = _records_by_key(records)
-        keyed_results = {_key(record): result for record, result in zip(records, results)}
+        corsa_records = records[-4:]
+        corsa_results = results[-4:]
         allowed = {
             CatalogIngestionAction.CREATED,
             CatalogIngestionAction.MATCHED,
             CatalogIngestionAction.REVIEW,
         }
-        self.assertIn(TOYOTA_KEY, keyed_results)
-        self.assertIn(PORSCHE_KEY, keyed_results)
-        self.assertTrue(all(keyed_results[key].action in allowed for key in (TOYOTA_KEY, PORSCHE_KEY)))
+        self.assertTrue(all(result.action in allowed for result in corsa_results))
 
-        for key in (TOYOTA_KEY, PORSCHE_KEY):
-            record = keyed_records[key]
-            result = keyed_results[key]
+        for record, result in zip(corsa_records, corsa_results):
             if result.action is CatalogIngestionAction.REVIEW:
                 self.assertIsNotNone(result.review_id)
                 self.assertIsNone(result.vehicle_id)
                 continue
             self.assertIsNotNone(result.vehicle_id)
+            field_evidence = record["payload"]["provenance"]["fieldEvidence"]
+            self.assertTrue(field_evidence)
+            self.assertIn("market", field_evidence)
+            self.assertIn("external_identifiers", field_evidence)
             expected_bindings = {
                 (field_name, evidence_id)
-                for field_name, evidence_ids in record["payload"]["provenance"]["fieldEvidence"].items()
+                for field_name, evidence_ids in field_evidence.items()
                 for evidence_id in evidence_ids
             }
             actual_bindings = {
@@ -131,6 +114,11 @@ class ToyotaPorscheRetainedRolloutTests(unittest.TestCase):
                 for fact in store.catalog_candidates_for_entity(result.vehicle_id)
             }
             self.assertTrue(expected_bindings <= actual_bindings)
+            evidence_source_ids = {
+                store.get_raw_evidence(evidence_id).source_id
+                for _, evidence_id in expected_bindings
+            }
+            self.assertTrue(evidence_source_ids <= EXPECTED_SOURCE_IDS)
 
 
 if __name__ == "__main__":

@@ -19,6 +19,7 @@
 - [`HANDOFF.md`](HANDOFF.md) - compact resume point derived from the current baseline.
 - [`CURRENT-STATE.md`](CURRENT-STATE.md) - legacy alias for the current state snapshot.
 - [`CURRENT-WORK.md`](CURRENT-WORK.md) - legacy active-work tracker; only meaningful if an active block exists.
+- [`PODIUM7-PRODUCTIVE-COVERAGE-WAVE-01-MULTISOURCE-ROLLOUT.md`](PODIUM7-PRODUCTIVE-COVERAGE-WAVE-01-MULTISOURCE-ROLLOUT.md) - retained Wave 01 multisource rollout state and local execution evidence.
 - [`DEVELOPMENT-WORKFLOW.md`](DEVELOPMENT-WORKFLOW.md) - autonomy, validation, Git/PR/CI, self-review, and done rules.
 - [`INVARIANTS.md`](INVARIANTS.md) - cross-cutting product invariants.
 - [`TECH-DEBT.md`](TECH-DEBT.md) - durable unresolved work and external blockers.

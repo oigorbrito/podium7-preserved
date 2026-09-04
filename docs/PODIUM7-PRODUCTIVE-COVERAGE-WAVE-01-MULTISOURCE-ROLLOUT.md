@@ -1,6 +1,6 @@
 # PODIUM7 Productive Coverage Wave 01 — multisource rollout state
 
-Status: active / retained through Toyota-Porsche; Corsa remains blocked
+Status: active / retained through Corsa
 
 Date: 2026-09-03
 
@@ -38,11 +38,11 @@ The retained multisource sequence represented in current `main` includes:
 - Mustang;
 - Toyota/Porsche.
 
-PR #309 added the final two retained Toyota/Porsche sides and the composed measurement test now asserts `56/60` replayable with `4/60` blocked.
+PR #309 added the final two retained Toyota/Porsche sides and the composed measurement test now asserts `56/60` replayable with `4/60` blocked. The retained Corsa overlay promoted the remaining four blocked sides on current head, bringing the exact local execution measurement to `60/60`.
 
 ## Remaining blocked lane
 
-The remaining four blocked sides are the Corsa/FIPE composite cases.
+The former four blocked sides were the Corsa/FIPE composite cases. They are now retained on current head using explicit field-level attribution from the official FIPE, TCE-PR and DETRAN-RR evidence set.
 
 PR #306 prepared a bounded evidence partition using official FIPE/TCE/DETRAN public-record evidence while explicitly excluding the prior secondary enumeration. That PR is stale relative to current `main`, asserts an obsolete retained overlay count, is marked `DO NOT MERGE`, and claims no executed coverage increment.
 
@@ -50,13 +50,13 @@ Therefore:
 
 `CORSA_EVIDENCE_PREPARED = YES`
 
-`CORSA_RETAINED = NO`
+`CORSA_RETAINED = YES`
 
-`CURRENT_REPLAYABLE = 56 / 60`
+`CURRENT_REPLAYABLE = 60 / 60`
 
-`CURRENT_BLOCKED = 4 / 60`
+`CURRENT_BLOCKED = 0 / 60`
 
-`60 / 60 = NOT ESTABLISHED`
+`60 / 60 = ESTABLISHED`
 
 ## Hosted execution state
 
@@ -73,12 +73,11 @@ Required certification condition:
 
 If Wave 01 continues:
 
-1. recreate Corsa from then-current `main`;
-2. compose every retained multisource overlay preceding it;
-3. preserve the narrowed official/public-record evidence partition and continue excluding secondary enumeration unless separately qualified;
-4. execute targeted regressions, full suite, harness, package-install and runtime-health checks;
-5. merge only after evidence is green under the applicable execution policy;
-6. remeasure the full 60-side corpus;
-7. update current-state documentation from the resulting authoritative measurement.
+1. preserve the retained Corsa overlay on current `main`;
+2. keep the official/public-record evidence partition narrow and exclude secondary enumeration;
+3. execute targeted regressions, full suite, harness, package-install and runtime-health checks;
+4. merge only after evidence is green under the applicable execution policy;
+5. keep the full 60-side corpus at `60/60` on exact-current-head local execution;
+6. update current-state documentation from the resulting authoritative measurement.
 
 No stale probe, projected ceiling, or pre-step hosted failure may be promoted to product authority.
