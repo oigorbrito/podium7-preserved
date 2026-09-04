@@ -22,6 +22,7 @@
         "detran-rr-leilao-004-2025-corsa-1995": "Official DETRAN-RR public record establishes a Corsa Wind observation in model year 1995."
       },
       "status": "RETAINED_PUBLIC_RECORD_ATTRIBUTION"
+      }
     },
     {
       "benchmark": "catalog_identity_golden_br_v1.json",
@@ -42,6 +43,7 @@
         "detran-rr-leilao-003-2025-corsa-1997": "Official DETRAN-RR public record establishes a Corsa Wind observation in model year 1997."
       },
       "status": "RETAINED_PUBLIC_RECORD_ATTRIBUTION"
+      }
     },
     {
       "benchmark": "catalog_identity_golden_br_v1.json",
@@ -59,6 +61,7 @@
         "tce-pr-fipe-model-table-2015": "Official TCE-PR administrative model table maps code 0040010 to GM-Chevrolet Corsa Wind 1.0 MPFI / EFI 2p."
       },
       "status": "RETAINED_PUBLIC_RECORD_ATTRIBUTION"
+      }
     },
     {
       "benchmark": "catalog_identity_golden_br_v1.json",
@@ -76,6 +79,7 @@
         "tce-pr-fipe-model-table-2015": "Official TCE-PR administrative model table maps code 0040010 to GM-Chevrolet Corsa Wind 1.0 MPFI / EFI 2p."
       },
       "status": "RETAINED_PUBLIC_RECORD_ATTRIBUTION"
+      }
     }
   ]
 }

@@ -2,7 +2,7 @@ import unittest
 
 from podium7.catalog import CatalogStore
 from podium7.catalog_ingestion import CatalogIngestionAction
-from podium7.operational_multisource import MULTISOURCE_REPLAY_METHOD
+from podium7.operational_multisource import MULTISOURCE_REPLAY_METHOD, run_multisource_operational_records
 from podium7.operational_multisource_overlay_set import (
     build_multisource_operational_records_from_overlays,
     measure_combined_operational_provenance_eligibility_from_overlays,
@@ -23,13 +23,16 @@ ATTRIBUTION_PATHS = (
     "benchmarks/operational_multisource_field_attribution_toyota_porsche_v1.json",
     "benchmarks/operational_multisource_field_attribution_corsa_v1.json",
 )
+BASELINE_ATTRIBUTION_PATHS = ATTRIBUTION_PATHS[:-1]
+YEAR_CASE = "br-no-match-corsa-shared-fipe-different-model-year"
+REVIEW_CASE = "br-review-shared-fipe-code-alone"
 CORSA_KEYS = (
-    ("br-1.0", "br-no-match-corsa-shared-fipe-different-model-year", "left"),
-    ("br-1.0", "br-no-match-corsa-shared-fipe-different-model-year", "right"),
-    ("br-1.0", "br-review-shared-fipe-code-alone", "left"),
-    ("br-1.0", "br-review-shared-fipe-code-alone", "right"),
+    ("br-1.0", YEAR_CASE, "left"),
+    ("br-1.0", YEAR_CASE, "right"),
+    ("br-1.0", REVIEW_CASE, "left"),
+    ("br-1.0", REVIEW_CASE, "right"),
 )
-CORSA_SECONDARY_SOURCE = "corsa-wind-fipe-code-secondary"
+SECONDARY_SOURCE = "corsa-wind-fipe-code-secondary"
 EXPECTED_SOURCE_IDS = {
     "fipe-official-vehicle-index",
     "tce-pr-fipe-model-table-2015",
@@ -43,6 +46,28 @@ def _key(record: dict) -> tuple[str, str, str]:
 
 
 class CorsaRetainedRolloutTests(unittest.TestCase):
+    def test_corsa_overlay_closes_exact_prior_four_record_gap(self) -> None:
+        baseline = measure_combined_operational_provenance_eligibility_from_overlays(
+            ACTIVE_PATHS,
+            BASELINE_ATTRIBUTION_PATHS,
+        )["summary"]
+        self.assertEqual(baseline["records"], 60)
+        self.assertEqual(baseline["replayableRecords"], 56)
+        self.assertEqual(baseline["blockedRecords"], 4)
+        self.assertEqual(
+            baseline["blockedByReasonCode"],
+            {"MULTI_SOURCE_WITHOUT_EXPLICIT_FIELD_ATTRIBUTION": 4},
+        )
+
+        current = measure_combined_operational_provenance_eligibility_from_overlays(
+            ACTIVE_PATHS,
+            ATTRIBUTION_PATHS,
+        )["summary"]
+        self.assertEqual(current["records"], 60)
+        self.assertEqual(current["replayableRecords"], 60)
+        self.assertEqual(current["blockedRecords"], 0)
+        self.assertEqual(current["blockedByReasonCode"], {})
+
     def test_composed_measurement_promotes_exact_four_corsa_sides(self) -> None:
         measurement = measure_combined_operational_provenance_eligibility_from_overlays(
             ACTIVE_PATHS,
@@ -62,12 +87,16 @@ class CorsaRetainedRolloutTests(unittest.TestCase):
             ATTRIBUTION_PATHS,
         )
         self.assertEqual(len(records), 38)
-        self.assertEqual(tuple(_key(record) for record in records[-4:]), CORSA_KEYS)
-        for record in records[-4:]:
-            self.assertNotIn(CORSA_SECONDARY_SOURCE, record["sourceIds"])
-            self.assertTrue(set(record["sourceIds"]) >= {"fipe-official-vehicle-index", "tce-pr-fipe-model-table-2015"})
+        corsa_records = records[-4:]
+        self.assertEqual(tuple(_key(record) for record in corsa_records), CORSA_KEYS)
+        for record in corsa_records:
+            self.assertNotIn(SECONDARY_SOURCE, record["sourceIds"])
+            self.assertGreaterEqual(len(record["sourceIds"]), 2)
+            field_evidence = record["payload"]["provenance"]["fieldEvidence"]
+            self.assertEqual(set(field_evidence), set(record["payload"]["vehicle"]))
+            self.assertTrue(all(field_evidence[field] for field in field_evidence))
 
-    def test_corsa_sides_replay_after_retained_corpus_with_complete_field_provenance(self) -> None:
+    def test_corsa_sides_replay_from_retained_repository_files(self) -> None:
         store = CatalogStore()
         self.addCleanup(store.close)
 
@@ -79,22 +108,18 @@ class CorsaRetainedRolloutTests(unittest.TestCase):
             ACTIVE_PATHS,
             ATTRIBUTION_PATHS,
         )
-        results = __import__(
-            "podium7.operational_multisource",
-            fromlist=["run_multisource_operational_records"],
-        ).run_multisource_operational_records(store, records)
-
+        self.assertEqual(tuple(_key(record) for record in records[-4:]), CORSA_KEYS)
+        results = run_multisource_operational_records(store, records)
         self.assertEqual(len(results), 38)
-        corsa_records = records[-4:]
-        corsa_results = results[-4:]
+
         allowed = {
             CatalogIngestionAction.CREATED,
             CatalogIngestionAction.MATCHED,
             CatalogIngestionAction.REVIEW,
         }
-        self.assertTrue(all(result.action in allowed for result in corsa_results))
+        self.assertTrue(all(result.action in allowed for result in results[-4:]))
 
-        for record, result in zip(corsa_records, corsa_results):
+        for record, result in zip(records[-4:], results[-4:]):
             if result.action is CatalogIngestionAction.REVIEW:
                 self.assertIsNotNone(result.review_id)
                 self.assertIsNone(result.vehicle_id)
