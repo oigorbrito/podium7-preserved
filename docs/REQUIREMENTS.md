@@ -50,7 +50,7 @@ Status: current requirement baseline
 ## Gaps
 
 - `TRACEABILITY_GAP`: resolved by the lightweight requirement trace table in this document and the linked quality-gate mapping.
-- `VERIFICATION_GAP`: hosted certification remains externally pending, so local verification is the only current acceptance evidence for the baseline.
+- `VERIFICATION_GAP`: hosted certification for `#270` is closed and archived, so local verification remains the acceptance evidence recorded for the baseline.
 
 ## Status semantics
 

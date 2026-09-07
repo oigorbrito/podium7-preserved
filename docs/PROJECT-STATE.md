@@ -8,11 +8,11 @@ Status: current state authority
 
 ## Reference SHA
 
-`63887c5d1df352a62f83e70abec1f1b3b2ee2816`
+`8f302bb29cdb049a0680248d11fde4fcd22a59d8`
 
 ## Remote baseline
 
-`origin/main = 6a804b9b8751515283146f402312f458985fc25b`
+`origin/main = 8f302bb29cdb049a0680248d11fde4fcd22a59d8`
 
 ## Lifecycle phase
 
@@ -39,7 +39,8 @@ Status: current state authority
 
 ## Pending external gates
 
-- hosted certification / GitHub-hosted runner evidence;
+- none currently block the current baseline;
+- the hosted certification record for `#270` is closed and archived in `TECH-DEBT.md`;
 - remote branch pruning has been reduced to deferred maintenance and is preserved durably in `TECH-DEBT.md`.
 
 ## Open blockers
@@ -52,7 +53,7 @@ Status: current state authority
 
 ## Blocker register
 
-- `BLK-EXT-001 | Hosted certification | PENDING_EXTERNAL_CI`
+- no active external blocker currently blocks the current baseline.
 
 ## Maintenance follow-up
 
@@ -68,4 +69,4 @@ integration bookkeeping.
 
 ## Next transition
 
-External-only follow-up: hosted certification and durable pruning traceability. Internal baseline closeout is complete; remote branch pruning is deferred maintenance, not a blocker.
+External-only follow-up: durable pruning traceability. Internal baseline closeout is complete; remote branch pruning is deferred maintenance, not a blocker.

@@ -18,11 +18,12 @@ This file is a compact resume point, not a second authority layer.
 - data mode: `FIXTURE_OPERATIONAL`; live acquisition is not required for
   the current baseline.
 - `PR #272` is superseded by `PR #274`.
+- hosted certification for `#270` is closed and archived in
+  [`TECH-DEBT.md`](TECH-DEBT.md).
 
 ## Active blockers
 
 - no known internal blocker;
-- hosted certification remains external;
 - remote pruning is deferred maintenance and its durable procedure lives in [`TECH-DEBT.md`](TECH-DEBT.md).
 
 ## Resume order

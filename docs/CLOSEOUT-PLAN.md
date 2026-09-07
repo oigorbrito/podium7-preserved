@@ -11,7 +11,7 @@ Status: authoritative closeout plan
 - private/proprietary project status remains in force;
 - local private operation and operator installation are already validated;
 - the repository contains overlapping state, history, evidence, and closeout documents that need consolidation;
-- the remote baseline is refreshed to `origin/main = 6a804b9b8751515283146f402312f458985fc25b`.
+- the remote baseline is refreshed to `origin/main = 8f302bb29cdb049a0680248d11fde4fcd22a59d8`.
 
 ## Gates
 

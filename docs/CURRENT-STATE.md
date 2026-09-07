@@ -9,7 +9,7 @@ This legacy snapshot now aliases the current baseline in [`PROJECT-STATE.md`](PR
 - current baseline: `POST_MVP_OPERATIONAL_BASELINE_V1`;
 - private/proprietary release status remains in force;
 - local private operation is validated;
-- hosted certification remains externally pending.
+- hosted certification for `#270` is closed and archived in `TECH-DEBT.md`.
 - data mode: `FIXTURE_OPERATIONAL`; live acquisition is not required for
   the current baseline.
 - remote branch pruning is deferred maintenance and no longer an active product blocker.

@@ -4,7 +4,6 @@ Status: future work authority
 
 ## Approved future work
 
-- hosted certification reconciliation when repository CI evidence is available;
 - remote branch pruning after merge/supersession evidence is confirmed;
 - documentation reconciliation and cleanup after the new authority layer is in place.
 

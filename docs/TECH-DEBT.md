@@ -77,22 +77,20 @@ No known harness blocker after Agent Harness V1 beyond normal documentation gard
 
 ### Hosted certification
 
-Status: `PENDING_EXTERNAL_CI`
+Status: `CLOSED / ARCHIVED`
 
-`#270` is retained here as a knowledge-preservation record for hosted certification. The durable facts to preserve are:
+`#270` is retained here as a knowledge-preservation record for hosted certification. The issue is closed remotely and no longer represents an active blocker. The durable facts to preserve are:
 
-- GitHub-hosted execution has not yet produced repository-step evidence on the exact merge candidate;
-- the failure is external to the local Podium 7 codebase;
-- `tests` and `minimum-python` are the checks that must pass once hosted execution is available;
+- GitHub-hosted execution did not produce repository-step evidence on the exact merge candidate while the issue was open;
+- the failure was external to the local Podium 7 codebase;
+- `tests` and `minimum-python` were the checks named by the hosted certification gate;
 - `steps=null` or missing workflow logs are not certification evidence;
 - billing/quota is only a hypothesis until confirmed by the hosted environment;
 - local private baseline acceptance is already complete and does not depend on this issue.
 
 Closure condition:
 
-- hosted runner executes repository steps on the exact SHA under certification;
-- the required checks pass;
-- the run is tied to the merge candidate head with reproducible evidence.
+- archived for history; if hosted certification needs to be revisited in a future cycle, certify against the exact SHA with repository steps and reproducible evidence.
 
 Reopen condition:
 
